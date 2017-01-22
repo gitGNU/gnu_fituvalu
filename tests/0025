@@ -1,0 +1,32 @@
+#!/bin/bash
+# Copyright (C) 2017 Ben Asselstine
+# 
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
+
+#here is what we expect
+expected=`mktemp $builddir/fituvalu.XXXXXX`
+bindir=$builddir/../src
+for n in `seq 1 1000`; do
+  if [ "$n" == "1" ]; then
+    echo "$n" >>$expected
+    continue
+  fi
+  remainder=`echo "scale=3; sqrt($n)" | bc | cut -f2 -d'.'`
+  if [ "$remainder" == "000" ]; then
+    echo "$n" >>$expected
+  fi
+done
+
+#generating our results
+$bindir/sq-seq 1 1000
+
+#0025.log is simultaneously created as this script runs.
+diff -uNrd $expected $builddir/0025.log
+retval=$?
+
+#cleanup
+rm $expected
+exit $retval

@@ -1,0 +1,503 @@
+Fituvalu - Tools for finding and managing 3x3 magic squares of squares.
+
+Copyright (C) 2016, 2017 Ben Asselstine
+This document is licensed under the terms of the "Creative Commons Attribution
+ShareAlike 4.0 International" license.
+
+This project is for generating and managing 3x3 magic squares that contain
+perfect squares.  It uses libgmp (GNU Multiprecision Arithmetic Library)
+for arbitrary precision arithmetic on very large integers.
+
+What does the name mean?
+The word Fituvalu is a compound word of the words "seven eight" in Samoan.
+
+There are top level programs that we want to run primarily, and then there
+are helper programs.  These programs are designed in the UNIX fashion;
+they are command-line programs with the output of one program being passed to
+the input of another via pipes.
+
+There are generally two kinds of progressions that we are searching for:
+The "step progression", and the "fulcrum progression".
+
+step progression:
+        |-----+--+--+-------+--+--+-------+--+--+------|
+               D1       E1
+The step progression is defined by two distances.
+
+fulcrum progression:
+        |-+--------+--+-----+--+--+-----+--+--------+--|
+              D1    E1   F1
+The fulcrum progression is defined by three distances, where the first
+distance adds up to the sum of the next two distances.
+
+These depict a number line with predefined distances between the numbers.
+These progressions can be trivially transformed into 3x3 magic squares.
+
+
+Common Options
+--------------
+
+--in-binary
+--out-binary
+
+When using arbitrary precision integers it is faster to deal with their raw
+formats.  Many of these programs have an option for reading or writing the
+raw GMP formats rather than textual representations of numbers.
+When reading and writing billions of records, the time savings can be
+considerable.
+
+
+Top-level Programs
+------------------
+
+
+All of these top-level programs iterate through sequences of perfect squares,
+and display progressions that contain 5 or more perfect squares.
+
+program: step-progression1
+Usage: step-progression1 [--squares=FILE] [--in-binary] [--out-binary] MIN MAX
+
+Here are the perfect squares we're searching for in this program:
+|-----+--+--+-------+--+--+-------+--+--+------|
+      ^  ^  ^       ^                           
+      1  2  3       4                           
+
+All of the progression programs will provide a visual depiction of the
+squares they're searching for in their --help.  The --squares option causes
+the program to take the starting perfect square from the standard input so
+you can have more control over what progressions get generated.
+
+You run it like this:
+$ step-progression1 1 1000 | head -n1
+1, 25, 49, 121, 145, 169, 241, 265, 289
+
+
+program: step-progression2
+Usage: step-progression2 [--squares=FILE] [--in-binary] [--out-binary] MIN MAX
+
+|-----+--+--+-------+--+--+-------+--+--+------|
+         ^  ^       ^  ^                        
+         1  2       3  4                        
+
+program: reverse-step-progression1
+Usage: reverse-step-progression1 [--squares=FILE] [--in-binary] [--out-binary] MIN MAX
+
+|-----+--+--+-------+--+--+-------+--+--+------|
+                          ^       ^  ^  ^       
+                          4       3  2  1       
+
+program: fulcrum-progression1
+Usage: fulcrum-progression1 [--squares=FILE] [--in-binary] [--out-binary] MIN MAX
+
+|-+--------+--+-----+--+--+-----+--+--------+--|
+  ^        ^  ^     ^                           
+  1        2  3     4                           
+
+program: fulcrum-progression2
+Usage: fulcrum-progression2 [--squares=FILE] [--in-binary] [--out-binary] MIN MAX
+
+|-+--------+--+-----+--+--+-----+--+--------+--|
+           ^  ^     ^  ^                        
+           1  2     3  4                        
+
+program: fulcrum-progression3
+Usage: fulcrum-progression3 [--squares=FILE] [--in-binary] [--out-binary] MIN MAX
+
+|-+--------+--+-----+--+--+-----+--+--------+--|
+                    ^  ^  ^     ^               
+                    1  2  3     4               
+
+program: reverse-fulcrum-progression1
+Usage: reverse-fulcrum-progression1 [--squares=FILE] [--in-binary] [--out-binary] MIN MAX
+
+|-+--------+--+-----+--+--+-----+--+--------+--|
+              ^     ^  ^  ^
+              4     3  2  1
+
+
+program: morgenstern-search-type-1
+Usage: morgenstern-search-type-1 [--filter=NUM] [--out-binary] MAX
+
+Whereas the other programs generate 3x3 magic squares with 4 perfect
+squares and then hope that a 5th, 6th, or 7th perfect square shows up, the
+morgenstern-search programs generate 3x3 magic squares with 5 perfect squares
+and then hope that a 6th or 7th perfect square shows up.
+
+The approach is create two arithmetic progressions of 3 perfect squares with
+a single square in common.  The results are much larger, and less varied in
+terms of magic square types.
+
+The standard input provides the parametric "MN" values -- two values per record
+to assist in the transformation.  The seq-morgenstern-mn program provides
+these numbers.
+
+Morgenstern type 1 squares have 5 perfect squares in this configuration:
++-------+-------+-------+
+|  A^2  |       |  C^2  |
++-------+-------+-------+
+|       |  E^2  |       |
++-------+-------+-------+
+|  G^2  |       |  I^2  |
++-------+-------+-------+
+
+program: morgenstern-search-type-2
+Usage: morgenstern-search-type-2 [--filter=NUM] [--out-binary] MAX
+
+Morgenstern type 2 squares have 5 perfect squares in this configuration:
++-------+-------+-------+
+|       |  B^2  |       |
++-------+-------+-------+
+|  D^2  |  E^2  |  F^2  |
++-------+-------+-------+
+|       |  H^2  |       |
++-------+-------+-------+
+
+program: morgenstern-search-type-3
+Usage: morgenstern-search-type-3 [--filter=NUM] [--out-binary] MAX
+
+Morgenstern type 3 squares have 5 perfect squares in this configuration:
++-------+-------+-------+
+|  A^2  |  B^2  |       |
++-------+-------+-------+
+|       |  E^2  |       |
++-------+-------+-------+
+|       |  H^2  |  I^2  |
++-------+-------+-------+
+
+program: morgenstern-search-type-4
+Usage: morgenstern-search-type-4 [--filter=NUM] [--out-binary] MAX
+
+Morgenstern type 4 squares have 5 perfect squares in this configuration:
++-------+-------+-------+
+|       |  B^2  |       |
++-------+-------+-------+
+|  D^2  |       |  F^2  |
++-------+-------+-------+
+|  G^2  |       |  I^2  |
++-------+-------+-------+
+
+program: morgenstern-search-type-5
+Usage: morgenstern-search-type-5 [--filter=NUM] [--out-binary] MAX
+
+Morgenstern type 5 squares have 5 perfect squares in this configuration:
++-------+-------+-------+
+|  A^2  |       |  C^2  |
++-------+-------+-------+
+|  D^2  |       |  F^2  |
++-------+-------+-------+
+|       |  H^2  |       |
++-------+-------+-------+
+
+program: morgenstern-search-type-6
+Usage: morgenstern-search-type-6 [--filter=NUM] [--out-binary] MAX
+
+Morgenstern type 6 squares have 5 perfect squares in this configuration:
++-------+-------+-------+
+|  A^2  |  B^2  |       |
++-------+-------+-------+
+|       |       |  F^2  |
++-------+-------+-------+
+|  G^2  |  H^2  |       |
++-------+-------+-------+
+
+program: morgenstern-search-type-7
+Usage: morgenstern-search-type-7 [--filter=NUM] [--out-binary] MAX
+
+Morgenstern type 7 squares have 5 perfect squares in this configuration:
++-------+-------+-------+
+|       |  B^2  |  C^2  |
++-------+-------+-------+
+|  D^2  |       |       |
++-------+-------+-------+
+|       |  H^2  |  I^2  |
++-------+-------+-------+
+
+program: morgenstern-search-type-8
+Usage: morgenstern-search-type-8 [--filter=NUM] [--out-binary] MAX
+
+Morgenstern type 8 squares have 5 perfect squares in this configuration:
++-------+-------+-------+
+|       |  B^2  |  C^2  |
++-------+-------+-------+
+|       |  E^2  |       |
++-------+-------+-------+
+|  G^2  |  H^2  |       |
++-------+-------+-------+
+
+
+Helper Programs
+---------------
+
+
+program: permute-square 
+Usage: permute-square [--display-offset] [--show-all]
+
+Try all permutations of a given progression on the standard input
+until it becomes a magic square.  With the --display-offset option, this
+program generates transformations for use in the "transform-square"
+program.  With the --show-all option, this command will show all possible
+permutations of the square.
+
+program: auto-transform-square
+Usage: auto-transform-square [-n]
+
+Like "permute-square" but much faster because it uses "transform-square".
+It takes the transformations in the first 100 squares and uses them to
+transform the rest.  The 100 can be changed with the -n option.
+
+program: transform-square
+Usage: transform-square [OPTION...] TRANSFORM-FILE
+
+Transform a set of progressions into magic squares given a data file of
+transformations.  When a progression can't be transformed it is displayed
+on the standard error.
+
+program: count-squares
+Usage: count-squares [--filter=NUM-SQUARES]
+
+Count how many perfect squares a magic square has, or filter squares that
+only have a given number of squares using the --filter option.
+
+program: reduce-square
+Usage: reduce-square [OPTION...]
+
+Determine what the lowest value is for the given magic square and have it
+still retain all of the perfect squares.
+
+program: rotate-square
+Usage: rotate-square [OPTION...]
+
+Given a magic square, show the rotations and reflections of it.
+
+program: uniq-squares
+Usage: uniq-squares [OPTION...]
+
+Given a set of magic squares, only show the unique ones.
+E.g. take into account all rotations, reflections and reductions.
+
+program: type-square
+Usage: type-square [--filter=NUM_SQUARES:TYPE] [---no-show-squares]
+
+Given a magic square determine which of the configurations it is.  Using the
+--filter option, this program filters a given set of magic squares such that
+ they only have the given type.  It displays records of the form: "5:12"
+(e.g. this magic square has 5 perfect squares, laid out in type 12.)
+
+program: sort-square
+Usage: sort-square [--prefix=NAME]
+
+Given a magic square, put it in a file called fives, sixes, sevens etc.
+according to how many perfect squares it contains.
+
+program: number-square
+Usage: number-square [OPTION...]
+
+Given a magic square on the standard input, output the magic number.  Only
+do so if the square is a magic square.
+
+program: check-square
+Usage: check-square [OPTION...]
+
+Given a set of 9 numbers on the standard input, check if it's a magic square.
+Only display it if it is.
+
+program: progression-type-square
+Usage: progression-type-square [--filter=TYPE]
+
+Given a magic square on the standard input, determine which of the two
+progression types it is.  1 is to "step progression", and 2 is
+"fulcrum progression".  Using the --filter option, this program filters magic
+squares based on progression type.
+
+program: display-square
+Usage: display-square [--number-line] [--no-magic-number] [--show-sums] [--simple]
+
+Pretty-print a 3x3 square and put the values inside the cells.  This program
+will also display the sums of the rows and columns and diagonals when the
+square is not magic.
+
+program: sq-seq [--out-binary]
+Usage: sq-seq [OPTION...] FIRST
+  or:  sq-seq [OPTION...] FIRST LAST
+  or:  sq-seq [OPTION...] FIRST INCREMENT LAST
+
+Generate a sequence of perfect squares.  This program works like "seq" from
+GNU Coreutils, but loops over squares.  It can be given an increment to 
+loop over every Nth square in the sequence.
+
+program: 4sq
+Usage: 4sq [--filter=NUM] [--type=NAME] [--in-binary] [--out-binary] START FINISH
+  or:  4sq [--filter=NUM] [--type=NAME] [--in-binary] [--out-binary] FINISH
+
+Generate a progression of 4 perfect squares.  4 squares in an arithmetic
+progression is impossible (e.g. where the distance between them is the
+same), but if the distance between one or more of the squares is varied,
+it can still form the basis of a 3x3 magic square.  4sq has four different
+strategies for generating 4 square progressions which is controlled by the
+--type option.  It can iterate over squares between a START and a FINISH,
+or it can take the starting squares from the standard input.
+
+program: complete-4sq-progression
+Usage: complete-4sq-progression [--filter=NUM] [--type=NAME] [--in-binary] [--out-binary]
+
+Generate a nine number progression based on four squares from the standard
+input, based on a progression strategy defined by the --type option.  There
+are 7 of them.  The --filter=NUM option only shows progressions with NUM
+squares or more.  The idea is that it accepts input from the "4sq" program.
+
+program: gen-progression
+Usage: gen-progression [--filter=NUM] [--type=NAME] [--in-binary] [--out-binary] START FINISH
+  or:  gen-progression [--filter=NUM] [--type=NAME] [--in-binary] [--out-binary] FINISH
+
+Generate a progression of 9 numbers that have at least 4 perfect squares.
+It can iterate over squares between a START and a FINISH, or it can take the
+starting squares from the standard input.  This progression can be easily
+transformed into a 3x3 magic square using the "auto-transform-square" command.
+The --filter=NUM option only shows progressions with NUM squares or more.
+
+This program is equivalent to using "4sq" and piping it into
+"complete-4sq-progression".  It's faster because it's not importing/exporting
+numbers to and from strings, and it doesn't involve a pipe.
+
+The following are equivalent:
+$ step-progression1 1 50000  >/tmp/dump1
+$ gen_progression --type=step-progression1 --filter 5 1 50000  >/tmp/dump2
+$ diff /tmp/dump1 /tmp/dump2
+$
+
+program: seq-morgenstern-mn
+Usage: seq-morgenstern-mn MAX
+
+Generates a sequence of numbers that has the form:
+M > N > 0, where M and N are coprime, and with one being even and the other one
+odd.  The output of this program is suitable for input into the
+"morgenstern-search-" programs.
+
+program: convert-binary-gmp-records-to-text
+Usage: convert-binary-gmp-records-to-text [--num-columns=NUM]
+
+The progression programs have an option to dump records in raw format 
+(--out-binary), so we don't spend time converting the numbers to their
+textual representation.  This program converts them from the GMP raw format
+to that textual representation.  It reads from the standard-input and
+outputs the records on the standard output.
+
+How do you use all this?
+------------------------
+
+
+You do something like:
+$ step-progression1 1 36893488147419103232 > data &
+(The big number is 2^65.  It's okay that it's not a perfect square.)
+
+Then while it's running you can check it by doing this:
+
+$ cat data | auto-transform-square | type-square | sort | uniq -c
+   1565 5:12
+   1667 5:21
+      4 5:8
+      6 5:9
+      2 6:14
+
+(e.g. Take the progressions, turn them into magic squares, show the type of
+square along with the number of squares it has, sort them, and then count
+them all up.)
+
+We can see there are two six-square magic squares with configuration type 14.
+But are they the same, or is it a duplicate?
+
+$ cat data | auto-transform-square | count-squares -f 6 | uniq-squares | type-square | sort | uniq -c
+      1 6:14
+Ah we can see there's only one unique six found.
+
+(e.g. Take the progressions, turn them into magic squares, filter out all
+but the six square magic squares, throw away the duplicate squares, show
+the type of square along with the number of squares it has, sort them, and
+then count them all up.)
+
+
+Did you find a seven?  You can look at it like this:
+$ cat data | auto-transform-square | count-squares -f7 | uniq-squares | display-square 
++--------+--------+--------+
+|  373^2 |  289^2 | 565^2  |
++--------+--------+--------+
+| 360721 |  425^2 |  23^2  |    magic number = 541875
++--------+--------+--------+
+|  205^2 | 527^2  | 222121 |
++--------+--------+--------+
+
+Do you want to take a look at a particular types of square?
+$ cat data | auto-transform-square | type-square -f 5:8 -f 5:9 | uniq-squares | wc -l
+100
+(e.g. Pull the magic squares that have 5 perfect squares, and are in
+configurations 8 and 9.  Get rid of the duplicates and count up the uniques
+ones.)
+
+How about those morgenstern programs?
+
+$ seq-morgenstern-mn 100 | morgenstern-search-type-8 100  -f 6 | check-square >data
+
+The "morgenstern-search-" programs do not require any transformations -- they
+do however, need to be checked for correctness because the algorithm generates
+squares with non-distinct values.
+
+Running "uniq-squares" on a dataset generated like this takes a lot longer because the values are larger.
+
+Running out of cpu cycles?  Parallelize it with GNU Parallel.
+
+If you have a 32 core system you can do something like this:
+$ sq-seq 1 1237940039285380274899124224 | parallel -j32 'echo {} | step-progression1 --squares=- 1 1237940039285380274899124224' > data
+
+(The big number is 2^90)
+
+With the right configuration, you can even parallelize over remote machines.
+
+$ sq-seq 1 1237940039285380274899124224 | parallel -S 32/: -S 4/192.168.0.1 -S 4/192.168.0.2 'echo {} | step-progression1 --squares=- 1 1237940039285380274899124224' > data
+
+This does 32 cores locally and 4 remotely at servers 192.168.0.1, and 192.168.0.2. (ssh must be configured to be able to login without passwords)
+
+One more example to illustrate where a beginner might go wrong:
+$ step-progression1 1 1000 | head -n1 | display-square 
+                    435
++-----+-----+-----+
+| 1^2 | 5^2 | 7^2 | 75
++-----+-----+-----+
+| 11^2| 145 | 13^2| 435
++-----+-----+-----+
+| 241 | 265 | 17^2| 795
++-----+-----+-----+
+  363   435   507   435
+
+"step-progression" does not output magic squares!  They have to passed
+through the "auto-transform-square" program.  Also, "display-square" will
+show the row and column sums when the square isn't a magic square.
+
+$ step-progression1 1 1000 | head -n1 | auto-transform-square | display-square 
++----+----+----+
+| 5^2| 241|13^2|
++----+----+----+
+|17^2| 145| 1^2|        magic number = 435
++----+----+----+
+|11^2| 7^2| 265|
++----+----+----+
+
+How do I build these programs?
+
+You'll need a GNU/Linux system, with the normal sort of tools installed:
+GNU Bash, GNU GCC, GNU make, GNU automake, GNU autoconf, GNU libtool,
+and GNU Coreutils.
+
+Also install libgmp (GNU Multiprecision Arithmetic Library.)
+
+All of these packages are available for installation in the package
+management system of your GNU/Linux distribution.
+
+If you are using Fedora you would type something like this:
+$ dnf install automake autoconf make gcc libtool gmp-devel
+(Bash and Coreutils are already installed by default)
+
+$ git clone http://gitlab.com/
+$ cd fituvalu
+$ ./configure
+$ make
+$ su -c 'make install'

@@ -1,0 +1,73 @@
+#!/bin/bash
+#Copyright (C) 2016, 2017 Ben Asselstine
+#  
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#take a list of 9 integers representing a 3x3 square.
+#remove the duplicates by
+#dividing them to get the lowest values in the squares that are whole numbers
+#and rotating them
+progname=$0
+function print_usage
+{
+  echo "Usage: $progname [OPTION...]"
+  echo "Filter duplicate, repeated, or reflected 3x3 magic squares."
+  echo ""
+  echo "  -i, --in-binary            Input raw GMP numbers instead of text"
+  echo "  -h, --help                 Give this help list"
+  echo ""
+  echo "Magic squares are given as nine values separated by commas, and terminated by"
+  echo "a comma and newlines on the standard input."
+  exit 
+}
+if [ "x$1" == "x--help" -o "x$1" == "x-h" ]; then
+  print_usage;
+fi
+
+lines="100"
+inbinary=""
+OPTIND=1
+while getopts "ih" opt
+do
+case "$opt" in
+"i") inbinary="1";;
+"h") print_usage; exit 0 ;;
+esac
+done
+shift $(expr $OPTIND - 1) # remove options from positional parameters
+
+tmpfile=`mktemp`
+sortfile=`mktemp`
+uniqfile=`mktemp`
+
+if [ "x$inbinary" == "x" ]; then
+  sort -n <&0 >$sortfile
+else
+  convert-binary-gmp-records-to-text <&0 | sort -n >$sortfile
+fi
+cat $sortfile | uniq > $uniqfile
+rm $sortfile
+cat $uniqfile | reduce-square | sort -n | uniq >$tmpfile
+rm $uniqfile
+
+rotatefile=`mktemp`
+while IFS='' read -r line || [[ -n "$line" ]]; do
+  grep "^$line$" $rotatefile 2>/dev/null >/dev/null
+  if [ "$?" != "0" ]; then
+    echo "$line" | rotate-square >> $rotatefile
+    echo $line
+  fi
+done < $tmpfile
+rm $tmpfile
+rm $rotatefile

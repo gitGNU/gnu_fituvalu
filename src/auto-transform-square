@@ -1,0 +1,71 @@
+#!/bin/bash
+#Copyright (C) 2016, 2017 Ben Asselstine
+#  
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+progname=$0
+function print_usage
+{
+  echo "Usage: $progname [OPTION...]"
+  echo "Read progressions of nine numbers and turn them into magic squares."
+  echo ""
+  echo "  -i, --in-binary            Input raw GMP numbers instead of text"
+  echo "  -n LINES                   Scan this many initial progressions"
+  echo "  -h, --help                 Give this help list"
+  echo ""
+  echo "By default 100 progressions are read in from the standard input and "
+  echo "analyzed to figure out how to transform the remainder of the "
+  echo "progressions.  Progressions are given as nine values separated by "
+  echo "commas, and terminated by a newline."
+  exit 
+}
+if [ "x$1" == "x--help" -o "x$1" == "x-h" ]; then
+  print_usage;
+fi
+
+lines="100"
+inbinary=""
+OPTIND=1
+while getopts "ihn:" opt
+do
+case "$opt" in
+"i") inbinary="1";;
+"h") print_usage; exit 0 ;;
+"n") lines=$OPTARG;;
+esac
+done
+shift $(expr $OPTIND - 1) # remove options from positional parameters
+
+
+#like permute-square but much faster because it uses transform-square.
+
+#scan in the data file, get the transformations used in the first 100 lines
+#then use those transformations to transform the whole file.
+datafile=`mktemp`
+tmpfile=`mktemp`
+if [ "x$inbinary" == "x" ]; then
+  tee $datafile >/dev/null
+else
+  convert-binary-gmp-records-to-text <&0 | tee $datafile >/dev/null
+fi
+cat $datafile | head -n $lines | permute-square -d | sort | uniq > $tmpfile
+rejectfile=`mktemp`
+cat $datafile | transform-square $tmpfile 2>$rejectfile
+rm $tmpfile
+rm $datafile
+if [ -s $rejectfile ]; then
+  echo "rejects in $rejectfile" 1>&2
+else
+  rm $rejectfile
+fi
