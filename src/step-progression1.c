@@ -157,16 +157,16 @@ main (int argc, char **argv)
 
   if (instream && !in_binary)
     read_square_and_run (instream,
-                         fwd_4sq_progression1,
+                         optimized_fwd_4sq_progression1,
                          check_progression,
                          start, finish, stdout);
   else if (instream && in_binary)
     binary_read_square_and_run (instream,
-                                fwd_4sq_progression1,
+                                optimized_fwd_4sq_progression1,
                                 check_progression,
                                 start, finish, stdout);
   else
-    loop_and_run (fwd_4sq_progression1,
+    loop_and_run (optimized_fwd_4sq_progression1,
                   check_progression,
                   start, finish, stdout);
 

@@ -41,6 +41,7 @@ void fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_
 void fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
 void fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
 void rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
+void optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
 
 void small_fwd_4sq_progression1 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *);
 void small_fwd_4sq_progression2 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *);
