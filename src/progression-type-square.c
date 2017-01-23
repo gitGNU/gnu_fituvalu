@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include "magicsquareutil.h"
 
+int dump_progression;
 int num_filters;
 int *filter_types;
 int (*read_numbers)(FILE *, mpz_t (*)[SIZE], char **, size_t *) = read_numbers_from_stream;
@@ -76,6 +77,14 @@ get_progression_type (mpz_t vec[], int size)
 
   qsort (progression, size, sizeof (mpz_t), compar);
 
+  if (dump_progression)
+    {
+      display_record (progression, stdout);
+      for (int i = 0; i < size; i++)
+        mpz_clears (progression[i], diffs[i], NULL);
+      return -1;
+    }
+
   for (int i = 1; i < size; i++)
     mpz_sub (diffs[i-1], progression[i], progression[i-1]);
 
@@ -106,6 +115,8 @@ find_progression_type (FILE *stream)
       if (read == -1)
         break;
       int progression_type = get_progression_type (vec, SIZE);
+      if (dump_progression)
+        continue;
       if (num_filters)
         {
           for (int i = 0; i < num_filters; i++)
@@ -132,6 +143,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'd':
+      dump_progression = 1;
+      break;
     case 'o':
       display_record = display_binary_nine_record;
       break;
@@ -153,6 +167,7 @@ options[] =
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "filter", 'f', "TYPE", 0, "Only show magic squares that have this progression type"},
+  { "dump-progression", 'd', 0, OPTION_HIDDEN, "Just display the progression"},
   { 0 }
 };
 
