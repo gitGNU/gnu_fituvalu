@@ -568,16 +568,16 @@ nine_progressions[] =
       four_square_to_nine_number_fulcrum_progression4,
       count_squares_in_fulcrum_progression4,
       "|--+--------+--+-----+--+--+-----+--+--------+-|\n"
-      "    ^        ^        ^     ^\n"
-      "    1        2        3     4\n"
+      "   ^        ^        ^     ^                    \n"
+      "   1        2        3     4                    \n"
     },
     {
       "fulcrum-progression5", FWD_PROGRESSION_6,
       four_square_to_nine_number_fulcrum_progression5,
       count_squares_in_fulcrum_progression5,
-      "|--+--------*-*-------*-+-*-------*-*--------+-|\n"
-      "            ^ ^       ^   ^\n"
-      "            1 2       3   4\n"
+      "|--+--------+-+-------+-+-+-------+-+--------+-|\n"
+      "            ^ ^       ^   ^                     \n"
+      "            1 2       3   4                     \n"
     },
     {
       "reverse-fulcrum-progression1", REV_PROGRESSION_1,
