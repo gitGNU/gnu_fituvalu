@@ -22,7 +22,7 @@
 #include "magicsquareutil.h"
 int in_binary;
 FILE *instream;
-mpz_t start, finish;
+mpz_t start, finish, oneshot;
 int num_args;
 void (*display_record) (mpz_t *progression, FILE *out) = display_nine_record;
 /*
@@ -84,6 +84,7 @@ options[] =
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "squares", 's', "FILE", 0, "Use perfect squares in FILE for the main loop"},
+  { NULL, '1', "NUM", 0, "Do one iteration with NUM as first square"},
   { 0 }
 };
 
@@ -110,6 +111,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case '1':
+      mpz_set_str (oneshot, arg, 10);
+      break;
     case 'o':
       display_record = display_binary_nine_record;
       break;
@@ -163,6 +167,8 @@ main (int argc, char **argv)
                                 rev_4sq_progression1,
                                 check_progression,
                                 start, finish, stdout);
+  else if (mpz_cmp_ui (oneshot, 0) != 0)
+    rev_4sq_progression1 (oneshot, start, finish, check_progression, stdout);
   else
     loop_and_run (rev_4sq_progression1,
                   check_progression,

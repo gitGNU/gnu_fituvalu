@@ -31,8 +31,7 @@ void (*four_to_nine_prog)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t);
 int (*count_prog) (mpz_t *);
 
 int filter;
-mpz_t start;
-mpz_t finish;
+mpz_t start, finish, oneshot;
 int num_args;
 
 static void
@@ -51,7 +50,19 @@ extend_and_count_squares_and_display_progression (mpz_t *progression, mpz_t one,
     display_record (progression, out);
 }
 
-void
+static void
+generate_progression_starting_at (mpz_t i, FILE *out)
+{
+  static void (*func) (mpz_t *, mpz_t one, mpz_t two, mpz_t three, mpz_t four, FILE *);
+  if (filter)
+    func = extend_and_count_squares_and_display_progression;
+  else
+    func = extend_and_display_progression;
+  void (*progression) (mpz_t, mpz_t, mpz_t, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
+  progression (i, i, finish, func, out);
+}
+
+static void
 generate_progression_from_input (FILE *in, FILE *out)
 {
   char *line = NULL;
@@ -82,7 +93,7 @@ generate_progression_from_input (FILE *in, FILE *out)
   free (line);
 }
 
-void
+static void
 generate_progression_from_binary_input (FILE *in, FILE *out)
 {
   ssize_t read;
@@ -105,7 +116,7 @@ generate_progression_from_binary_input (FILE *in, FILE *out)
   mpz_clear (i);
 }
 
-void
+static void
 generate_progression (FILE *out)
 {
   mpz_t i;
@@ -145,6 +156,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case '1':
+      mpz_set_str (oneshot, arg, 10);
+      break;
     case 'o':
       display_record = display_binary_nine_record;
       break;
@@ -244,6 +258,7 @@ options[] =
   { "type", 't', "NAME", 0, "Use NAME as the progression strategy"},
   { "filter", 'f', "NUM", 0, "Only show progressions that have at least NUM perfect squares" },
   { "force-4sq", '4', "NAME", 0, "Force the use of an alternative four square progression strategy"},
+  { NULL, '1', "NUM", 0, "Do one iteration with NUM as first square"},
   { 0 }
 };
 
@@ -262,7 +277,12 @@ main (int argc, char **argv)
         generate_progression_from_input (stdin, stdout);
     }
   else
-    generate_progression (stdout);
+    {
+      if (mpz_cmp_ui (oneshot, 0) != 0)
+        generate_progression_starting_at (oneshot, stdout);
+      else
+        generate_progression (stdout);
+    }
   return 0;
 }
 

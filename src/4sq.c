@@ -23,8 +23,7 @@
 
 int in_binary;
 void (*func)(mpz_t, mpz_t, mpz_t, void (*)(mpz_t* ,mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *) = fwd_4sq_progression1;
-mpz_t start;
-mpz_t finish;
+mpz_t start, finish, oneshot;
 int num_args;
 
 static void (*display_four_progression)(mpz_t *, FILE *);
@@ -140,6 +139,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case '1':
+      mpz_set_str (oneshot, arg, 10);
+      break;
     case 'o':
       display_four_progression = display_four_progression_as_binary;
       break;
@@ -210,6 +212,7 @@ options[] =
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "type", 't', "NAME", 0, "Use NAME as the progression strategy"},
+  { NULL, '1', "NUM", 0, "Do one iteration with NUM as first square"},
   { 0 }
 };
 
@@ -221,12 +224,19 @@ main (int argc, char **argv)
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
   if (num_args == 1)
-    if (in_binary)
-      generate_4sq_from_binary_input (stdin, stdout);
-    else
-      generate_4sq_from_input (stdin, stdout);
+    {
+      if (in_binary)
+        generate_4sq_from_binary_input (stdin, stdout);
+      else
+        generate_4sq_from_input (stdin, stdout);
+    }
   else
-    generate_4sq (stdout);
+    {
+      if (mpz_cmp_ui (oneshot, 0) != 0)
+        func (oneshot, start, finish, display_squares, stdout);
+      else
+        generate_4sq (stdout);
+    }
   return 0;
 }
 
