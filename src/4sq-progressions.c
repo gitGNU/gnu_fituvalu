@@ -867,22 +867,18 @@ optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)
 /* |-----+--+--+-------+-----|
          ^  ^  ^       ^
          1  2  3       4       */
-  mpz_t lastroot, j, k;
-  mpz_inits (lastroot, j, k, NULL);
+  mpz_t lastroot, j, k, jroot, diff, next, kroot, amt, nextrem;
+  mpz_inits (lastroot, j, k, jroot, diff, next, kroot, amt, nextrem, NULL);
   mpz_sqrt (lastroot, finish);
   mpz_t progression[9];
   mpz_inits (progression[0], progression[1], progression[2],
              progression[3], progression[4], progression[5],
              progression[6], progression[7], progression[8], NULL);
 
-  mpz_t jroot;
-  mpz_init (jroot);
   mpz_sqrt (jroot, i);
   for (mpz_set (j, i); mpz_cmp (jroot, lastroot) < 0;)
     {
       inc (&j, &jroot);
-      mpz_t diff;
-      mpz_init (diff);
       mpz_sub (diff, j, i);
       if (!mpz_divisible_ui_p (diff, 24))
         {
@@ -891,41 +887,30 @@ optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)
         }
       if (mpz_cmp_ui (diff, 0) > 0)
         {
-          mpz_t next;
-          mpz_init (next);
           mpz_add (next, j, diff);
-          if (!mpz_perfect_square_p (next))
+          mpz_sqrtrem (kroot, nextrem, next);
+          if (mpz_cmp_ui (nextrem, 0) != 0)
             {
-              mpz_clear (next);
-              mpz_clear (diff);
               mpz_add_ui (jroot, jroot, 1);
               continue;
             }
-          mpz_t kroot;
-          mpz_init (kroot);
-          mpz_sqrt (kroot, next);
+
           for (mpz_set (k, next); mpz_cmp (kroot, lastroot) < 0;)
             {
               inc (&k, &kroot);
-              mpz_t amt;
-              mpz_init (amt);
               mpz_sub (amt, k, j);
               mpz_add (amt, amt, diff);
               if (mpz_cmp_ui (amt, 0) > 0 && mpz_cmp (next, k) != 0)
                 func (progression, i, j, next, k, out);
-              mpz_clear (amt);
               mpz_add_ui (kroot, kroot, 1);
             }
-          mpz_clear (next);
-          mpz_clear (kroot);
         }
       mpz_add_ui (jroot, jroot, 1);
-      mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
               progression[3], progression[4], progression[5],
               progression[6], progression[7], progression[8], NULL);
-  mpz_clears (lastroot, j, k, NULL);
+  mpz_clears (lastroot, j, k, jroot, diff, next, kroot, amt, nextrem, NULL);
 }
 
 void
