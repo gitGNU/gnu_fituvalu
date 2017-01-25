@@ -99,7 +99,7 @@ get_progression_type (mpz_t vec[], int size)
 }
 
 static int
-find_progression_type (FILE *stream)
+find_progression_type (FILE *in, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -111,7 +111,7 @@ find_progression_type (FILE *stream)
     mpz_inits (vec[i], orig[i], NULL);
   while (1)
     {
-      read = read_numbers (stream, &vec, &line, &len);
+      read = read_numbers (in, &vec, &line, &len);
       if (read == -1)
         break;
       int progression_type = get_progression_type (vec, SIZE);
@@ -122,12 +122,12 @@ find_progression_type (FILE *stream)
           for (int i = 0; i < num_filters; i++)
             if (filter_types[i] == progression_type)
               {
-                display_record (vec, stdout);
+                display_record (vec, out);
                 break;
               }
         }
       else
-        fprintf (stdout, "%d\n", progression_type);
+        fprintf (out, "%d\n", progression_type);
     }
 
   for (int i = 0; i < SIZE; i++)
@@ -177,5 +177,5 @@ int
 main (int argc, char **argv)
 {
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  return find_progression_type (stdin);
+  return find_progression_type (stdin, stdout);
 }
