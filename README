@@ -481,6 +481,22 @@ $ step-progression1 1 1000 | head -n1 | auto-transform-square | display-square
 |11^2| 7^2| 265|
 +----+----+----+
 
+How long do these programs take to run?
+(times are in seconds)
+                                1 mil    10 mil
+step-progression1               0.344     3.865
+step-progression2              61.806  2004.184
+step-progression3               9.934   317.211
+step-progression4              48.073  1605.358
+reverse-step-progression1       0.358     3.844
+fulcrum-progression1            0.385     3.973
+fulcrum-progression2           62.021  1973.596
+fulcrum-progression3            0.558     6.364
+fulcrum-progression4            0.324     3.281
+fulcrum-progression5           47.827  1612.199
+reverse-fulcrum-progression1    0.384     4.179
+
+
 How do I build these programs?
 
 You'll need a GNU/Linux system, with the normal sort of tools installed:
@@ -501,3 +517,16 @@ $ cd fituvalu
 $ ./configure
 $ make
 $ su -c 'make install'
+
+
+0.344   3.865
+61.806  2004.184
+9.934   317.211
+48.073  1605.358
+0.358   3.844
+0.385   3.973
+62.021  1973.596
+0.558   6.364
+0.324   3.281
+47.827  1612.199
+0.384   4.179
