@@ -112,7 +112,7 @@ search_type_5 (unsigned long long m1, unsigned long long n1, unsigned long long 
   mpz_add (yx2sum, y2, x2);
 
 /*
-    -----------
+   -----------
     A^2  -  C^2
     D^2  -  F^2
      -  H^2  - 

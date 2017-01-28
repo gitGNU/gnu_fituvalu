@@ -35,7 +35,7 @@ bin_PROGRAMS = \
 	     morgenstern-search-type-4 morgenstern-search-type-5 \
 	     morgenstern-search-type-6 morgenstern-search-type-7 \
 	     morgenstern-search-type-8 \
-	     mine-3sq-progressions
+	     mine-3sq-progressions 3sq complete-3sq-progression
 
 noinst_LTLIBRARIES = libmagicsquareutil.la
 
@@ -190,6 +190,12 @@ morgenstern_search_type_8_LDADD = -lm libmagicsquareutil.la
 
 mine_3sq_progressions_SOURCES = mine-3sq-progressions.c
 mine_3sq_progressions_LDADD = -lm libmagicsquareutil.la
+
+3sq_SOURCES = 3sq.c
+3sq_LDADD = -lm libmagicsquareutil.la
+
+complete_3sq_progression_SOURCES = complete-3sq-progression.c
+complete_3sq_progression_LDADD = -lm libmagicsquareutil.la
 
 libmagicsquareutil_la_SOURCES=magicsquareutil.c magicsquareutil.h \
 			      4sq-progressions.c nine-progressions.c

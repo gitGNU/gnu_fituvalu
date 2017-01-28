@@ -328,6 +328,40 @@ dump_num (mpz_t *i, FILE *out)
 }
 
 void
+display_three_record (mpz_t *progression, FILE *out)
+{
+  for (int i = 0; i < 3; i++)
+    {
+      dump_num (&progression[i], out);
+      fprintf (out, ", ");
+    }
+  fprintf (out, "\n");
+}
+
+void
+display_four_record (mpz_t *progression, FILE *out)
+{
+  for (int i = 0; i < 4; i++)
+    {
+      dump_num (&progression[i], out);
+      fprintf (out, ", ");
+    }
+  fprintf (out, "\n");
+}
+void
+display_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out)
+{
+  for (int i = 0; i < 3; i++)
+    {
+      dump_num (&progression[i], out);
+      fprintf (out, ", ");
+    }
+  dump_num (root, out);
+  fprintf (out, ", ");
+  fprintf (out, "\n");
+}
+
+void
 display_nine_record (mpz_t *progression, FILE *out)
 {
   for (int i = 0; i < 9; i++)
@@ -400,6 +434,43 @@ seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out, 
     }
 }
 
+static void
+symmetric_seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out, void (*search)(unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long _m2, unsigned long long _n2)
+{
+  if (m >= _m2)
+    return;
+  search (m, n, _m2, _n2, out);
+  unsigned long long int s = m + n;
+  if (s < finish)
+    {
+      unsigned long long int m2 = s;
+      unsigned long long int n2 = m;
+      if ((n2 & 1) == 0)
+        seq (m2, n2, finish, out, search, _m2, _n2);
+      else
+        {
+          s = m2 + n2;
+          if (s < finish)
+            {
+              seq (s, m2, finish, out, search, _m2, _n2);
+              seq (s, n2, finish, out, search, _m2, _n2);
+            }
+        }
+      n2 = n;
+      if ((n2 & 1) == 0)
+        seq (m2, n2, finish, out, search, _m2, _n2);
+      else
+        {
+          s = m2 + n2;
+          if (s < finish)
+            {
+              seq (s, m2, finish, out, search, _m2, _n2);
+              seq (s, n2, finish, out, search, _m2, _n2);
+            }
+        }
+    }
+}
+
 int
 morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out)
 {
@@ -421,6 +492,33 @@ morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned l
       end = NULL;
       n = strtoull (line, &end, 10);
       seq (1, 2, max, out, search, m, n);
+    }
+  if (line)
+    free (line);
+  return 0;
+}
+
+int
+morgenstern_symmetric_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out)
+{
+  ssize_t read;
+  char *line = NULL;
+  size_t len = 0;
+  unsigned long long m, n;
+  char *end = NULL;
+  while (1)
+    {
+      read = getdelim (&line, &len, ',', in);
+      if (read == -1)
+        break;
+      end = NULL;
+      m = strtoull (line, &end, 10);
+      read = getline (&line, &len, in);
+      if (read == -1)
+        break;
+      end = NULL;
+      n = strtoull (line, &end, 10);
+      symmetric_seq (1, 2, max, out, search, m, n);
     }
   if (line)
     free (line);

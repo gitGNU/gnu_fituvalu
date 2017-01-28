@@ -18,6 +18,9 @@
 #include <gmp.h>
 #define SIZE 9
 void display_nine_record (mpz_t *progression, FILE *out);
+void display_three_record (mpz_t *progression, FILE *out);
+void display_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out);
+void display_four_record (mpz_t *progression, FILE *out);
 void display_binary_nine_record (mpz_t *progression, FILE *out);
 void display_square_record (mpz_t s[3][3], FILE *out);
 void display_binary_square_record (mpz_t s[3][3], FILE *out);
@@ -112,4 +115,5 @@ extern four_square_progression_t four_square_progressions[];
 extern nine_progression_t nine_progressions[];
 
 int morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out);
+int morgenstern_symmetric_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out);
 #endif

@@ -20,6 +20,7 @@
 #include "magicsquareutil.h"
 
 int show_sum;
+int show_diff;
 int (*read_numbers)(FILE *, mpz_t (*)[SIZE], char **, size_t *) = read_numbers_from_stream;
 
 int
@@ -54,6 +55,12 @@ void combinationUtil (mpz_t arr[], mpz_t data[], int start, int end,
       mpz_sub (diff1, data[1], data[0]);
       mpz_sub (diff2, data[2], data[1]);
       int match = mpz_cmp (diff1, diff2) == 0;
+      if (show_diff && match)
+        {
+          char buf[mpz_sizeinbase (diff1, 10) + 2];
+          mpz_get_str (buf, 10, diff1);
+          fprintf (out, "%s, ", buf);
+        }
       mpz_clears (diff1, diff2, NULL);
       if (!match)
         return;
@@ -147,6 +154,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'd':
+      show_diff = 1;
+      break;
     case 's':
       show_sum = 1;
       break;
@@ -162,6 +172,7 @@ options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "show-sum", 's', 0, 0, "Also show the sum"},
+  { "show-diff", 'd', 0, 0, "Also show the diff"},
   { 0 }
 };
 
