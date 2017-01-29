@@ -46,6 +46,8 @@ is_lucas (mpz_t s[3][3], mpz_t *abc)
   mpz_t diff1, diff2;
   mpz_inits (diff1, diff2, NULL);
   mpz_set (abc[2], s[1][1]);
+  mpz_set_ui (abc[0], 0);
+  mpz_set_ui (abc[1], 0);
   mpz_sub (diff1, s[0][0], abc[2]);
   mpz_sub (diff2, s[2][2], abc[2]);
   mpz_abs (diff1, diff1);
@@ -109,7 +111,7 @@ lucas_square (FILE *in, FILE *out)
         break;
       int magic = is_magic_square (a, 1);
       int ret = is_lucas (a, abc);
-      if ((magic && invert && ret == 0) || (magic && !invert && ret) || (!magic && invert))
+      if ((magic && invert && !ret) || (magic && !invert && ret) || (!magic && invert))
         {
           if (show_abc)
             display_three_record (abc, out);
