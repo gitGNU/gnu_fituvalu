@@ -371,7 +371,31 @@ Usage: seq-morgenstern-mn MAX
 Generates a sequence of numbers that has the form:
 M > N > 0, where M and N are coprime, and with one being even and the other one
 odd.  The output of this program is suitable for input into the
-"morgenstern-search-" programs.
+"morgenstern-search-" programs, as well as the "3sq" program.
+
+program: mine-3sq-progressions
+Usage: mine-3sq-progressions [--show-diff] [--in-binary] [--show-root] [--show-sum]
+
+Accept 3x3 magic squares on the standard input and output any arithmetic
+progressions that are formed by three perfect squares.  The idea here is that
+we are "mining" the results of our previously generated magic squares for
+progressions that can be used to make new magic squares.
+
+program: 3sq
+Usage: 3sq [OPTION...]
+
+Given a pair of "MN" parametric values on the standard input, generate three
+equidistant perfect squares.  It generates records of four numbers separated
+by commas, with the final number being the square root of the third square.
+This program generates useful input for "complete-3sq-progression".
+
+program: complete-3sq-progression
+Usage: complete-3sq-progression NUM
+
+Given an arithmetic progression of three perfect squares and the root of the
+third square on the standard input, generate a progression of four squares.
+The fourth square iterated forward NUM times.  This program generates useful
+input for "complete-4sq-progression".
 
 program: convert-binary-gmp-records-to-text
 Usage: convert-binary-gmp-records-to-text [--num-columns=NUM]
