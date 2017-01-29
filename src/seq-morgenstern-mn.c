@@ -18,7 +18,7 @@
 #include <stdlib.h>
 
 int num_args;
-unsigned long long max;
+unsigned long long max, min;
 
 static void
 seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out)
@@ -58,7 +58,10 @@ seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out)
 static int
 morgenstern_seq (FILE *out)
 {
-  seq (2, 1, max, out);
+  if (min)
+    seq (min-1, min-2, max, out);
+  else
+    seq (2, 1, max, out);
   return 0;
 }
 
@@ -68,12 +71,21 @@ parse_opt (int key, char *arg, struct argp_state *state)
   switch (key)
     {
     case ARGP_KEY_ARG:
-      if (num_args == 1)
+      if (num_args == 2)
         argp_error (state, "too many arguments");
       else
         {
           char *end = NULL;
-          max = strtoull (arg, &end, 10);
+          switch (num_args)
+            {
+            case 0:
+              max = strtoull (arg, &end, 10);
+              break;
+            case 1:
+              min = max;
+              max = strtoull (arg, &end, 10);
+              break;
+            }
           num_args++;
         }
       break;
@@ -84,7 +96,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-struct argp argp ={NULL, parse_opt, "MAX", "Compute an MN list.\vThe output of this program is suitable for input into the \"morgenstern-search-type-1\" program.  This sequence of numbers has the form:\nM > N > 0, where M and N are coprime, and with one being even and the other one odd." , 0};
+struct argp argp ={NULL, parse_opt, "MAX\nMIN MAX", "Compute an MN list.\vThe output of this program is suitable for input into the \"morgenstern-search-type-1\" program.  This sequence of numbers has the form:\nM > N > 0, where M and N are coprime, and with one being even and the other one odd." , 0};
 
 int
 main (int argc, char **argv)
