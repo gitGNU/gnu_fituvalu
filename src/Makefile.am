@@ -30,11 +30,11 @@ bin_PROGRAMS = \
              check-square progression-type-square display-square sq-seq \
 	     4sq complete-4sq-progression gen-progression \
 	     convert-binary-gmp-records-to-text morgenstern-five-type \
-	     seq-morgenstern-mn morgenstern-search-type-1 \
-	     morgenstern-search-type-2 morgenstern-search-type-3 \
-	     morgenstern-search-type-4 morgenstern-search-type-5 \
-	     morgenstern-search-type-6 morgenstern-search-type-7 \
-	     morgenstern-search-type-8 \
+	     small-seq-morgenstern-mn seq-morgenstern-mn \
+	     morgenstern-search-type-1 morgenstern-search-type-2 \
+	     morgenstern-search-type-3 morgenstern-search-type-4 \
+	     morgenstern-search-type-5 morgenstern-search-type-6 \
+	     morgenstern-search-type-7  morgenstern-search-type-8 \
 	     mine-3sq-progressions 3sq complete-3sq-progression \
 	     lucas-square
 
@@ -158,6 +158,9 @@ convert_binary_gmp_records_to_text_LDADD = -lm libmagicsquareutil.la
 
 morgenstern_five_type_SOURCES = morgenstern-five-type.c
 morgenstern_five_type_LDADD = -lm libmagicsquareutil.la
+
+small_seq_morgenstern_mn_SOURCES = small-seq-morgenstern-mn.c
+small_seq_morgenstern_mn_LDADD= -lm
 
 seq_morgenstern_mn_SOURCES = seq-morgenstern-mn.c
 seq_morgenstern_mn_LDADD= -lm
