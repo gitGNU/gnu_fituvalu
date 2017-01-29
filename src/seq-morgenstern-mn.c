@@ -16,52 +16,79 @@
 #include <argp.h>
 #include <string.h>
 #include <stdlib.h>
+#include <gmp.h>
 
 int num_args;
-unsigned long long max, min;
+mpz_t max, min;
 
 static void
-seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out)
+seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out)
 {
-  fprintf (out, "%llu, %llu\n", m, n);
-  unsigned long long int s = m + n;
-  if (s < finish)
     {
-      unsigned long long int m2 = s;
-      unsigned long long int n2 = m;
-      if ((n2 & 1) == 0)
-        seq (m2, n2, finish, out);
-      else
-        {
-          s = m2 + n2;
-          if (s < finish)
-            {
-              seq (s, m2, finish, out);
-              seq (s, n2, finish, out);
-            }
-        }
-      n2 = n;
-      if ((n2 & 1) == 0)
-        seq (m2, n2, finish, out);
-      else
-        {
-          s = m2 + n2;
-          if (s < finish)
-            {
-              seq (s, m2, finish, out);
-              seq (s, n2, finish, out);
-            }
-        }
+      char buf[mpz_sizeinbase (m, 10) + 2];
+      mpz_get_str (buf, 10, m);
+      fprintf (out, "%s, ", buf);
     }
+    {
+      char buf[mpz_sizeinbase (n, 10) + 2];
+      mpz_get_str (buf, 10, n);
+      fprintf (out, "%s,\n", buf);
+    }
+  mpz_t s;
+  mpz_init (s);
+  mpz_add (s, m, n);
+  if (mpz_cmp (s, finish) < 0)
+    {
+      mpz_t m2, n2;
+      mpz_inits (m2, n2, NULL);
+      mpz_set (m2, s);
+      mpz_set (n2, m);
+      if (mpz_even_p (n2))
+        seq (m2, n2, finish, out);
+      else
+        {
+          mpz_add (s, m2, n2);
+          if (mpz_cmp (s, finish) < 0)
+            {
+              seq (s, m2, finish, out);
+              seq (s, n2, finish, out);
+            }
+        }
+      mpz_set (n2, n);
+      if (mpz_even_p (n2))
+        seq (m2, n2, finish, out);
+      else
+        {
+          mpz_add (s, m2, n2);
+          if (mpz_cmp (s, finish) < 0)
+            {
+              seq (s, m2, finish, out);
+              seq (s, n2, finish, out);
+            }
+        }
+      mpz_clears (m2, n2, NULL);
+    }
+  mpz_clear (s);
 }
 
 static int
 morgenstern_seq (FILE *out)
 {
-  if (min)
-    seq (min-1, min-2, max, out);
+  mpz_t m, n;
+  mpz_inits (m, n, NULL);
+  if (mpz_cmp_ui (min, 0) > 0)
+    {
+      mpz_sub_ui (m, min, 1);
+      mpz_sub_ui (n, min, 2);
+      seq (m, n, max, out);
+    }
   else
-    seq (2, 1, max, out);
+    {
+      mpz_set_ui (m, 2);
+      mpz_set_ui (n, 1);
+      seq (m, n, max, out);
+    }
+  mpz_clears (m, n, NULL);
   return 0;
 }
 
@@ -75,15 +102,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
         argp_error (state, "too many arguments");
       else
         {
-          char *end = NULL;
           switch (num_args)
             {
             case 0:
-              max = strtoull (arg, &end, 10);
+              mpz_set_str (max, arg, 10);
               break;
             case 1:
-              min = max;
-              max = strtoull (arg, &end, 10);
+              mpz_set (min, max);
+              mpz_set_str (max, arg, 10);
               break;
             }
           num_args++;
