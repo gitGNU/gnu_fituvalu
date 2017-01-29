@@ -28,14 +28,15 @@ bin_PROGRAMS = \
 	     permute-square transform-square count-squares reduce-square \
 	     rotate-square type-square sort-square number-square \
              check-square progression-type-square display-square sq-seq \
-	     square-search 4sq complete-4sq-progression gen-progression \
+	     4sq complete-4sq-progression gen-progression \
 	     convert-binary-gmp-records-to-text morgenstern-five-type \
 	     seq-morgenstern-mn morgenstern-search-type-1 \
 	     morgenstern-search-type-2 morgenstern-search-type-3 \
 	     morgenstern-search-type-4 morgenstern-search-type-5 \
 	     morgenstern-search-type-6 morgenstern-search-type-7 \
 	     morgenstern-search-type-8 \
-	     mine-3sq-progressions 3sq complete-3sq-progression
+	     mine-3sq-progressions 3sq complete-3sq-progression \
+	     lucas-square
 
 noinst_LTLIBRARIES = libmagicsquareutil.la
 
@@ -143,9 +144,6 @@ display_square_LDADD = -lm libmagicsquareutil.la
 sq_seq_SOURCES = sq-seq.c
 sq_seq_LDADD = -lm
 
-square_search_SOURCES = square-search.c
-square_search_LDADD = -lm
-
 4sq_SOURCES = 4sq.c
 4sq_LDADD = -lm libmagicsquareutil.la
 
@@ -196,6 +194,9 @@ mine_3sq_progressions_LDADD = -lm libmagicsquareutil.la
 
 complete_3sq_progression_SOURCES = complete-3sq-progression.c
 complete_3sq_progression_LDADD = -lm libmagicsquareutil.la
+
+lucas_square_SOURCES = lucas-square.c
+lucas_square_LDADD = -lm libmagicsquareutil.la
 
 libmagicsquareutil_la_SOURCES=magicsquareutil.c magicsquareutil.h \
 			      4sq-progressions.c nine-progressions.c
