@@ -109,7 +109,7 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "NUM", "Generate progressions of four squares.\vThe input of this program comes from \"3sq\".", 0 };
+struct argp argp ={options, parse_opt, "NUM", "Generate progressions of four squares given an arithmetic progression of three squares.\vThe input of this program comes from \"3sq\" -- three squares that are equidistant, seperated by commas, and followed by the square root of the third square.  NUM is the number of squares to iterate after the third square.", 0 };
 
 int
 main (int argc, char **argv)
