@@ -21,6 +21,7 @@
 
 int show_sum;
 int show_diff;
+int show_root;
 int (*read_numbers)(FILE *, mpz_t (*)[SIZE], char **, size_t *) = read_numbers_from_stream;
 
 int
@@ -80,6 +81,16 @@ void combinationUtil (mpz_t arr[], mpz_t data[], int start, int end,
           char buf[mpz_sizeinbase (data[j], 10) + 2];
           mpz_get_str (buf, 10, data[j]);
           fprintf (out, "%s, ", buf);
+        }
+      if (show_root)
+        {
+          mpz_t root;
+          mpz_init (root);
+          mpz_sqrt (root, data[r-1]);
+          char buf[mpz_sizeinbase (root, 10) + 2];
+          mpz_get_str (buf, 10, root);
+          fprintf (out, "%s, ", buf);
+          mpz_clear (root);
         }
       fprintf (out, "\n");
       return;
@@ -160,6 +171,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 's':
       show_sum = 1;
       break;
+    case 'r':
+      show_root = 1;
+      break;
     case 'i':
       read_numbers = binary_read_numbers_from_stream;
       break;
@@ -173,6 +187,7 @@ options[] =
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "show-sum", 's', 0, 0, "Also show the sum"},
   { "show-diff", 'd', 0, 0, "Also show the diff"},
+  { "show-root", 'r', 0, 0, "Also show the root"},
   { 0 }
 };
 
