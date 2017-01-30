@@ -400,7 +400,91 @@ display_binary_square_record (mpz_t s[3][3], FILE *out)
 }
 
 static void
-seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out, void (*search)(unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long _m2, unsigned long long _n2)
+seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, FILE *), mpz_t _m2, mpz_t _n2)
+{
+  search (m, n, _m2, _n2, out);
+  mpz_t s;
+  mpz_init (s);
+  mpz_add (s, m, n);
+  if (mpz_cmp (s, finish) < 0)
+    {
+      mpz_t m2, n2;
+      mpz_inits (m2, n2, NULL);
+      mpz_set (m2, s);
+      mpz_set (n2, m);
+      if (mpz_even_p (n2))
+        seq (m2, n2, finish, out, search, _m2, _n2);
+      else
+        {
+          mpz_add (s, m2, n2);
+          if (mpz_cmp (s, finish) < 0)
+            {
+              seq (s, m2, finish, out, search, _m2, _n2);
+              seq (s, n2, finish, out, search, _m2, _n2);
+            }
+        }
+      mpz_set (n2, n);
+      if (mpz_even_p (n2))
+        seq (m2, n2, finish, out, search, _m2, _n2);
+      else
+        {
+          mpz_add (s, m2, n2);
+          if (mpz_cmp (s, finish) < 0)
+            {
+              seq (s, m2, finish, out, search, _m2, _n2);
+              seq (s, n2, finish, out, search, _m2, _n2);
+            }
+        }
+      mpz_clears (m2, n2, NULL);
+    }
+  mpz_clear (s);
+}
+
+static void
+symmetric_seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, FILE *), mpz_t _m2, mpz_t _n2)
+{
+  if (mpz_cmp (m, _m2) >= 0)
+    return;
+  search (m, n, _m2, _n2, out);
+  mpz_t s;
+  mpz_init (s);
+  mpz_add (s, m, n);
+  if (mpz_cmp (s, finish) < 0)
+    {
+      mpz_t m2, n2;
+      mpz_inits (m2, n2, NULL);
+      mpz_set (m2, s);
+      mpz_set (n2, m);
+      if (mpz_even_p (n2))
+        symmetric_seq (m2, n2, finish, out, search, _m2, _n2);
+      else
+        {
+          mpz_add (s, m2, n2);
+          if (mpz_cmp (s, finish) < 0)
+            {
+              symmetric_seq (s, m2, finish, out, search, _m2, _n2);
+              symmetric_seq (s, n2, finish, out, search, _m2, _n2);
+            }
+        }
+      mpz_set (n2, n);
+      if (mpz_even_p (n2))
+        symmetric_seq (m2, n2, finish, out, search, _m2, _n2);
+      else
+        {
+          mpz_add (s, m2, n2);
+          if (mpz_cmp (s, finish) < 0)
+            {
+              symmetric_seq (s, m2, finish, out, search, _m2, _n2);
+              symmetric_seq (s, n2, finish, out, search, _m2, _n2);
+            }
+        }
+      mpz_clears (m2, n2, NULL);
+    }
+  mpz_clear (s);
+}
+
+static void
+small_seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out, void (*search)(unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long _m2, unsigned long long _n2)
 {
   search (m, n, _m2, _n2, out);
   unsigned long long int s = m + n;
@@ -409,33 +493,33 @@ seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out, 
       unsigned long long int m2 = s;
       unsigned long long int n2 = m;
       if ((n2 & 1) == 0)
-        seq (m2, n2, finish, out, search, _m2, _n2);
+        small_seq (m2, n2, finish, out, search, _m2, _n2);
       else
         {
           s = m2 + n2;
           if (s < finish)
             {
-              seq (s, m2, finish, out, search, _m2, _n2);
-              seq (s, n2, finish, out, search, _m2, _n2);
+              small_seq (s, m2, finish, out, search, _m2, _n2);
+              small_seq (s, n2, finish, out, search, _m2, _n2);
             }
         }
       n2 = n;
       if ((n2 & 1) == 0)
-        seq (m2, n2, finish, out, search, _m2, _n2);
+        small_seq (m2, n2, finish, out, search, _m2, _n2);
       else
         {
           s = m2 + n2;
           if (s < finish)
             {
-              seq (s, m2, finish, out, search, _m2, _n2);
-              seq (s, n2, finish, out, search, _m2, _n2);
+              small_seq (s, m2, finish, out, search, _m2, _n2);
+              small_seq (s, n2, finish, out, search, _m2, _n2);
             }
         }
     }
 }
 
 static void
-symmetric_seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out, void (*search)(unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long _m2, unsigned long long _n2)
+small_symmetric_seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out, void (*search)(unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long _m2, unsigned long long _n2)
 {
   if (m >= _m2)
     return;
@@ -446,33 +530,33 @@ symmetric_seq (unsigned long long int m, unsigned long long int n, int finish, F
       unsigned long long int m2 = s;
       unsigned long long int n2 = m;
       if ((n2 & 1) == 0)
-        seq (m2, n2, finish, out, search, _m2, _n2);
+        small_symmetric_seq (m2, n2, finish, out, search, _m2, _n2);
       else
         {
           s = m2 + n2;
           if (s < finish)
             {
-              seq (s, m2, finish, out, search, _m2, _n2);
-              seq (s, n2, finish, out, search, _m2, _n2);
+              small_symmetric_seq (s, m2, finish, out, search, _m2, _n2);
+              small_symmetric_seq (s, n2, finish, out, search, _m2, _n2);
             }
         }
       n2 = n;
       if ((n2 & 1) == 0)
-        seq (m2, n2, finish, out, search, _m2, _n2);
+        small_symmetric_seq (m2, n2, finish, out, search, _m2, _n2);
       else
         {
           s = m2 + n2;
           if (s < finish)
             {
-              seq (s, m2, finish, out, search, _m2, _n2);
-              seq (s, n2, finish, out, search, _m2, _n2);
+              small_symmetric_seq (s, m2, finish, out, search, _m2, _n2);
+              small_symmetric_seq (s, n2, finish, out, search, _m2, _n2);
             }
         }
     }
 }
 
 int
-morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out)
+small_morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out)
 {
   ssize_t read;
   char *line = NULL;
@@ -491,7 +575,7 @@ morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned l
         break;
       end = NULL;
       n = strtoull (line, &end, 10);
-      seq (1, 2, max, out, search, m, n);
+      small_seq (1, 2, max, out, search, m, n);
     }
   if (line)
     free (line);
@@ -499,7 +583,7 @@ morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned l
 }
 
 int
-morgenstern_symmetric_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out)
+small_morgenstern_symmetric_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out)
 {
   ssize_t read;
   char *line = NULL;
@@ -518,8 +602,70 @@ morgenstern_symmetric_search (unsigned long long max, FILE *in, void (*search) (
         break;
       end = NULL;
       n = strtoull (line, &end, 10);
-      symmetric_seq (1, 2, max, out, search, m, n);
+      small_symmetric_seq (1, 2, max, out, search, m, n);
     }
+  if (line)
+    free (line);
+  return 0;
+}
+
+int
+morgenstern_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+{
+  ssize_t read;
+  char *line = NULL;
+  size_t len = 0;
+  mpz_t m, n, startm, startn;
+  mpz_inits (m, n, startm, startn, NULL);
+  mpz_set_ui (startm, 1);
+  mpz_set_ui (startn, 2);
+  while (1)
+    {
+      read = getdelim (&line, &len, ',', in);
+      if (read == -1)
+        break;
+      char *comma = strchr (line, ',');
+      if (comma)
+        *comma = '\0';
+      mpz_set_str (m, line, 10);
+      read = getline (&line, &len, in);
+      if (read == -1)
+        break;
+      mpz_set_str (n, line, 10);
+      seq (startm, startn, max, out, search, m, n);
+    }
+  mpz_clears (m, n, startm, startn, NULL);
+  if (line)
+    free (line);
+  return 0;
+}
+
+int
+morgenstern_symmetric_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+{
+  ssize_t read;
+  char *line = NULL;
+  size_t len = 0;
+  mpz_t m, n, startm, startn;
+  mpz_inits (m, n, startm, startn, NULL);
+  mpz_set_ui (startm, 1);
+  mpz_set_ui (startn, 2);
+  while (1)
+    {
+      read = getdelim (&line, &len, ',', in);
+      if (read == -1)
+        break;
+      char *comma = strchr (line, ',');
+      if (comma)
+        *comma = '\0';
+      mpz_set_str (m, line, 10);
+      read = getline (&line, &len, in);
+      if (read == -1)
+        break;
+      mpz_set_str (n, line, 10);
+      symmetric_seq (startm, startn, max, out, search, m, n);
+    }
+  mpz_clears (m, n, startm, startn, NULL);
   if (line)
     free (line);
   return 0;

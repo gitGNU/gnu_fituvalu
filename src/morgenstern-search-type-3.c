@@ -25,7 +25,7 @@ void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 
 int filter_num_squares;
 int num_args;
-unsigned long long max;
+mpz_t max;
 mpz_t a[3][3];
 mpz_t x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
       yx1dif, yx1sum, yx2dif, yx2sum;
@@ -70,18 +70,18 @@ filter (int num_squares)
 }
 
 static void
-search_type_3 (unsigned long long m1, unsigned long long n1, unsigned long long m2, unsigned long long n2, FILE *out)
+search_type_3 (mpz_t m1, mpz_t n1, mpz_t m2, mpz_t n2, FILE *out)
 {
   //where X1 = 2*m1*n1,  Y1 = m1^2-n1^2,  Z1 = m1^2+n1^2,
-  mpz_set_ui (x1, m1);
-  mpz_mul_ui (x1, x1, n1);
+  mpz_set (x1, m1);
+  mpz_mul (x1, x1, n1);
   mpz_mul_ui (x1, x1, 2);
 
-  mpz_set_ui (m12, m1);
-  mpz_mul_ui (m12, m12, m1);
+  mpz_set (m12, m1);
+  mpz_mul (m12, m12, m1);
 
-  mpz_set_ui (n12, n1);
-  mpz_mul_ui (n12, n12, n1);
+  mpz_set (n12, n1);
+  mpz_mul (n12, n12, n1);
 
   mpz_sub (_y1, m12, n12);
 
@@ -92,15 +92,15 @@ search_type_3 (unsigned long long m1, unsigned long long n1, unsigned long long 
   mpz_add (yx1sum, _y1, x1);
 
   // where X2 = 2*m2*n2,  Y2 = m2^2-n2^2,  Z2 = m2^2+n2^2,
-  mpz_set_ui (x2, m2);
-  mpz_mul_ui (x2, x2, n2);
+  mpz_set (x2, m2);
+  mpz_mul (x2, x2, n2);
   mpz_mul_ui (x2, x2, 2);
 
-  mpz_set_ui (m22, m2);
-  mpz_mul_ui (m22, m22, m2);
+  mpz_set (m22, m2);
+  mpz_mul (m22, m22, m2);
 
-  mpz_set_ui (n22, n2);
-  mpz_mul_ui (n22, n22, n2);
+  mpz_set (n22, n2);
+  mpz_mul (n22, n22, n2);
 
   mpz_sub (y2, m22, n22);
 
@@ -194,8 +194,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
         argp_error (state, "too many arguments");
       else
         {
-          char *end = NULL;
-          max = strtoull (arg, &end, 10);
+          mpz_init_set_str (max, arg, 10);
           num_args++;
         }
       break;

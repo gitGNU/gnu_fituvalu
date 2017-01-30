@@ -114,6 +114,8 @@ char * generate_list_of_nine_progression_timelines ();
 extern four_square_progression_t four_square_progressions[];
 extern nine_progression_t nine_progressions[];
 
-int morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out);
-int morgenstern_symmetric_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out);
+int small_morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out);
+int small_morgenstern_symmetric_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out);
+int morgenstern_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
+int morgenstern_symmetric_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
 #endif

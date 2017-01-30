@@ -28,15 +28,20 @@ bin_PROGRAMS = \
 	     permute-square transform-square count-squares reduce-square \
 	     rotate-square type-square sort-square number-square \
              check-square progression-type-square display-square sq-seq \
-	     4sq complete-4sq-progression gen-progression \
+	     4sq complete-4sq-progression gen-progression lucas-square \
 	     convert-binary-gmp-records-to-text morgenstern-five-type \
+             \
 	     small-seq-morgenstern-mn seq-morgenstern-mn \
-	     morgenstern-search-type-1 morgenstern-search-type-2 \
-	     morgenstern-search-type-3 morgenstern-search-type-4 \
-	     morgenstern-search-type-5 morgenstern-search-type-6 \
-	     morgenstern-search-type-7  morgenstern-search-type-8 \
-	     mine-3sq-progressions 3sq complete-3sq-progression \
-	     lucas-square
+	     small-morgenstern-search-type-1 morgenstern-search-type-1 \
+	     small-morgenstern-search-type-2 morgenstern-search-type-2 \
+	     small-morgenstern-search-type-3 morgenstern-search-type-3 \
+	     small-morgenstern-search-type-4 morgenstern-search-type-4 \
+	     small-morgenstern-search-type-5 morgenstern-search-type-5 \
+	     small-morgenstern-search-type-6 morgenstern-search-type-6 \
+	     small-morgenstern-search-type-7 morgenstern-search-type-7 \
+	     small-morgenstern-search-type-8 morgenstern-search-type-8 \
+             \
+	     mine-3sq-progressions 3sq complete-3sq-progression
 
 noinst_LTLIBRARIES = libmagicsquareutil.la
 
@@ -188,6 +193,30 @@ morgenstern_search_type_7_LDADD = -lm libmagicsquareutil.la
 
 morgenstern_search_type_8_SOURCES = morgenstern-search-type-8.c
 morgenstern_search_type_8_LDADD = -lm libmagicsquareutil.la
+
+small_morgenstern_search_type_1_SOURCES = small-morgenstern-search-type-1.c
+small_morgenstern_search_type_1_LDADD = -lm libmagicsquareutil.la
+
+small_morgenstern_search_type_2_SOURCES = small-morgenstern-search-type-2.c
+small_morgenstern_search_type_2_LDADD = -lm libmagicsquareutil.la
+
+small_morgenstern_search_type_3_SOURCES = small-morgenstern-search-type-3.c
+small_morgenstern_search_type_3_LDADD = -lm libmagicsquareutil.la
+
+small_morgenstern_search_type_4_SOURCES = small-morgenstern-search-type-4.c
+small_morgenstern_search_type_4_LDADD = -lm libmagicsquareutil.la
+
+small_morgenstern_search_type_5_SOURCES = small-morgenstern-search-type-5.c
+small_morgenstern_search_type_5_LDADD = -lm libmagicsquareutil.la
+
+small_morgenstern_search_type_6_SOURCES = small-morgenstern-search-type-6.c
+small_morgenstern_search_type_6_LDADD = -lm libmagicsquareutil.la
+
+small_morgenstern_search_type_7_SOURCES = small-morgenstern-search-type-7.c
+small_morgenstern_search_type_7_LDADD = -lm libmagicsquareutil.la
+
+small_morgenstern_search_type_8_SOURCES = small-morgenstern-search-type-8.c
+small_morgenstern_search_type_8_LDADD = -lm libmagicsquareutil.la
 
 mine_3sq_progressions_SOURCES = mine-3sq-progressions.c
 mine_3sq_progressions_LDADD = -lm libmagicsquareutil.la

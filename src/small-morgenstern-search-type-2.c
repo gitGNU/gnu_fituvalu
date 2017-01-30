@@ -25,7 +25,7 @@ void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 
 int filter_num_squares;
 int num_args;
-mpz_t max;
+unsigned long long max;
 mpz_t a[3][3];
 mpz_t x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
       yx1dif, yx1sum, yx2dif, yx2sum;
@@ -48,19 +48,20 @@ filter (int num_squares)
       if (count >= num_squares)
         return 1;
     }
+
   if (mpz_perfect_square_p (a[0][2]))
     {
       count++;
       if (count >= num_squares)
         return 1;
     }
-  if (mpz_perfect_square_p (a[1][1]))
+  if (mpz_perfect_square_p (a[2][0]))
     {
       count++;
       if (count >= num_squares)
         return 1;
     }
-  if (mpz_perfect_square_p (a[2][1]))
+  if (mpz_perfect_square_p (a[2][2]))
     {
       count++;
       if (count >= num_squares)
@@ -70,18 +71,18 @@ filter (int num_squares)
 }
 
 static void
-search_type_4 (mpz_t m1, mpz_t n1, mpz_t m2, mpz_t n2, FILE *out)
+search_type_2 (unsigned long long m1, unsigned long long n1, unsigned long long m2, unsigned long long n2, FILE *out)
 {
   //where X1 = 2*m1*n1,  Y1 = m1^2-n1^2,  Z1 = m1^2+n1^2,
-  mpz_set (x1, m1);
-  mpz_mul (x1, x1, n1);
+  mpz_set_ui (x1, m1);
+  mpz_mul_ui (x1, x1, n1);
   mpz_mul_ui (x1, x1, 2);
 
-  mpz_set (m12, m1);
-  mpz_mul (m12, m12, m1);
+  mpz_set_ui (m12, m1);
+  mpz_mul_ui (m12, m12, m1);
 
-  mpz_set (n12, n1);
-  mpz_mul (n12, n12, n1);
+  mpz_set_ui (n12, n1);
+  mpz_mul_ui (n12, n12, n1);
 
   mpz_sub (_y1, m12, n12);
 
@@ -92,15 +93,15 @@ search_type_4 (mpz_t m1, mpz_t n1, mpz_t m2, mpz_t n2, FILE *out)
   mpz_add (yx1sum, _y1, x1);
 
   // where X2 = 2*m2*n2,  Y2 = m2^2-n2^2,  Z2 = m2^2+n2^2,
-  mpz_set (x2, m2);
-  mpz_mul (x2, x2, n2);
+  mpz_set_ui (x2, m2);
+  mpz_mul_ui (x2, x2, n2);
   mpz_mul_ui (x2, x2, 2);
 
-  mpz_set (m22, m2);
-  mpz_mul (m22, m22, m2);
+  mpz_set_ui (m22, m2);
+  mpz_mul_ui (m22, m22, m2);
 
-  mpz_set (n22, n2);
-  mpz_mul (n22, n22, n2);
+  mpz_set_ui (n22, n2);
+  mpz_mul_ui (n22, n22, n2);
 
   mpz_sub (y2, m22, n22);
 
@@ -113,53 +114,46 @@ search_type_4 (mpz_t m1, mpz_t n1, mpz_t m2, mpz_t n2, FILE *out)
 /*
     -----------
      -  B^2  - 
-    D^2  -  F^2
-    G^2  -  I^2
+    D^2 E^2 F^2
+     -  H^2  - 
     -----------
-         4     
+         2     
 */
-  // G = Z1 * YX2dif;
-  // B = YX1dif * YX2dif;
-  // F = YX1sum * YX2dif;
-  // I = YX1dif * Z2;
-  // D = YX1dif * YX2sum;
-  mpz_mul (a[2][0], z1, yx2dif);
-  mpz_mul (a[2][0], a[2][0], a[2][0]);
-
-  mpz_mul (a[0][1], yx1dif, yx2dif);
+  //E = Z1 * Z2;
+  //H = YX1sum * Z2;
+  //B = YX1dif * Z2;
+  //F = YX2sum * Z1;
+  //D = YX2dif * Z1;
+  mpz_mul (a[1][1], z1, z2);
+  mpz_mul (a[1][1], a[1][1], a[1][1]);
+  mpz_mul (a[2][1], yx1sum, z2);
+  mpz_mul (a[2][1], a[2][1], a[2][1]);
+  mpz_mul (a[0][1], yx1dif, z2);
   mpz_mul (a[0][1], a[0][1], a[0][1]);
-
-  mpz_mul (a[1][2], yx1sum, yx2dif);
+  mpz_mul (a[1][2], yx2sum, z1);
   mpz_mul (a[1][2], a[1][2], a[1][2]);
-
-  mpz_mul (a[2][2], yx1dif, z2);
-  mpz_mul (a[2][2], a[2][2], a[2][2]);
-
-  mpz_mul (a[1][0], yx1dif, yx2sum);
+  mpz_mul (a[1][0], yx2dif, z1);
   mpz_mul (a[1][0], a[1][0], a[1][0]);
 
-  // A^2 = F^2 + I^2 - B^2;
-  // C^2 = D^2 + G^2 - B^2;
-  // H^2 = D^2 + F^2 - B^2;
-  // E^2 = A^2 + C^2 - H^2;
-  mpz_add (a[0][0], a[1][2], a[2][2]);
-  mpz_sub (a[0][0], a[0][0], a[0][1]);
-
-  mpz_add (a[0][2], a[1][0], a[2][0]);
-  mpz_sub (a[0][2], a[0][2], a[0][1]);
-
-  mpz_add (a[2][1], a[1][0], a[1][2]);
-  mpz_sub (a[2][1], a[2][1], a[0][1]);
-
-  mpz_add (a[1][1], a[0][0], a[0][2]);
-  mpz_sub (a[1][1], a[1][1], a[2][1]);
+  //A^2 = (F^2 + H^2) / 2;
+  //C^2 = (D^2 + H^2) / 2;
+  //G^2 = (F^2 + B^2) / 2;
+  //I^2 = (D^2 + B^2) / 2;
+  mpz_add (a[0][0], a[1][2], a[2][1]);
+  mpz_cdiv_q_ui (a[0][0], a[0][0], 2);
+  mpz_add (a[0][2], a[1][0], a[2][1]);
+  mpz_cdiv_q_ui (a[0][2], a[0][2], 2);
+  mpz_add (a[2][0], a[1][2], a[0][1]);
+  mpz_cdiv_q_ui (a[2][0], a[2][0], 2);
+  mpz_add (a[2][2], a[1][0], a[0][1]);
+  mpz_cdiv_q_ui (a[2][2], a[2][2], 2);
 
   if (filter_square (filter_num_squares))
     display_square (a, out);
 }
 
 static int
-morgenstern_search_type_4 (FILE *in, FILE *out)
+morgenstern_search_type_2 (FILE *in, FILE *out)
 {
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
@@ -167,7 +161,7 @@ morgenstern_search_type_4 (FILE *in, FILE *out)
   mpz_inits (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
              yx1dif, yx1sum, yx2dif, yx2sum,
              NULL);
-  morgenstern_symmetric_search (max, in, search_type_4, out);
+  small_morgenstern_symmetric_search (max, in, search_type_2, out);
   mpz_clears (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
               yx1dif, yx1sum, yx2dif, yx2sum, NULL);
   for (int i = 0; i < 3; i++)
@@ -201,7 +195,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
         argp_error (state, "too many arguments");
       else
         {
-          mpz_init_set_str (max, arg, 10);
+          char *end = NULL;
+          max = strtoull (arg, &end, 10);
           num_args++;
         }
       break;
@@ -214,13 +209,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-struct argp argp ={options, parse_opt, "MAX", "Generate 3x3 magic squares with 5 perfect squares or more by creating two arithmetic progressions of three perfect squares with the smallest value in common.\vThe standard input provides the parametric \"MN\" values -- two values per record to assist in the transformation.  Use the \"seq-morgenstern-mn\" program to provide this data on the standard input.  Morgenstern type 4 squares have 5 perfect squares in this configuration:\n\
+struct argp argp ={options, parse_opt, "MAX", "Generate 3x3 magic squares with 5 perfect squares or more by creating two arithmetic progressions of three perfect squares with the center square in common.\vThe standard input provides the parametric \"MN\" values -- two values per record to assist in the transformation.  Use the \"seq-morgenstern-mn\" program to provide this data on the standard input.  Morgenstern type 2 squares have 5 perfect squares in this configuration:\n\
 +-------+-------+-------+\n\
 |       |  B^2  |       |\n\
 +-------+-------+-------+\n\
-|  D^2  |       |  F^2  |\n\
+|  D^2  |  E^2  |  F^2  |\n\
 +-------+-------+-------+\n\
-|  G^2  |       |  I^2  |\n\
+|       |  H^2  |       |\n\
 +-------+-------+-------+", 0};
 
 
@@ -229,5 +224,5 @@ main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  return morgenstern_search_type_4 (stdin, stdout);
+  return morgenstern_search_type_2 (stdin, stdout);
 }
