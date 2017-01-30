@@ -9,10 +9,10 @@
 #here is what we expect
 expected=`mktemp $builddir/fituvalu.XXXXXX`
 bindir=$builddir/../src
-$bindir/small-seq-morgenstern-mn 100 | $bindir/small-morgenstern-search-type-2 100 >$expected
+$bindir/small-seq-morgenstern-mn 100 | $bindir/small-morgenstern-search-type-2 100 -f 6 >$expected
 
 #generating our results
-$bindir/seq-morgenstern-mn 100 | $bindir/morgenstern-search-type-2 100
+$bindir/seq-morgenstern-mn 100 | $bindir/morgenstern-search-type-2 100 -f 6
 
 #0035.log is simultaneously created as this script runs.
 diff -uNrd $expected $builddir/0035.log

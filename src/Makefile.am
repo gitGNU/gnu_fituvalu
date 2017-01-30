@@ -168,7 +168,7 @@ small_seq_morgenstern_mn_SOURCES = small-seq-morgenstern-mn.c
 small_seq_morgenstern_mn_LDADD= -lm
 
 seq_morgenstern_mn_SOURCES = seq-morgenstern-mn.c
-seq_morgenstern_mn_LDADD= -lm
+seq_morgenstern_mn_LDADD= -lm libmagicsquareutil.la
 
 morgenstern_search_type_1_SOURCES = morgenstern-search-type-1.c
 morgenstern_search_type_1_LDADD = -lm libmagicsquareutil.la

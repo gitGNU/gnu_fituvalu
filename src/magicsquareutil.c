@@ -348,6 +348,14 @@ display_four_record (mpz_t *progression, FILE *out)
     }
   fprintf (out, "\n");
 }
+
+void
+display_binary_four_record (mpz_t *progression, FILE *out)
+{
+  for (int i = 0; i < 4; i++)
+    mpz_out_raw (out, progression[i]);
+}
+
 void
 display_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out)
 {
@@ -362,6 +370,14 @@ display_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out)
 }
 
 void
+display_binary_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out)
+{
+  for (int i = 0; i < 3; i++)
+      mpz_out_raw (out, progression[i]);
+  mpz_out_raw (out, *root);
+}
+
+void
 display_nine_record (mpz_t *progression, FILE *out)
 {
   for (int i = 0; i < 9; i++)
@@ -369,6 +385,22 @@ display_nine_record (mpz_t *progression, FILE *out)
       dump_num (&progression[i], out);
       fprintf (out, ", ");
     }
+  fprintf (out, "\n");
+}
+
+void
+display_binary_two_record (mpz_t *one, mpz_t *two, FILE *out)
+{
+    mpz_out_raw (out, *one);
+    mpz_out_raw (out, *two);
+}
+
+void
+display_two_record (mpz_t *one, mpz_t *two, FILE *out)
+{
+  dump_num (one, out);
+  fprintf (out, ", ");
+  dump_num (two, out);
   fprintf (out, "\n");
 }
 
@@ -668,5 +700,49 @@ morgenstern_symmetric_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t,
   mpz_clears (m, n, startm, startn, NULL);
   if (line)
     free (line);
+  return 0;
+}
+
+int
+morgenstern_symmetric_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+{
+  ssize_t read;
+  mpz_t m, n, startm, startn;
+  mpz_inits (m, n, startm, startn, NULL);
+  mpz_set_ui (startm, 1);
+  mpz_set_ui (startn, 2);
+  while (1)
+    {
+      read = mpz_inp_raw (m, in);
+      if (!read)
+        break;
+      read = mpz_inp_raw (n, in);
+      if (!read)
+        break;
+      symmetric_seq (startm, startn, max, out, search, m, n);
+    }
+  mpz_clears (m, n, startm, startn, NULL);
+  return 0;
+}
+
+int
+morgenstern_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+{
+  ssize_t read;
+  mpz_t m, n, startm, startn;
+  mpz_inits (m, n, startm, startn, NULL);
+  mpz_set_ui (startm, 1);
+  mpz_set_ui (startn, 2);
+  while (1)
+    {
+      read = mpz_inp_raw (m, in);
+      if (!read)
+        break;
+      read = mpz_inp_raw (n, in);
+      if (!read)
+        break;
+      seq (startm, startn, max, out, search, m, n);
+    }
+  mpz_clears (m, n, startm, startn, NULL);
   return 0;
 }

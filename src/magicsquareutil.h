@@ -20,8 +20,12 @@
 void display_nine_record (mpz_t *progression, FILE *out);
 void display_three_record (mpz_t *progression, FILE *out);
 void display_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out);
+void display_binary_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out);
 void display_four_record (mpz_t *progression, FILE *out);
+void display_binary_four_record (mpz_t *progression, FILE *out);
 void display_binary_nine_record (mpz_t *progression, FILE *out);
+void display_binary_two_record (mpz_t *one, mpz_t *two, FILE *out);
+void display_two_record (mpz_t *one, mpz_t *two, FILE *out);
 void display_square_record (mpz_t s[3][3], FILE *out);
 void display_binary_square_record (mpz_t s[3][3], FILE *out);
 void is_magic_square_init ();
@@ -118,4 +122,6 @@ int small_morgenstern_search (unsigned long long max, FILE *in, void (*search) (
 int small_morgenstern_symmetric_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out);
 int morgenstern_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
 int morgenstern_symmetric_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
+int morgenstern_symmetric_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
+int morgenstern_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
 #endif

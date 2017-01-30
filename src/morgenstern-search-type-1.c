@@ -23,6 +23,7 @@
 
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 
+int in_binary;
 int filter_num_squares;
 int num_args;
 mpz_t max;
@@ -166,7 +167,10 @@ morgenstern_search_type_1 (FILE *in, FILE *out)
   mpz_inits (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
              yx1dif, yx1sum, yx2dif, yx2sum,
              NULL);
-  morgenstern_symmetric_search (max, in, search_type_1, out);
+  if (in_binary)
+    morgenstern_symmetric_search_from_binary (max, in, search_type_1, out);
+  else
+    morgenstern_symmetric_search (max, in, search_type_1, out);
   mpz_clears (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
               yx1dif, yx1sum, yx2dif, yx2sum, NULL);
   for (int i = 0; i < 3; i++)
@@ -180,6 +184,7 @@ options[] =
 {
   { "filter", 'f', "NUM", 0, "Only show magic squares that have at least NUM perfect squares" },
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { 0 }
 };
 
@@ -188,6 +193,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'i':
+      in_binary = 1;
+      break;
     case 'f':
       filter_num_squares = atoi (arg);
       filter_square = filter;

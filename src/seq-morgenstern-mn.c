@@ -17,22 +17,22 @@
 #include <string.h>
 #include <stdlib.h>
 #include <gmp.h>
+#include "magicsquareutil.h"
 
 int num_args;
 mpz_t max, min;
 
+void (*display_record)(mpz_t*, mpz_t*, FILE *) = display_two_record;
 static void
 seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out)
 {
     {
-      char buf[mpz_sizeinbase (m, 10) + 2];
-      mpz_get_str (buf, 10, m);
-      fprintf (out, "%s, ", buf);
-    }
-    {
-      char buf[mpz_sizeinbase (n, 10) + 2];
-      mpz_get_str (buf, 10, n);
-      fprintf (out, "%s\n", buf);
+      //XXX FIXME: we put m and n into one and two to avoid a warning
+      mpz_t one, two;
+      mpz_init_set (one, m);
+      mpz_init_set (two, n);
+      display_record (&one, &two, out);
+      mpz_clears (one, two, NULL);
     }
   mpz_t s;
   mpz_init (s);
@@ -97,6 +97,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'o':
+      display_record = display_binary_two_record;
+      break;
     case ARGP_KEY_ARG:
       if (num_args == 2)
         argp_error (state, "too many arguments");
@@ -126,7 +129,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-struct argp argp ={NULL, parse_opt, "MAX\nMIN MAX", "Compute an MN list.\vThe output of this program is suitable for input into the \"morgenstern-search-type-1\" program.  This sequence of numbers has the form:\nM > N > 0, where M and N are coprime, and with one being even and the other one odd." , 0};
+static struct argp_option
+options[] =
+{
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { 0 }
+};
+struct argp argp ={options, parse_opt, "MAX\nMIN MAX", "Compute an MN list.\vThe output of this program is suitable for input into the \"morgenstern-search-type-*\" programs, as well as \"3sq\".  This sequence of numbers has the form:\nM > N > 0, where M and N are coprime, and with one number being even, and the other number being odd." , 0};
 
 int
 main (int argc, char **argv)

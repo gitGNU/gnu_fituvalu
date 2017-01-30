@@ -23,6 +23,9 @@
 
 mpz_t x1, _y1, z1, m12, n12, yx1dif, yx1sum;
 
+int in_binary;
+void (*display_record) (mpz_t *, mpz_t*, FILE *out) = display_three_record_with_root;
+
 static void
 create_three_square_progression (mpz_t m, mpz_t n, mpz_t *vec, int size, mpz_t *finalroot)
 {
@@ -85,7 +88,7 @@ gen_3sq (FILE *in, FILE *out)
         break;
       mpz_set_str (n, line, 10);
       create_three_square_progression (m, n, vec, 3, &finalroot);
-      display_three_record_with_root (vec, &finalroot, out);
+      display_record (vec, &finalroot, out);
     }
   mpz_clears (m, n, vec[0], vec[1], vec[2], finalroot, NULL);
   mpz_clears (x1, _y1, z1, m12, n12, yx1dif, yx1sum, NULL);
@@ -94,12 +97,62 @@ gen_3sq (FILE *in, FILE *out)
   return 0;
 }
 
-struct argp argp ={NULL, NULL, "", "Generate arithmetic progressions of three squares, with a fourth number being the square root of the 3rd square.\vThe input of this program comes from \"seq-morgenstern-mn\".", 0 };
+static int
+gen_binary_3sq (FILE *in, FILE *out)
+{
+  ssize_t read;
+  mpz_t m, n, vec[3], finalroot;
+  mpz_inits (m, n, vec[0], vec[1], vec[3], finalroot, NULL);
+  mpz_inits (x1, _y1, z1, m12, n12, yx1dif, yx1sum, NULL);
+  while (1)
+    {
+      read = mpz_inp_raw (m, in);
+      if (!read)
+        break;
+      read = mpz_inp_raw (n, in);
+      if (!read)
+        break;
+      create_three_square_progression (m, n, vec, 3, &finalroot);
+      display_record (vec, &finalroot, out);
+    }
+  mpz_clears (m, n, vec[0], vec[1], vec[2], finalroot, NULL);
+  mpz_clears (x1, _y1, z1, m12, n12, yx1dif, yx1sum, NULL);
+  return 0;
+}
+
+
+static error_t
+parse_opt (int key, char *arg, struct argp_state *state)
+{
+  switch (key)
+    {
+    case 'i':
+      in_binary = 1;
+      break;
+    case 'o':
+      display_record = display_binary_three_record_with_root;
+      break;
+    }
+  return 0;
+}
+
+static struct argp_option
+options[] =
+{
+  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { 0 }
+};
+
+struct argp argp ={options, parse_opt, "", "Generate arithmetic progressions of three squares, with a fourth number being the square root of the 3rd square.\vThe input of this program comes from \"seq-morgenstern-mn\".", 0 };
 
 int
 main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  return gen_3sq (stdin, stdout);
+  if (in_binary)
+    return gen_binary_3sq (stdin, stdout);
+  else
+    return gen_3sq (stdin, stdout);
 }

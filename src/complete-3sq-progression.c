@@ -21,6 +21,8 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+int in_binary;
+void (*display_record) (mpz_t *, FILE *out) = display_four_record;
 unsigned long long max_tries;
 
 static void
@@ -38,7 +40,7 @@ complete_3sq (FILE *in, FILE *out)
   char *line = NULL;
   size_t len = 0;
   mpz_t vec[4], root;
-  mpz_inits (vec[0], vec[1], vec[3], vec[4], root, NULL);
+  mpz_inits (vec[0], vec[1], vec[2], vec[3], root, NULL);
   while (1)
     {
       read = getdelim (&line, &len, ',', in);
@@ -73,7 +75,7 @@ complete_3sq (FILE *in, FILE *out)
       for (unsigned long long i = 0; i < max_tries; i++)
         {
           inc (&vec[3], &root);
-          display_four_record (vec, out);
+          display_record (vec, out);
           mpz_add_ui (root, root, 1);
         }
     }
@@ -83,12 +85,50 @@ complete_3sq (FILE *in, FILE *out)
   return 0;
 }
 
+static int
+complete_binary_3sq (FILE *in, FILE *out)
+{
+  ssize_t read;
+  mpz_t vec[4], root;
+  mpz_inits (vec[0], vec[1], vec[2], vec[3], root, NULL);
+  while (1)
+    {
+      read = mpz_inp_raw (vec[0], in);
+      if (!read)
+        break;
+      read = mpz_inp_raw (vec[1], in);
+      if (!read)
+        break;
+      read = mpz_inp_raw (vec[2], in);
+      if (!read)
+        break;
+      read = mpz_inp_raw (root, in);
+      if (!read)
+        break;
+      mpz_set (vec[3], vec[2]);
+      for (unsigned long long i = 0; i < max_tries; i++)
+        {
+          inc (&vec[3], &root);
+          display_record (vec, out);
+          mpz_add_ui (root, root, 1);
+        }
+    }
+  mpz_clears (vec[0], vec[1], vec[2], vec[3], root, NULL);
+  return 0;
+}
+
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
   char *end = NULL;
   switch (key)
     {
+    case 'i':
+      in_binary = 1;
+      break;
+    case 'o':
+      display_record = display_binary_four_record;
+      break;
     case ARGP_KEY_ARG:
       if (max_tries)
         argp_error (state, "too many arguments");
@@ -106,6 +146,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 static struct argp_option
 options[] =
 {
+  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { 0 }
 };
 
@@ -116,5 +158,8 @@ main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  return complete_3sq (stdin, stdout);
+  if (in_binary)
+    return complete_binary_3sq (stdin, stdout);
+  else
+    return complete_3sq (stdin, stdout);
 }
