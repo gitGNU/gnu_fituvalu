@@ -128,7 +128,7 @@ main (int argc, char **argv)
       ret = sq_seq (args[0], args[1], one, out);
       break;
     case 3:
-      ret = sq_seq (args[0], args[1], args[2], out);
+      ret = sq_seq (args[0], args[2], args[1], out);
       break;
     }
 
