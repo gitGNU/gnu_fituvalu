@@ -29,13 +29,6 @@ void (*display_record) (mpz_t *, mpz_t*, FILE *out) = display_three_record_with_
 static void
 create_three_square_progression (mpz_t m, mpz_t n, mpz_t *vec, int size, mpz_t *finalroot)
 {
-  if (mpz_cmp_ui (m, 86) == 0 &&
-      mpz_cmp_ui (n, 29) == 0)
-    {
-      printf("yay\n");
-    }
-      //mpz_set_str (m, "86", 10);
-      //mpz_set_str (n, "29", 10);
   //where X1 = 2*m1*n1,  Y1 = m1^2-n1^2,  Z1 = m1^2+n1^2,
   mpz_set (x1, m);
   mpz_mul (x1, x1, n);
@@ -72,7 +65,7 @@ gen_3sq (FILE *in, FILE *out)
   char *line = NULL;
   size_t len = 0;
   mpz_t m, n, vec[3], finalroot;
-  mpz_inits (m, n, vec[0], vec[1], vec[3], finalroot, NULL);
+  mpz_inits (m, n, vec[0], vec[1], vec[2], finalroot, NULL);
   mpz_inits (x1, _y1, z1, m12, n12, yx1dif, yx1sum, NULL);
   while (1)
     {
@@ -102,7 +95,7 @@ gen_binary_3sq (FILE *in, FILE *out)
 {
   ssize_t read;
   mpz_t m, n, vec[3], finalroot;
-  mpz_inits (m, n, vec[0], vec[1], vec[3], finalroot, NULL);
+  mpz_inits (m, n, vec[0], vec[1], vec[2], finalroot, NULL);
   mpz_inits (x1, _y1, z1, m12, n12, yx1dif, yx1sum, NULL);
   while (1)
     {
