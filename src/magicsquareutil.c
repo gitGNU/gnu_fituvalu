@@ -183,6 +183,43 @@ binary_read_numbers_from_stream (FILE *stream, mpz_t (*a)[SIZE], char **line, si
 }
 
 int
+read_three_numbers_from_stream (FILE *stream, mpz_t (*a)[3], char **line, size_t *len)
+{
+  int i;
+  ssize_t read;
+  for (i = 0; i < 3; i++)
+    {
+      if (i == 3 - 1)
+        read = getline (line, len, stream);
+      else
+        read = getdelim (line, len, ',', stream);
+      if (read == -1)
+        break;
+      char *end = strpbrk (*line, ",\n");
+      if (end)
+        *end = '\0';
+      mpz_set_str ((*a)[i], *line, 10);
+    }
+  return read;
+}
+
+int
+binary_read_three_numbers_from_stream (FILE *stream, mpz_t (*a)[3], char **line, size_t *len)
+{
+  int i;
+  ssize_t read;
+  for (i = 0; i < 3; i++)
+    {
+      read = mpz_inp_raw ((*a)[i], stream);
+      if (!read)
+        break;
+    }
+  if (!read)
+    read = -1;
+  return read;
+}
+
+int
 count_squares (mpz_t a[3][3])
 {
   int i, j;
@@ -367,6 +404,13 @@ display_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out)
   dump_num (root, out);
   fprintf (out, ", ");
   fprintf (out, "\n");
+}
+
+void
+display_binary_three_record (mpz_t *progression, FILE *out)
+{
+  for (int i = 0; i < 3; i++)
+      mpz_out_raw (out, progression[i]);
 }
 
 void
@@ -745,4 +789,38 @@ morgenstern_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_
     }
   mpz_clears (m, n, startm, startn, NULL);
   return 0;
+}
+
+void
+reduce_three_square_progression (mpz_t *progression)
+{
+  //progression must already be sorted
+  //and all 3 numbers must be perfect squares
+  mpz_t gcd;
+  mpz_init (gcd);
+  mpz_set (gcd, progression[0]);
+  mpz_gcd (gcd, gcd, progression[1]);
+  mpz_gcd (gcd, gcd, progression[2]);
+  if (mpz_cmp_ui (gcd, 1) > 0)
+    {
+      mpz_t d;
+      mpz_init (d);
+      int squares_retained = 1;
+      for (int i = 0; i < 3; i++)
+        {
+          mpz_cdiv_q (d, progression[i], gcd);
+          if (!mpz_perfect_square_p (d))
+            {
+              squares_retained = 0;
+              break;
+            }
+        }
+      mpz_clear (d);
+      if (squares_retained)
+        {
+          for (int i = 0; i < 3; i++)
+            mpz_cdiv_q (progression[i], progression[i], gcd);
+        }
+    }
+  mpz_clear (gcd);
 }

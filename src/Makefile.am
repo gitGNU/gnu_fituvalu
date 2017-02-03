@@ -41,8 +41,10 @@ bin_PROGRAMS = \
 	     small-morgenstern-search-type-7 morgenstern-search-type-7 \
 	     small-morgenstern-search-type-8 morgenstern-search-type-8 \
              \
-	     mine-3sq-progressions 3sq complete-3sq-progression \
-	     nine-search find-3sq-progressions
+	     mine-3sq-progressions \
+	     find-3sq-progressions-mn find-3sq-progressions \
+	     complete-3sq-progression reduce-3sq-progression \
+	     nine-search
 
 noinst_LTLIBRARIES = libmagicsquareutil.la
 
@@ -222,11 +224,17 @@ small_morgenstern_search_type_8_LDADD = -lm libmagicsquareutil.la
 mine_3sq_progressions_SOURCES = mine-3sq-progressions.c
 mine_3sq_progressions_LDADD = -lm libmagicsquareutil.la
 
-3sq_SOURCES = 3sq.c
-3sq_LDADD = -lm libmagicsquareutil.la
+find_3sq_progressions_mn_SOURCES = find-3sq-progressions-mn.c
+find_3sq_progressions_mn_LDADD = -lm libmagicsquareutil.la
+
+find_3sq_progressions_SOURCES = find-3sq-progressions.c
+find_3sq_progressions_LDADD = -lm libmagicsquareutil.la
 
 complete_3sq_progression_SOURCES = complete-3sq-progression.c
 complete_3sq_progression_LDADD = -lm libmagicsquareutil.la
+
+reduce_3sq_progression_SOURCES = reduce-3sq-progression.c
+reduce_3sq_progression_LDADD = -lm libmagicsquareutil.la
 
 lucas_square_SOURCES = lucas-square.c
 lucas_square_LDADD = -lm libmagicsquareutil.la
@@ -236,9 +244,6 @@ libmagicsquareutil_la_SOURCES=magicsquareutil.c magicsquareutil.h \
 
 nine_search_SOURCES = nine-search.c
 nine_search_LDADD = -lm libmagicsquareutil.la
-
-find_3sq_progressions_SOURCES = find-3sq-progressions.c
-find_3sq_progressions_LDADD = -lm libmagicsquareutil.la
 
 AM_CFLAGS=-Wall
 

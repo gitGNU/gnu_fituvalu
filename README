@@ -384,8 +384,8 @@ progressions that are formed by three perfect squares.  The idea here is that
 we are "mining" the results of our previously generated magic squares for
 progressions that can be used to make new magic squares.
 
-program: 3sq
-Usage: 3sq [OPTION...]
+program: find-3sq-progressions-mn
+Usage: find-3sq-progressions-mn [OPTION...]
 
 Given a pair of "MN" parametric values on the standard input, generate three
 equidistant perfect squares.  It generates records of four numbers separated
