@@ -44,7 +44,7 @@ bin_PROGRAMS = \
 	     mine-3sq-progressions \
 	     find-3sq-progressions-mn find-3sq-progressions \
 	     complete-3sq-progression reduce-3sq-progression \
-	     nine-search
+	     nine-search 3sq-pair-search
 
 noinst_LTLIBRARIES = libmagicsquareutil.la
 
@@ -244,6 +244,9 @@ libmagicsquareutil_la_SOURCES=magicsquareutil.c magicsquareutil.h \
 
 nine_search_SOURCES = nine-search.c
 nine_search_LDADD = -lm libmagicsquareutil.la
+
+3sq_pair_search_SOURCES = 3sq-pair-search.c
+3sq_pair_search_LDADD = -lm libmagicsquareutil.la
 
 AM_CFLAGS=-Wall
 
