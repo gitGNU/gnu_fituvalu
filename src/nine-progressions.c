@@ -528,8 +528,8 @@ nine_progressions[] =
       four_square_to_nine_number_step_progression4,
       count_squares_in_step_progression4,
       "|----+--*--*--------*--+--*--------*--*--+----|\n"
-      "        ^  ^        ^     ^\n"
-      "        1  2        3     4\n"
+      "        ^  ^        ^     ^                    \n"
+      "        1  2        3     4                    \n"
     },
     {
       "reverse-step-progression1", REV_PROGRESSION_1,

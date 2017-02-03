@@ -20,6 +20,7 @@
 #include <string.h>
 #include <gmp.h>
 #include "magicsquareutil.h"
+unsigned long long incr = 1;
 int in_binary;
 FILE *instream;
 mpz_t start, finish, oneshot;
@@ -94,6 +95,7 @@ options[] =
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "squares", 's', "FILE", 0, "Use perfect squares in FILE for the main loop"},
   { NULL, '1', "NUM", 0, "Do one iteration with NUM as first square"},
+  { "increment", 'I', "NUM", 0, "Advance by NUM squares instead of 1"},
   { 0 }
 };
 
@@ -118,8 +120,12 @@ struct argp argp ={options, parse_opt, "MIN MAX", "Find arithmetic progressions 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  char *end = NULL;
   switch (key)
     {
+    case 'I':
+      incr = strtoull (arg, &end, 10);
+      break;
     case '1':
       mpz_set_str (oneshot, arg, 10);
       break;
@@ -170,18 +176,19 @@ main (int argc, char **argv)
     read_square_and_run (instream,
                          fwd_4sq_progression1,
                          check_progression,
-                         start, finish, stdout);
+                         start, finish, incr, stdout);
   else if (instream && in_binary)
     binary_read_square_and_run (instream,
                                 fwd_4sq_progression1,
                                 check_progression,
-                                start, finish, stdout);
+                                start, finish, incr, stdout);
   else if (mpz_cmp_ui (oneshot, 0) != 0)
-    fwd_4sq_progression1 (oneshot, start, finish, check_progression, stdout);
+    fwd_4sq_progression1 (oneshot, start, finish, incr, check_progression,
+                          stdout);
   else
     loop_and_run (fwd_4sq_progression1,
                   check_progression,
-                  start, finish, stdout);
+                  start, finish, incr, stdout);
 
   return 0;
 }

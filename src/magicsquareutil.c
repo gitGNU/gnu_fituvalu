@@ -216,7 +216,7 @@ small_read_square_and_run (FILE *stream, void (*iterfunc)(unsigned long long, un
 }
 
 void
-read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t start, mpz_t finish, FILE *out)
+read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t start, mpz_t finish, unsigned long long incr, FILE *out)
 {
   mpz_t i;
   mpz_init (i);
@@ -232,7 +232,7 @@ read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, void (*
       if (end)
         *end = '\0';
       mpz_set_str (i, line, 10);
-      iterfunc (i, start, finish, checkfunc, out);
+      iterfunc (i, start, finish, incr, checkfunc, out);
     }
   mpz_clear (i);
   free (line);
@@ -240,7 +240,7 @@ read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, void (*
 }
 
 void
-binary_read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t start, mpz_t finish, FILE *out)
+binary_read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t start, mpz_t finish, unsigned long long incr, FILE *out)
 {
   mpz_t i;
   mpz_init (i);
@@ -250,7 +250,7 @@ binary_read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, 
       read = mpz_inp_raw (i, stream);
       if (!read)
         break;
-      iterfunc (i, start, finish, checkfunc, out);
+      iterfunc (i, start, finish, incr, checkfunc, out);
     }
   mpz_clear (i);
   return;
@@ -293,7 +293,7 @@ small_loop_and_run (void (*iterfunc)(unsigned long long, unsigned long long, uns
 }
 
 void
-loop_and_run (void (*iterfunc)(mpz_t, mpz_t, mpz_t, void (*)(mpz_t*, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE*), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t start, mpz_t finish, FILE *out)
+loop_and_run (void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t*, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE*), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t start, mpz_t finish, unsigned long long incr, FILE *out)
 {
   mpz_t i, j, k, root, lastroot;
   mpz_inits (i, j, k, root, lastroot, NULL);
@@ -301,7 +301,7 @@ loop_and_run (void (*iterfunc)(mpz_t, mpz_t, mpz_t, void (*)(mpz_t*, mpz_t, mpz_
     {
       if (mpz_perfect_square_p (i))
         {
-          iterfunc (i, start, finish, checkfunc, out);
+          iterfunc (i, start, finish, incr, checkfunc, out);
           mpz_sqrt (root, i);
           mpz_sqrt (lastroot, finish);
           do
@@ -309,7 +309,7 @@ loop_and_run (void (*iterfunc)(mpz_t, mpz_t, mpz_t, void (*)(mpz_t*, mpz_t, mpz_
               mpz_add (i, i, root);
               mpz_add (i, i, root);
               mpz_add_ui (i, i, 1);
-              iterfunc (i, start, finish, checkfunc, out);
+              iterfunc (i, start, finish, incr, checkfunc, out);
               mpz_add_ui (root, root, 1);
             }
           while (mpz_cmp (root, lastroot) < 0);
@@ -472,7 +472,7 @@ seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out, void (*search)(mpz_t, mpz_t, mpz
   mpz_clear (s);
 }
 
-static void
+void
 symmetric_seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, FILE *), mpz_t _m2, mpz_t _n2)
 {
   if (mpz_cmp (m, _m2) >= 0)
@@ -550,7 +550,7 @@ small_seq (unsigned long long int m, unsigned long long int n, int finish, FILE 
     }
 }
 
-static void
+void
 small_symmetric_seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out, void (*search)(unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long _m2, unsigned long long _n2)
 {
   if (m >= _m2)

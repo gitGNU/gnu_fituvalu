@@ -21,16 +21,26 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+unsigned long long incr = 1;
 int in_binary;
 void (*display_record) (mpz_t *, FILE *out) = display_four_record;
 unsigned long long max_tries;
 
 static void
-inc (mpz_t *j, mpz_t *jroot)
+advance (mpz_t *vec, mpz_t root, FILE *out)
 {
-  mpz_add (*j, *j, *jroot);
-  mpz_add (*j, *j, *jroot);
-  mpz_add_ui (*j, *j, 1);
+  mpz_t nroot;
+  mpz_init (nroot);
+  for (unsigned long long i = 0; i < max_tries; i++)
+    {
+      mpz_mul_ui (nroot, root, incr);
+      mpz_add (vec[3], vec[3], nroot);
+      mpz_add (vec[3], vec[3], nroot);
+      mpz_add_ui (vec[3], vec[3], incr);
+      display_record (vec, out);
+      mpz_add_ui (root, root, incr);
+    }
+  mpz_clear (nroot);
 }
 
 static int
@@ -72,12 +82,7 @@ complete_3sq (FILE *in, FILE *out)
         *comma = '\0';
       mpz_set_str (root, line, 10);
       mpz_set (vec[3], vec[2]);
-      for (unsigned long long i = 0; i < max_tries; i++)
-        {
-          inc (&vec[3], &root);
-          display_record (vec, out);
-          mpz_add_ui (root, root, 1);
-        }
+      advance (vec, root, out);
     }
   mpz_clears (vec[0], vec[1], vec[2], vec[3], root, NULL);
   if (line)
@@ -106,12 +111,7 @@ complete_binary_3sq (FILE *in, FILE *out)
       if (!read)
         break;
       mpz_set (vec[3], vec[2]);
-      for (unsigned long long i = 0; i < max_tries; i++)
-        {
-          inc (&vec[3], &root);
-          display_record (vec, out);
-          mpz_add_ui (root, root, 1);
-        }
+      advance (vec, root, out);
     }
   mpz_clears (vec[0], vec[1], vec[2], vec[3], root, NULL);
   return 0;
@@ -123,6 +123,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
   char *end = NULL;
   switch (key)
     {
+    case 'I':
+      incr = strtoull (arg, &end, 10);
+      break;
     case 'i':
       in_binary = 1;
       break;
@@ -148,6 +151,7 @@ options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "increment", 'I', "NUM", 0, "Advance by NUM squares instead of 1"},
   { 0 }
 };
 

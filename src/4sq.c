@@ -21,8 +21,9 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+unsigned long long incr = 1;
 int in_binary;
-void (*func)(mpz_t, mpz_t, mpz_t, void (*)(mpz_t* ,mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *) = fwd_4sq_progression1;
+void (*func)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t*, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *) = fwd_4sq_progression1;
 mpz_t start, finish, oneshot;
 int num_args;
 
@@ -77,7 +78,7 @@ generate_4sq_from_binary_input (FILE *in, FILE *out)
       read = mpz_inp_raw (i, in);
       if (!read)
         break;
-      func (i, i, finish, display_squares, out);
+      func (i, i, finish, incr, display_squares, out);
     }
   mpz_clear (i);
 }
@@ -99,7 +100,7 @@ generate_4sq_from_input (FILE *in, FILE *out)
       if (end)
         *end = '\0';
       mpz_set_str (i, line, 10);
-      func (i, i, finish, display_squares, out);
+      func (i, i, finish, incr, display_squares, out);
     }
   mpz_clear (i);
   free (line);
@@ -110,35 +111,36 @@ generate_4sq (FILE *out)
 {
   mpz_t i;
   mpz_init (i);
-  for (mpz_set (i, start); mpz_cmp (i, finish) < 0; mpz_add_ui (i, i, 1))
+  mpz_t root, nroot;
+  mpz_inits (root, nroot, NULL);
+  mpz_sqrt (root, start);
+  mpz_mul (i, root, root);
+  func (i, start, finish, incr, display_squares, stdout);
+  while (1)
     {
-      if (mpz_perfect_square_p (i))
-        {
-          func (i, start, finish, display_squares, stdout);
-          mpz_t root;
-          mpz_init (root);
-          mpz_sqrt (root, i);
-          while (1)
-            {
-              mpz_add (i, i, root);
-              mpz_add (i, i, root);
-              mpz_add_ui (i, i, 1);
-              if (mpz_cmp (i, finish) >= 0)
-                break;
-              func (i, start, finish, display_squares, out);
-              mpz_add_ui (root, root, 1);
-            }
-          mpz_clear (root);
-        }
+      mpz_mul_ui (nroot, root, incr);
+      mpz_add (i, i, nroot);
+      mpz_add (i, i, nroot);
+      mpz_add_ui (i, i, incr);
+
+      if (mpz_cmp (i, finish) >= 0)
+        break;
+      func (i, start, finish, incr, display_squares, out);
+      mpz_add_ui (root, root, incr);
     }
+  mpz_clears (root, nroot, NULL);
   mpz_clear (i);
 }
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  char *end = NULL;
   switch (key)
     {
+    case 'I':
+      incr = strtoull (arg, &end, 10);
+      break;
     case '1':
       mpz_set_str (oneshot, arg, 10);
       break;
@@ -180,7 +182,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case ARGP_KEY_INIT:
       mpz_init (start);
       mpz_init (finish);
-      display_four_progression  = display_four_progression_as_text;
+      display_four_progression = display_four_progression_as_text;
       break;
     case ARGP_KEY_FINI:
       if (num_args == 0)
@@ -213,6 +215,7 @@ options[] =
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "type", 't', "NAME", 0, "Use NAME as the progression strategy"},
   { NULL, '1', "NUM", 0, "Do one iteration with NUM as first square"},
+  { "increment", 'I', "NUM", 0, "Advance by NUM squares instead of 1"},
   { 0 }
 };
 
@@ -233,7 +236,7 @@ main (int argc, char **argv)
   else
     {
       if (mpz_cmp_ui (oneshot, 0) != 0)
-        func (oneshot, start, finish, display_squares, stdout);
+        func (oneshot, start, finish, incr, display_squares, stdout);
       else
         generate_4sq (stdout);
     }

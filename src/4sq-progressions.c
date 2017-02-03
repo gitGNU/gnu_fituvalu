@@ -127,23 +127,39 @@ lookup_four_square_progression_by_kind (four_square_progression_enum_t kind)
 }
 
 static void
-inc (mpz_t *j, mpz_t *jroot)
+inc (mpz_t *j, mpz_t *jroot, unsigned long long incr)
 {
-  mpz_add (*j, *j, *jroot);
-  mpz_add (*j, *j, *jroot);
-  mpz_add_ui (*j, *j, 1);
+  static int initd = 0;
+  static mpz_t nroot;
+  if (!initd)
+    {
+      mpz_init (nroot);
+      initd = 0;
+    }
+  mpz_mul_ui (nroot, *jroot, incr);
+  mpz_add (*j, *j, nroot);
+  mpz_add (*j, *j, nroot);
+  mpz_add_ui (*j, *j, incr);
 }
 
 static void
-dec (mpz_t *j, mpz_t *jroot)
+dec (mpz_t *j, mpz_t *jroot, unsigned long long incr)
 {
-  mpz_sub (*j, *j, *jroot);
-  mpz_sub (*j, *j, *jroot);
-  mpz_sub_ui (*j, *j, 1);
+  static int initd = 0;
+  static mpz_t nroot;
+  if (!initd)
+    {
+      mpz_init (nroot);
+      initd = 0;
+    }
+  mpz_mul_ui (nroot, *jroot, incr);
+  mpz_sub (*j, *j, nroot);
+  mpz_sub (*j, *j, nroot);
+  mpz_sub_ui (*j, *j, incr);
 }
 
 void
-fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
 {
 /* |-----+--+--+-------+-----|
          ^  ^  ^       ^
@@ -161,7 +177,7 @@ fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
   mpz_sqrt (jroot, i);
   for (mpz_set (j, i); mpz_cmp (jroot, lastroot) < 0;)
     {
-      inc (&j, &jroot);
+      inc (&j, &jroot, incr);
       mpz_t diff;
       mpz_init (diff);
       mpz_sub (diff, j, i);
@@ -174,7 +190,7 @@ fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
             {
               mpz_clear (next);
               mpz_clear (diff);
-              mpz_add_ui (jroot, jroot, 1);
+              mpz_add_ui (jroot, jroot, incr);
               continue;
             }
           mpz_t kroot;
@@ -182,7 +198,7 @@ fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
           mpz_sqrt (kroot, next);
           for (mpz_set (k, next); mpz_cmp (kroot, lastroot) < 0;)
             {
-              inc (&k, &kroot);
+              inc (&k, &kroot, incr);
               mpz_t amt;
               mpz_init (amt);
               mpz_sub (amt, k, j);
@@ -190,12 +206,12 @@ fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
               if (mpz_cmp_ui (amt, 0) > 0 && mpz_cmp (next, k) != 0)
                 func (progression, i, j, next, k, out);
               mpz_clear (amt);
-              mpz_add_ui (kroot, kroot, 1);
+              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (next);
           mpz_clear (kroot);
         }
-      mpz_add_ui (jroot, jroot, 1);
+      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
@@ -205,7 +221,7 @@ fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
 }
 
 void
-fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
 {
 /* |---+--+-------+--+---|
        ^  ^       ^  ^                        
@@ -224,7 +240,7 @@ fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
   mpz_sqrt (jroot, i);
   for (mpz_set (j, i); mpz_cmp (jroot, lastroot) < 0;)
     {
-      inc (&j, &jroot);
+      inc (&j, &jroot, incr);
       mpz_t diff;
       mpz_init (diff);
       mpz_sub (diff, j, i);
@@ -235,31 +251,31 @@ fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
           mpz_set (next, j);
           mpz_t kroot;
           mpz_init (kroot);
-          mpz_add_ui (kroot, jroot, 1);
-          inc (&next, &kroot);
-          mpz_add_ui (kroot, kroot, 1);
+          mpz_add_ui (kroot, jroot, incr);
+          inc (&next, &kroot, incr);
+          mpz_add_ui (kroot, kroot, incr);
           for (mpz_set (k, next); mpz_cmp (kroot, lastroot) < 0;)
             {
-              inc (&k, &kroot);
+              inc (&k, &kroot, incr);
               mpz_t amt, fourth;  // amt is E1
               mpz_inits (amt, fourth, NULL);
               mpz_add (fourth, k, diff);
               if (!mpz_perfect_square_p (fourth))
                 {
                   mpz_clears (amt, fourth, NULL);
-                  mpz_add_ui (kroot, kroot, 1);
+                  mpz_add_ui (kroot, kroot, incr);
                   continue;
                 }
               mpz_sub (amt, k, j);
               if (mpz_cmp_ui (amt, 0) > 0)
                 func (progression, i, j, k, fourth, out);
               mpz_clears (amt, fourth, NULL);
-              mpz_add_ui (kroot, kroot, 1);
+              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (next);
           mpz_clear (kroot);
         }
-      mpz_add_ui (jroot, jroot, 1);
+      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
@@ -269,7 +285,7 @@ fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
 }
 
 void
-fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
 {
 /* |---+--------+--+-----+---|
        ^        ^  ^     ^
@@ -286,7 +302,7 @@ fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
   mpz_sqrt (jroot, i);
   for (mpz_set (j, i); mpz_cmp (jroot, lastroot) < 0;)
     {
-      inc (&j, &jroot);
+      inc (&j, &jroot, incr);
       mpz_t diff;
       mpz_init (diff);
       mpz_sub (diff, j, i);
@@ -299,7 +315,7 @@ fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
             {
               mpz_clear (next);
               mpz_clear (diff);
-              mpz_add_ui (jroot, jroot, 1);
+              mpz_add_ui (jroot, jroot, incr);
               continue;
             }
           mpz_t kroot, lastkroot;
@@ -308,15 +324,15 @@ fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
           mpz_sqrt (kroot, j);
           for (mpz_set (k, j); mpz_cmp (kroot, lastkroot) < 0;)
             {
-              inc (&k, &kroot);
+              inc (&k, &kroot, incr);
               if (mpz_cmp (k, j) != 0)
                 func (progression, i, j, k, next, out);
-              mpz_add_ui (kroot, kroot, 1);
+              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (next);
           mpz_clears (kroot, lastkroot, NULL);
         }
-      mpz_add_ui (jroot, jroot, 1);
+      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
@@ -326,7 +342,7 @@ fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
 }
 
 void
-fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
 {
 /* |-----+--+--+-------+--+--+--|
          ^     ^       ^     ^
@@ -347,18 +363,18 @@ fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
   mpz_init (iroot);
   mpz_sqrt (iroot, i);
   mpz_set (nexti, i);
-  inc (&nexti, &iroot);
+  inc (&nexti, &iroot, incr);
   mpz_sqrt (jroot, nexti);
   mpz_clear (iroot);
   for (mpz_set (j, nexti); mpz_cmp (jroot, lastroot) < 0;)
     {
-      inc (&j, &jroot);
+      inc (&j, &jroot, incr);
       mpz_t diff;
       mpz_init (diff);
       mpz_sub (diff, j, i);
       if (!mpz_divisible_ui_p (diff, 24))
         {
-          mpz_add_ui (jroot, jroot, 1);
+          mpz_add_ui (jroot, jroot, incr);
           continue;
         }
       if (mpz_cmp_ui (diff, 0) > 0)
@@ -368,23 +384,23 @@ fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
           mpz_sqrt (kroot, j);
           for (mpz_set (k, j); mpz_cmp (kroot, lastroot) < 0;)
             {
-              inc (&k, &kroot);
+              inc (&k, &kroot, incr);
               mpz_t next;
               mpz_init (next);
               mpz_add (next, k, diff);
               if (!mpz_perfect_square_p (next))
                 {
                   mpz_clear (next);
-                  mpz_add_ui (kroot, kroot, 1);
+                  mpz_add_ui (kroot, kroot, incr);
                   continue;
                 }
               func (progression, i, j, k, next, out);
               mpz_clear (next);
-              mpz_add_ui (kroot, kroot, 1);
+              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (kroot);
         }
-      mpz_add_ui (jroot, jroot, 1);
+      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clear (nexti);
@@ -395,7 +411,7 @@ fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
 }
 
 void
-fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
 {
 /* |---+--------+--+-----+--+--+------|
        ^        ^        ^     ^
@@ -413,7 +429,7 @@ fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
   mpz_sqrt (jroot, i);
   for (mpz_set (j, i); mpz_cmp (jroot, lastroot) < 0;)
     {
-      inc (&j, &jroot);
+      inc (&j, &jroot, incr);
       mpz_t diff;
       mpz_init (diff);
       mpz_sub (diff, j, i);
@@ -424,7 +440,7 @@ fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
           mpz_add (next, j, diff);
           if (!mpz_perfect_square_p (next))
             {
-              mpz_add_ui (jroot, jroot, 1);
+              mpz_add_ui (jroot, jroot, incr);
               mpz_clear (next);
               continue;
             }
@@ -436,25 +452,25 @@ fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
           mpz_sqrt (kroot, next);
           for (mpz_set (k, next); mpz_cmp (kroot, lastkroot) < 0;)
             {
-              inc (&k, &kroot);
+              inc (&k, &kroot, incr);
               mpz_t nextkdiff;
               mpz_init (nextkdiff);
               mpz_sub (nextkdiff, k, next);
               if (mpz_odd_p (nextkdiff))
                 {
                   mpz_clear (nextkdiff);
-                  mpz_add_ui (kroot, kroot, 1);
+                  mpz_add_ui (kroot, kroot, incr);
                   continue;
                 }
               mpz_clear (nextkdiff);
               if (mpz_cmp (j, k) != 0)
                 func (progression, i, j, next, k, out);
-              mpz_add_ui (kroot, kroot, 1);
+              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (next);
           mpz_clears (kroot, lastkroot, NULL);
         }
-      mpz_add_ui (jroot, jroot, 1);
+      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
@@ -464,7 +480,7 @@ fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
 }
 
 void
-fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
 {
   //|----+--*--*--------*--+--*--------*--*--+----|
   //        ^  ^        ^     ^
@@ -481,12 +497,12 @@ fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
   mpz_inits (jroot, root, nexti, NULL);
   mpz_set (nexti, i);
   mpz_sqrt (root, i);
-  inc (&nexti, &root);
+  inc (&nexti, &root, incr);
   mpz_clear (root);
   mpz_sqrt (jroot, nexti);
   for (mpz_set (j, nexti); mpz_cmp (jroot, lastroot) < 0;)
     {
-      inc (&j, &jroot);
+      inc (&j, &jroot, incr);
       mpz_t diff;
       mpz_init (diff);
       mpz_sub (diff, j, i);
@@ -497,11 +513,11 @@ fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
           mpz_sqrt (kroot, j);
           for (mpz_set (k, j); mpz_cmp (kroot, lastroot) < 0;)
             {
-              inc (&k, &kroot);
+              inc (&k, &kroot, incr);
               mpz_sub (diff, k, j);
               if (mpz_odd_p (diff))
                 {
-                  mpz_add_ui (kroot, kroot, 1);
+                  mpz_add_ui (kroot, kroot, incr);
                   continue;
                 }
               mpz_t d1, next;
@@ -512,17 +528,17 @@ fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
               if (!mpz_perfect_square_p (next))
                 {
                   mpz_clear (next);
-                  mpz_add_ui (kroot, kroot, 1);
+                  mpz_add_ui (kroot, kroot, incr);
                   continue;
                 }
               if (mpz_cmp (next, j) < 0)
                 func (progression, i, next, j, k, out);
               mpz_clear (next);
-              mpz_add_ui (kroot, kroot, 1);
+              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (kroot);
         }
-      mpz_add_ui (jroot, jroot, 1);
+      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
@@ -533,7 +549,7 @@ fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
 
 
 void
-rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
 {
 /* |------+-------+--+--+------|
           ^       ^  ^  ^       
@@ -551,8 +567,8 @@ rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
   mpz_sqrt (jroot, i);
   for (mpz_set (j, i); mpz_cmp (jroot, lastroot) > 0;)
     {
-      mpz_sub_ui (jroot, jroot, 1);
-      dec (&j, &jroot);
+      mpz_sub_ui (jroot, jroot, incr);
+      dec (&j, &jroot, incr);
       mpz_t diff;
       mpz_init (diff);
       mpz_sub (diff, j, i);
@@ -572,8 +588,8 @@ rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, 
           mpz_sqrt (kroot, next);
           for (mpz_set (k, next); mpz_cmp (kroot, lastroot) > 0;)
             {
-              mpz_sub_ui (kroot, kroot, 1);
-              dec (&k, &kroot);
+              mpz_sub_ui (kroot, kroot, incr);
+              dec (&k, &kroot, incr);
               mpz_t amt;
               mpz_init (amt);
               mpz_sub (amt, k, j);
@@ -862,7 +878,7 @@ small_rev_4sq_progression1 (unsigned long long i, unsigned long long start, unsi
 }
 
 void
-optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
 {
 /* |-----+--+--+-------+-----|
          ^  ^  ^       ^
@@ -878,11 +894,11 @@ optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)
   mpz_sqrt (jroot, i);
   for (mpz_set (j, i); mpz_cmp (jroot, lastroot) < 0;)
     {
-      inc (&j, &jroot);
+      inc (&j, &jroot, incr);
       mpz_sub (diff, j, i);
       if (!mpz_divisible_ui_p (diff, 24))
         {
-          mpz_add_ui (jroot, jroot, 1);
+          mpz_add_ui (jroot, jroot, incr);
           continue;
         }
       if (mpz_cmp_ui (diff, 0) > 0)
@@ -891,21 +907,21 @@ optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)
           mpz_sqrtrem (kroot, nextrem, next);
           if (mpz_cmp_ui (nextrem, 0) != 0)
             {
-              mpz_add_ui (jroot, jroot, 1);
+              mpz_add_ui (jroot, jroot, incr);
               continue;
             }
 
           for (mpz_set (k, next); mpz_cmp (kroot, lastroot) < 0;)
             {
-              inc (&k, &kroot);
+              inc (&k, &kroot, incr);
               mpz_sub (amt, k, j);
               mpz_add (amt, amt, diff);
               if (mpz_cmp_ui (amt, 0) > 0 && mpz_cmp (next, k) != 0)
                 func (progression, i, j, next, k, out);
-              mpz_add_ui (kroot, kroot, 1);
+              mpz_add_ui (kroot, kroot, incr);
             }
         }
-      mpz_add_ui (jroot, jroot, 1);
+      mpz_add_ui (jroot, jroot, incr);
     }
   mpz_clears (progression[0], progression[1], progression[2],
               progression[3], progression[4], progression[5],
@@ -914,7 +930,7 @@ optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)
 }
 
 void
-optimized_rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+optimized_rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
 {
 /* |------+-------+--+--+------|
           ^       ^  ^  ^       
@@ -932,8 +948,8 @@ optimized_rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)
   mpz_sqrt (jroot, i);
   for (mpz_set (j, i); mpz_cmp (jroot, lastroot) > 0;)
     {
-      mpz_sub_ui (jroot, jroot, 1);
-      dec (&j, &jroot);
+      mpz_sub_ui (jroot, jroot, incr);
+      dec (&j, &jroot, incr);
       mpz_t diff;
       mpz_init (diff);
       mpz_sub (diff, j, i);
@@ -955,8 +971,8 @@ optimized_rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)
           mpz_sqrt (kroot, next);
           for (mpz_set (k, next); mpz_cmp (kroot, lastroot) > 0;)
             {
-              mpz_sub_ui (kroot, kroot, 1);
-              dec (&k, &kroot);
+              mpz_sub_ui (kroot, kroot, incr);
+              dec (&k, &kroot, incr);
               mpz_t amt;
               mpz_init (amt);
               mpz_sub (amt, k, j);
@@ -978,7 +994,7 @@ optimized_rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)
 }
 
 void
-optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
 {
 /* |---+--------+--+-----+---|
        ^        ^  ^     ^
@@ -995,13 +1011,13 @@ optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, void (*func)
   mpz_sqrt (jroot, i);
   for (mpz_set (j, i); mpz_cmp (jroot, lastroot) < 0;)
     {
-      inc (&j, &jroot);
+      inc (&j, &jroot, incr);
       mpz_t diff;
       mpz_init (diff);
       mpz_sub (diff, j, i);
       if (!mpz_divisible_ui_p (diff, 24))
         {
-          mpz_add_ui (jroot, jroot, 1);
+          mpz_add_ui (jroot, jroot, incr);
           continue;
         }
       if (mpz_cmp_ui (diff, 0) > 0)
@@ -1013,7 +1029,7 @@ optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, void (*func)
             {
               mpz_clear (next);
               mpz_clear (diff);
-              mpz_add_ui (jroot, jroot, 1);
+              mpz_add_ui (jroot, jroot, incr);
               continue;
             }
           mpz_t kroot, lastkroot;
@@ -1022,15 +1038,15 @@ optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, void (*func)
           mpz_sqrt (kroot, j);
           for (mpz_set (k, j); mpz_cmp (kroot, lastkroot) < 0;)
             {
-              inc (&k, &kroot);
+              inc (&k, &kroot, incr);
               if (mpz_cmp (k, j) != 0)
                 func (progression, i, j, k, next, out);
-              mpz_add_ui (kroot, kroot, 1);
+              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (next);
           mpz_clears (kroot, lastkroot, NULL);
         }
-      mpz_add_ui (jroot, jroot, 1);
+      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],

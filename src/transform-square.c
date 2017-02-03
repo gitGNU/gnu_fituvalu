@@ -150,7 +150,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'o':
       display_square = display_binary_square_record;
       break;
-    case 'I':
+    case 'g':
       display_errors = 0;
       break;
     case ARGP_KEY_ARG:
@@ -193,7 +193,7 @@ options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { "ignore", 'I', 0, 0, "Ignore records we can't transform into magic squares" },
+  { "ignore", 'g', 0, 0, "Ignore records we can't transform into magic squares" },
     { 0 }
 };
 

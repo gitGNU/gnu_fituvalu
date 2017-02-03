@@ -21,6 +21,7 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+unsigned long long incr = 1;
 int in_binary;
 four_square_progression_t *force_four_square_prog;
 nine_progression_t *nine_prog = &nine_progressions[0];
@@ -58,8 +59,8 @@ generate_progression_starting_at (mpz_t i, FILE *out)
     func = extend_and_count_squares_and_display_progression;
   else
     func = extend_and_display_progression;
-  void (*progression) (mpz_t, mpz_t, mpz_t, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
-  progression (i, i, finish, func, out);
+  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
+  progression (i, i, finish, incr, func, out);
 }
 
 static void
@@ -76,7 +77,7 @@ generate_progression_from_input (FILE *in, FILE *out)
   else
     func = extend_and_display_progression;
   
-  void (*progression) (mpz_t, mpz_t, mpz_t, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
+  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
   while (1)
     {
       read = getline (&line, &len, in);
@@ -87,7 +88,7 @@ generate_progression_from_input (FILE *in, FILE *out)
         *end = '\0';
       mpz_set_str (i, line, 10);
 
-      progression (i, i, finish, func, out);
+      progression (i, i, finish, incr, func, out);
     }
   mpz_clear (i);
   free (line);
@@ -105,13 +106,13 @@ generate_progression_from_binary_input (FILE *in, FILE *out)
   else
     func = extend_and_display_progression;
   
-  void (*progression) (mpz_t, mpz_t, mpz_t, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
+  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
   while (1)
     {
       read = mpz_inp_raw (i, in);
       if (!read)
         break;
-      progression (i, i, finish, func, out);
+      progression (i, i, finish, incr, func, out);
     }
   mpz_clear (i);
 }
@@ -119,43 +120,41 @@ generate_progression_from_binary_input (FILE *in, FILE *out)
 static void
 generate_progression (FILE *out)
 {
-  mpz_t i;
-  mpz_init (i);
   static void (*func) (mpz_t *, mpz_t one, mpz_t two, mpz_t three, mpz_t four, FILE *);
   if (filter)
     func = extend_and_count_squares_and_display_progression;
   else
     func = extend_and_display_progression;
-  void (*progression) (mpz_t, mpz_t, mpz_t, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
-  for (mpz_set (i, start); mpz_cmp (i, finish) < 0; mpz_add_ui (i, i, 1))
+  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
+  mpz_t root, nroot, i;
+  mpz_inits (root, nroot, i, NULL);
+  mpz_set (i, start);
+  mpz_sqrt (root, i);
+  mpz_mul (i, root, root);
+  progression (i, start, finish, incr, func, out);
+  while (1)
     {
-      if (mpz_perfect_square_p (i))
-        {
-          progression (i, start, finish, func, out);
-          mpz_t root;
-          mpz_init (root);
-          mpz_sqrt (root, i);
-          while (1)
-            {
-              mpz_add (i, i, root);
-              mpz_add (i, i, root);
-              mpz_add_ui (i, i, 1);
-              if (mpz_cmp (i, finish) >= 0)
-                break;
-              progression (i, start, finish, func, out);
-              mpz_add_ui (root, root, 1);
-            }
-          mpz_clear (root);
-        }
+      mpz_mul_ui (nroot, root, incr);
+      mpz_add (i, i, nroot);
+      mpz_add (i, i, nroot);
+      mpz_add_ui (i, i, incr);
+      if (mpz_cmp (i, finish) >= 0)
+        break;
+      progression (i, start, finish, incr, func, out);
+      mpz_add_ui (root, root, incr);
     }
-  mpz_clear (i);
+  mpz_clears (root, nroot, i, NULL);
 }
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  char *end = NULL;
   switch (key)
     {
+    case 'I':
+      incr = strtoull (arg, &end, 10);
+      break;
     case '1':
       mpz_set_str (oneshot, arg, 10);
       break;
@@ -259,6 +258,7 @@ options[] =
   { "filter", 'f', "NUM", 0, "Only show progressions that have at least NUM perfect squares" },
   { "force-4sq", '4', "NAME", 0, "Force the use of an alternative four square progression strategy"},
   { NULL, '1', "NUM", 0, "Do one iteration with NUM as first square"},
+  { "increment", 'I', "NUM", 0, "Advance by NUM squares instead of 1"},
   { 0 }
 };
 

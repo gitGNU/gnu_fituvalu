@@ -36,19 +36,20 @@ int binary_read_square_from_stream (FILE *stream, mpz_t (*a)[3][3], char **s, si
 int read_numbers_from_stream (FILE *stream, mpz_t (*a)[SIZE], char **line, size_t *len);
 int binary_read_numbers_from_stream (FILE *stream, mpz_t (*a)[SIZE], char **line, size_t *len);
 void small_read_square_and_run (FILE *, void (*)(unsigned long long, unsigned long long, unsigned long long, void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *), void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long, unsigned long long, FILE *);
-void read_square_and_run (FILE *, void (*)(mpz_t,mpz_t, mpz_t, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *), void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), mpz_t, mpz_t, FILE *);
-void binary_read_square_and_run (FILE *, void (*iterfunc)(mpz_t, mpz_t, mpz_t, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *), void (*check)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t, mpz_t, FILE *);
-void loop_and_run (void (*)(mpz_t, mpz_t, mpz_t, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *), void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), mpz_t, mpz_t, FILE *);
+void read_square_and_run (FILE *, void (*)(mpz_t,mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *), void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), mpz_t, mpz_t, unsigned long long, FILE *);
+void binary_read_square_and_run (FILE *, void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *), void (*check)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t, mpz_t, unsigned long long, FILE *);
+void loop_and_run (void (*)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *), void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), mpz_t, mpz_t, unsigned long long, FILE *);
 void small_loop_and_run (void (*func)(unsigned long long, unsigned long long, unsigned long long, void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *), void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long start, unsigned long long finish, FILE *out);
 int small_is_square (long long num);
-void fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
-void fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
-void fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
-void fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
-void fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
-void fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
-void rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
-void optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
+
+void fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
+void fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
+void fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
+void fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
+void fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
+void fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
+void rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
+void optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
 
 void small_fwd_4sq_progression1 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *);
 void small_fwd_4sq_progression2 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *);
@@ -95,7 +96,7 @@ typedef enum four_square_progression_enum_t {
 typedef struct four_square_progression_t {
   four_square_progression_enum_t kind;
   char *name;
-  void (*func) (mpz_t, mpz_t, mpz_t, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
+  void (*func) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
   char *timeline;
 } four_square_progression_t;
 
@@ -124,4 +125,6 @@ int morgenstern_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t
 int morgenstern_symmetric_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
 int morgenstern_symmetric_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
 int morgenstern_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
+void symmetric_seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, FILE *), mpz_t _m2, mpz_t _n2);
+void small_symmetric_seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out, void (*search)(unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long _m2, unsigned long long _n2);
 #endif
