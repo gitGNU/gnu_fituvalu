@@ -345,7 +345,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
           if (num_args == 0 && access (arg, R_OK) == 0)
             infile = fopen (arg, "r");
           else
+            {
+              char *comma = strchr (arg, ',');
+              if (comma)
+                *comma = '\0';
             mpz_init_set_str (match[num_args], arg, 10);
+            }
           num_args++;
         }
       break;

@@ -401,8 +401,11 @@ display_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out)
       dump_num (&progression[i], out);
       fprintf (out, ", ");
     }
-  dump_num (root, out);
-  fprintf (out, ", ");
+  if (mpz_cmp_ui (*root, 0) != 0)
+    {
+      dump_num (root, out);
+      fprintf (out, ", ");
+    }
   fprintf (out, "\n");
 }
 
@@ -418,7 +421,8 @@ display_binary_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *ou
 {
   for (int i = 0; i < 3; i++)
       mpz_out_raw (out, progression[i]);
-  mpz_out_raw (out, *root);
+  if (mpz_cmp_ui (*root, 0) != 0)
+    mpz_out_raw (out, *root);
 }
 
 void

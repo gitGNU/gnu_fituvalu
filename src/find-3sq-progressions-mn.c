@@ -23,6 +23,7 @@
 
 mpz_t x1, _y1, z1, m12, n12, yx1dif, yx1sum;
 
+int showroot = 1;
 int in_binary;
 void (*display_record) (mpz_t *, mpz_t*, FILE *out) = display_three_record_with_root;
 
@@ -54,7 +55,10 @@ create_three_square_progression (mpz_t m, mpz_t n, mpz_t *vec, int size, mpz_t *
 
   mpz_mul (vec[0], vec[0], vec[0]);
   mpz_mul (vec[1], vec[1], vec[1]);
-  mpz_set (*finalroot, vec[2]);
+  if (showroot)
+    mpz_set (*finalroot, vec[2]);
+  else
+    mpz_set_ui (*finalroot, 0);
   mpz_mul (vec[2], vec[2], vec[2]);
 }
 
@@ -119,6 +123,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'n':
+      showroot = 0;
+      break;
     case 'i':
       in_binary = 1;
       break;
@@ -134,6 +141,7 @@ options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "no-root", 'n', 0, 0, "Don't show the root of the fourth number"},
   { 0 }
 };
 

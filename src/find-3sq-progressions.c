@@ -21,6 +21,7 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+int showroot = 1;
 unsigned long long incr = 1;
 unsigned long long max_tries;
 mpz_t x1, _y1, z1, m12, n12, yx1dif, yx1sum;
@@ -35,6 +36,7 @@ create_three_square_progression (mpz_t m, mpz_t *vec, int size, mpz_t *finalroot
   mpz_inits (root, nroot, diff, NULL);
   mpz_sqrt (root, m);
   mpz_set (vec[0], m);
+  mpz_set (vec[1], vec[0]);
   for (unsigned long long count = 0; count < max_tries; count++)
     {
       mpz_mul_ui (nroot, root, incr);
@@ -47,7 +49,10 @@ create_three_square_progression (mpz_t m, mpz_t *vec, int size, mpz_t *finalroot
       mpz_add (vec[2], vec[1], diff);
       if (mpz_perfect_square_p (vec[2]))
         {
-          mpz_sqrt (*finalroot, vec[2]);
+          if (showroot)
+            mpz_sqrt (*finalroot, vec[2]);
+          else
+            mpz_set_ui (*finalroot, 0);
           display_record (vec, finalroot, out);
         }
       mpz_sub (vec[2], vec[0], diff);
@@ -55,7 +60,10 @@ create_three_square_progression (mpz_t m, mpz_t *vec, int size, mpz_t *finalroot
         break;
       if (mpz_perfect_square_p (vec[2]))
         {
-          mpz_set (*finalroot, root);
+          if (showroot)
+            mpz_set (*finalroot, root);
+          else
+            mpz_set_ui (*finalroot, 0);
           mpz_set (diff, vec[0]);
           mpz_set (vec[0], vec[2]);
           mpz_set (vec[2], vec[1]);
@@ -112,6 +120,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
   char *end = NULL;
   switch (key)
     {
+    case 'n':
+      showroot = 0;
+      break;
     case 'i':
       in_binary = 1;
       break;
@@ -140,6 +151,7 @@ options[] =
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "increment", 'I', "NUM", 0, "Advance by NUM squares instead of 1"},
+  { "no-root", 'n', 0, 0, "Don't show the root of the fourth number"},
   { 0 }
 };
 
