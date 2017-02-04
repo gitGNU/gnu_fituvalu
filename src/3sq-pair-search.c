@@ -22,6 +22,7 @@
 #include "magicsquareutil.h"
 
 FILE *infile;
+int flipflops = 1;
 int num_args;
 int tries = 1;
 mpz_t advsq;
@@ -180,24 +181,35 @@ converge (mpz_t *a, mpz_t *b, int j, FILE *out)
       create_square (a, b, out);
       return;
     }
-  if (mpz_cmp (a[j], b[j]) < 0)
+  /*
+     i thought this flip-flopping approach would help, but it doesn't
+     seem to, even when i vary advsq.
+     maybe if i vary advsq on the inside of the loop?
+   */
+  for (int q = 0; q < flipflops; q++)
     {
-      while (mpz_cmp (a[j], b[j]) < 0)
+      if (mpz_cmp (a[j], b[j]) < 0)
         {
-          for (int i = 0; i < 3; i++)
-            mpz_mul (a[i], a[i], advsq);
+          while (mpz_cmp (a[j], b[j]) < 0)
+            {
+              for (int i = 0; i < 3; i++)
+                mpz_mul (a[i], a[i], advsq);
+            }
+        }
+      else
+        {
+          while (mpz_cmp (b[j], a[j]) <= 0)
+            {
+              for (int i = 0; i < 3; i++)
+                mpz_mul (b[i], b[i], advsq);
+            }
+        }
+      if (mpz_cmp (a[j], b[j]) == 0)
+        {
+          create_square (a, b, out);
+          break;
         }
     }
-  else
-    {
-      while (mpz_cmp (b[j], a[j]) <= 0)
-        {
-          for (int i = 0; i < 3; i++)
-            mpz_mul (b[i], b[i], advsq);
-        }
-    }
-  if (mpz_cmp (a[j], b[j]) == 0)
-    create_square (a, b, out);
 }
 
 static void
@@ -325,6 +337,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
   char *end = NULL;
   switch (key)
     {
+    case 'f':
+      flipflops = strtoull (arg, &end, 10);
+      break;
     case 't':
       tries = strtoull (arg, &end, 10);
       break;
@@ -380,10 +395,11 @@ options[] =
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "tries", 't', "NUM", OPTION_HIDDEN, "Try this many squares after 1"},
   { "advance", 'a', "NUM", OPTION_HIDDEN, "Advance the values by this square"},
+  { "flip-flops", 'f', "NUM", OPTION_HIDDEN, "Try this many flip-flops"},
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "N1, N2, N3,\nFILE", "Try to create a 3x3 of magic square from two progressions of three squares.  The first progression is given as the arguments N1, N2, N3.  The second progression is passed in on the standard input.\vThe three values must be perfect squares, separated by a comma and terminated by a newline, and must be in ascending order.\n", 0};
+struct argp argp ={options, parse_opt, "N1, N2, N3,\nFILE", "Try to create a 3x3 of magic square from two progressions of three squares.  The first progression is given as the arguments N1, N2, N3.  The second progression is passed in on the standard input.\vThe three values must be perfect squares, separated by a comma and terminated by a newline, and must be in ascending order.  The programs \"find-3sq-progressions\", \"find-3sq-progressions-mn\", and \"mine-3sq-progressions\" produce suitable input for this program.\n", 0};
 
 int
 main (int argc, char **argv)
