@@ -53,7 +53,7 @@ help_filter (int key, const char *text, void *input)
   if (key == ARGP_KEY_HELP_POST_DOC)
     {
       char *s =
-        "|--+--------*-*-------*-+-*-------*-*--------+-|\n"
+        "|--+--------+-+-------+-+-+-------+-+--------+-|\n"
         "            ^ ^       ^   ^\n"
         "            1 2       3   4\n";
       char *new_text = NULL;
