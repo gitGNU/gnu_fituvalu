@@ -40,6 +40,8 @@ seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out)
               seq (s, n2, finish, out);
             }
         }
+      //s = m + n;
+      //m2 = s;
       n2 = n;
       if ((n2 & 1) == 0)
         seq (m2, n2, finish, out);
