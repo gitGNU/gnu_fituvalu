@@ -143,6 +143,7 @@ Usage: reverse-fulcrum-progression1 [--squares=FILE] [--in-binary] [--out-binary
 
 program: morgenstern-search-type-1
 Usage: morgenstern-search-type-1 [--filter=NUM] [--out-binary] MAX
+ or:   morgenstern-search-type-1 [--filter=NUM] [--out-binary] FILE
 
 Whereas the prior programs generate 3x3 magic squares with 4 perfect
 squares and then hope that a 5th, 6th, or 7th perfect square shows up, the
@@ -156,6 +157,12 @@ terms of magic square types.
 The standard input provides the parametric "MN" values -- two values per record
 to assist in the transformation.  The seq-morgenstern-mn program provides
 these numbers.
+
+If you pass in a number "MAX", it will automatically iterate up to MAX against
+each of the records passed in on the standard input.  If you pass in a FILE,
+it will iterate each of the records in FILE against each of the records passed
+in on the standard input.  This method is slightly faster because there's no
+calculation involved.
 
 Morgenstern type 1 squares have 5 perfect squares in this configuration:
 +-------+-------+-------+
@@ -171,6 +178,7 @@ squares, and C^2, E^2, G^2 is the other.  They share E^2 in common.
 
 program: morgenstern-search-type-2
 Usage: morgenstern-search-type-2 [--filter=NUM] [--out-binary] MAX
+ or:   morgenstern-search-type-2 [--filter=NUM] [--out-binary] FILE
 
 Morgenstern type 2 squares have 5 perfect squares in this configuration:
 +-------+-------+-------+
@@ -183,6 +191,7 @@ Morgenstern type 2 squares have 5 perfect squares in this configuration:
 
 program: morgenstern-search-type-3
 Usage: morgenstern-search-type-3 [--filter=NUM] [--out-binary] MAX
+ or:   morgenstern-search-type-3 [--filter=NUM] [--out-binary] FILE
 
 Morgenstern type 3 squares have 5 perfect squares in this configuration:
 +-------+-------+-------+
@@ -195,6 +204,7 @@ Morgenstern type 3 squares have 5 perfect squares in this configuration:
 
 program: morgenstern-search-type-4
 Usage: morgenstern-search-type-4 [--filter=NUM] [--out-binary] MAX
+ or:   morgenstern-search-type-4 [--filter=NUM] [--out-binary] FILE
 
 Morgenstern type 4 squares have 5 perfect squares in this configuration:
 +-------+-------+-------+
@@ -207,6 +217,7 @@ Morgenstern type 4 squares have 5 perfect squares in this configuration:
 
 program: morgenstern-search-type-5
 Usage: morgenstern-search-type-5 [--filter=NUM] [--out-binary] MAX
+ or:   morgenstern-search-type-5 [--filter=NUM] [--out-binary] FILE
 
 Morgenstern type 5 squares have 5 perfect squares in this configuration:
 +-------+-------+-------+
@@ -219,6 +230,7 @@ Morgenstern type 5 squares have 5 perfect squares in this configuration:
 
 program: morgenstern-search-type-6
 Usage: morgenstern-search-type-6 [--filter=NUM] [--out-binary] MAX
+ or:   morgenstern-search-type-6 [--filter=NUM] [--out-binary] FILE
 
 Morgenstern type 6 squares have 5 perfect squares in this configuration:
 +-------+-------+-------+
@@ -231,6 +243,7 @@ Morgenstern type 6 squares have 5 perfect squares in this configuration:
 
 program: morgenstern-search-type-7
 Usage: morgenstern-search-type-7 [--filter=NUM] [--out-binary] MAX
+ or:   morgenstern-search-type-7 [--filter=NUM] [--out-binary] FILE
 
 Morgenstern type 7 squares have 5 perfect squares in this configuration:
 +-------+-------+-------+
@@ -243,6 +256,7 @@ Morgenstern type 7 squares have 5 perfect squares in this configuration:
 
 program: morgenstern-search-type-8
 Usage: morgenstern-search-type-8 [--filter=NUM] [--out-binary] MAX
+ or:   morgenstern-search-type-8 [--filter=NUM] [--out-binary] FILE
 
 Morgenstern type 8 squares have 5 perfect squares in this configuration:
 +-------+-------+-------+
