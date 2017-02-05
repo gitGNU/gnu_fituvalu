@@ -571,19 +571,28 @@ This does 32 cores locally and 4 remotely at servers 192.168.0.1, and
 This runs the step-progression1 program once for every line that
 "sq-seq 1 1237940039285380274899124224" generates.
 
-A performance increase can be gained by splitting the input data into equal
-chunks beforehand; one for each of our six jobs.  Like so:
+A performance increase can be gained by:
+1. using binary data files instead of text, and
+2. by splitting the input data into equal chunks beforehand; one for
+each of our six jobs.  Like so:
 
 $ seq-morgenstern-mn 3500  > /tmp/indata
 $ split -d -n 6 --suffix-length=3 /tmp/indata indata-
-$ mv indata-* /tmp/
-$ scp /tmp/indata-* 192.168.1.101:/tmp/
-$ seq -f "%03g" 0 5 | parallel -S 3/192.168.1.101 -S 3/:  'cat /tmp/indata-{} | morgenstern-search-type-2 3500 -f 6' > data
+$ cat indata-000 | convert-binary-gmp-to-text -i > indata-000.bin
+$ cat indata-001 | convert-binary-gmp-to-text -i > indata-001.bin
+$ cat indata-002 | convert-binary-gmp-to-text -i > indata-002.bin
+$ cat indata-003 | convert-binary-gmp-to-text -i > indata-003.bin
+$ cat indata-004 | convert-binary-gmp-to-text -i > indata-004.bin
+$ cat indata-005 | convert-binary-gmp-to-text -i > indata-005.bin
+$ mv indata-*.bin /tmp/
+$ scp /tmp/indata-*.bin 192.168.1.101:/tmp/
+$ seq -f "%03g" 0 5 | parallel -S 3/192.168.1.101 -S 3/:  'cat /tmp/indata-{}.bin | morgenstern-search-type-2 3500 -f 6 -i' > data
 
 We generate /tmp/indata, and then the "split" command generates: "indata-000",
-"indata-001" and so on.  After manually copying the files into place, we run
-"seq" so that we get one number for each of our jobs, and it's the same number
-of the "indata-???" file it will operate on.
+"indata-001" and so on.  Next we convert them from text to binary gmp records.
+After manually copying the files into place, we run "seq" so that we get one
+number for each of our jobs, and it's the same number of the "indata-???.bin"
+file it will operate on.
 
 This method avoids the overhead of regularly setting up and tearing down ssh
 connections, as well as starting up and tearing down program executions.
