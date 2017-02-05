@@ -474,13 +474,14 @@ The fourth square iterated forward NUM times.  This program generates useful
 input for "complete-4sq-progression".
 
 program: convert-binary-gmp-records-to-text
-Usage: convert-binary-gmp-records-to-text [--num-columns=NUM]
+Usage: convert-binary-gmp-records-to-text [--num-columns=NUM] [--inverse]
 
 The progression programs have an option to dump records in raw format 
 (--out-binary), so we don't spend time converting the numbers to their
 textual representation.  This program converts them from the GMP raw format
 to that textual representation.  It reads from the standard-input and
 outputs the records on the standard output.
+The --inverse option converts from text to binary.
 
 How do you use all this?
 ------------------------
