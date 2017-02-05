@@ -20,6 +20,7 @@
 #include <argp.h>
 #include <gmp.h>
 #include "magicsquareutil.h"
+int to_binary;
 int num_columns = 9;
 
 static error_t
@@ -27,6 +28,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'i':
+      to_binary = 1;
+      break;
     case 'n':
       num_columns = atoi (arg);
       break;
@@ -37,7 +41,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 static struct argp_option
 options[] =
 {
-  { "num-columns", 'n', "NUM", 0, "a record has NUM columns (default 9)"},
+  { "num-columns", 'n', "NUM", 0, "A record has NUM columns (default 9)"},
+  { "inverse", 'i', 0, 0, "Convert to binary instead"},
   { 0 }
 };
 
@@ -75,12 +80,48 @@ convert_binary_records (FILE *in, FILE *out)
   mpz_clear (i);
 }
 
+static void
+convert_text_records (FILE *in, FILE *out)
+{
+  ssize_t read;
+  char *line = NULL;
+  size_t len = 0;
+  mpz_t n;
+  mpz_init (n);
+  while (1)
+    {
+      for (int i = 0; i < num_columns; i++)
+        {
+          if (i < num_columns - 1)
+            read = getdelim (&line, &len, ',', in);
+          else
+            read = getline (&line, &len, in);
+          if (read == -1)
+            break;
+          char *comma = strchr (line, ',');
+          if (comma)
+            *comma = '\0';
+          mpz_set_str (n, line, 10);
+          mpz_out_raw (out, n);
+        }
+      if (read == -1)
+        break;
+    }
+  mpz_clear (n);
+  if (line)
+    free (line);
+  return;
+}
+
 int
 main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  convert_binary_records (stdin, stdout);
+  if (to_binary)
+    convert_text_records (stdin, stdout);
+  else
+    convert_binary_records (stdin, stdout);
   return 0;
 }
 
