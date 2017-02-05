@@ -59,8 +59,8 @@ Top-level Programs
 step-progression and fulcrum-progression programs iterate through squares to
 find 3x3 magic squares that have at least 5 perfect squares.
 
-program: step-progression1
-Usage: step-progression1 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
+program: step-progression-1
+Usage: step-progression-1 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
 
 Here are the perfect squares we're searching for in this program:
 |-----+--+--+-------+--+--+-------+--+--+------|
@@ -73,68 +73,68 @@ the program to take the starting perfect square from the standard input so
 you can have more control over what progressions get generated.
 
 You run it like this:
-$ step-progression1 1 1000 | head -n1
+$ step-progression-1 1 1000 | head -n1
 1, 25, 49, 121, 145, 169, 241, 265, 289
 
 
-program: step-progression2
-Usage: step-progression2 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
+program: step-progression-2
+Usage: step-progression-2 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
 
 |-----+--+--+-------+--+--+-------+--+--+------|
          ^  ^       ^  ^                        
          1  2       3  4                        
 
-program: step-progression3
-Usage: step-progression3 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
+program: step-progression-3
+Usage: step-progression-3 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
 
 |------+--+--+-------+--+--+------+--+--+-----|
        ^     ^       ^     ^
        1     2       3     4
 
-program: reverse-step-progression1
-Usage: reverse-step-progression1 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
+program: reverse-step-progression-1
+Usage: reverse-step-progression-1 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
 
 |-----+--+--+-------+--+--+-------+--+--+------|
                           ^       ^  ^  ^       
                           4       3  2  1       
 
-program: fulcrum-progression1
-Usage: fulcrum-progression1 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
+program: fulcrum-progression-1
+Usage: fulcrum-progression-1 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
 
 |-+--------+--+-----+--+--+-----+--+--------+--|
   ^        ^  ^     ^                           
   1        2  3     4                           
 
-program: fulcrum-progression2
-Usage: fulcrum-progression2 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
+program: fulcrum-progression-2
+Usage: fulcrum-progression-2 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
 
 |-+--------+--+-----+--+--+-----+--+--------+--|
            ^  ^     ^  ^                        
            1  2     3  4                        
 
-program: fulcrum-progression3
-Usage: fulcrum-progression3 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
+program: fulcrum-progression-3
+Usage: fulcrum-progression-3 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
 
 |-+--------+--+-----+--+--+-----+--+--------+--|
                     ^  ^  ^     ^               
                     1  2  3     4               
 
-program: fulcrum-progression4
-Usage: fulcrum-progression4 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
+program: fulcrum-progression-4
+Usage: fulcrum-progression-4 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
 
 |--+--------+--+-----+--+--+-----+--+--------+-|
    ^        ^        ^     ^
    1        2        3     4
 
-program: fulcrum-progression5
-Usage: fulcrum-progression5 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
+program: fulcrum-progression-5
+Usage: fulcrum-progression-5 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
 
 |--+--------+-+-------+-+-+-------+-+--------+-|
             ^ ^       ^   ^
             1 2       3   4
 
-program: reverse-fulcrum-progression1
-Usage: reverse-fulcrum-progression1 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
+program: reverse-fulcrum-progression-1
+Usage: reverse-fulcrum-progression-1 [--squares=FILE] [--in-binary] [--out-binary] [--increment=NUM] MIN MAX
 
 |-+--------+--+-----+--+--+-----+--+--------+--|
               ^     ^  ^  ^
@@ -439,8 +439,8 @@ This program is equivalent to using "4sq" and piping it into
 numbers to and from strings, and it doesn't involve a pipe.
 
 The following are equivalent:
-$ step-progression1 1 50000  >/tmp/dump1
-$ gen_progression --type=step-progression1 --filter 5 1 50000  >/tmp/dump2
+$ step-progression-1 1 50000  >/tmp/dump1
+$ gen_progression --type=step-progression-1 --filter 5 1 50000  >/tmp/dump2
 $ diff /tmp/dump1 /tmp/dump2
 $
 
@@ -502,7 +502,7 @@ How do you use all this?
 
 
 You do something like:
-$ step-progression1 1 36893488147419103232 > data &
+$ step-progression-1 1 36893488147419103232 > data &
 (The big number is 2^65.  It's okay that it's not a perfect square.)
 
 Then while it's running you can check it by doing this:
@@ -571,18 +571,18 @@ $ sq-seq 1000000000 | find-3sq-progressions 100000 | uniq > data
 Running out of cpu cycles?  Parallelize it with GNU Parallel.
 
 If you have a 32 core system you can do something like this:
-$ sq-seq 1 1237940039285380274899124224 | parallel -j32 'echo {} | step-progression1 --squares=- 1 1237940039285380274899124224' > data
+$ sq-seq 1 1237940039285380274899124224 | parallel -j32 'echo {} | step-progression-1 --squares=- 1 1237940039285380274899124224' > data
 
 (The big number is 2^90)
 
 With the right configuration, you can even parallelize over remote machines.
 
-$ sq-seq 1 1237940039285380274899124224 | parallel -S 32/: -S 4/192.168.0.1 -S 4/192.168.0.2 'echo {} | step-progression1 --squares=- 1 1237940039285380274899124224' > data
+$ sq-seq 1 1237940039285380274899124224 | parallel -S 32/: -S 4/192.168.0.1 -S 4/192.168.0.2 'echo {} | step-progression-1 --squares=- 1 1237940039285380274899124224' > data
 
 This does 32 cores locally and 4 remotely at servers 192.168.0.1, and
 192.168.0.2.  (ssh must be configured to be able to login without passwords)
 
-This runs the step-progression1 program once for every line that
+This runs the step-progression-1 program once for every line that
 "sq-seq 1 1237940039285380274899124224" generates.
 
 A performance increase can be gained by:
@@ -613,7 +613,7 @@ connections, as well as starting up and tearing down program executions.
 It has a drawback of the output data not being flushed to 'data' immediately.
 
 One more example to illustrate where a beginner might go wrong:
-$ step-progression1 1 1000 | head -n1 | display-square 
+$ step-progression-1 1 1000 | head -n1 | display-square 
                     435
 +-----+-----+-----+
 | 1^2 | 5^2 | 7^2 | 75
@@ -628,7 +628,7 @@ $ step-progression1 1 1000 | head -n1 | display-square
 through the "auto-transform-square" program.  Also, "display-square" will
 show the row and column sums when the square isn't a magic square.
 
-$ step-progression1 1 1000 | head -n1 | auto-transform-square | display-square 
+$ step-progression-1 1 1000 | head -n1 | auto-transform-square | display-square 
 +----+----+----+
 | 5^2| 241|13^2|
 +----+----+----+
@@ -640,17 +640,17 @@ $ step-progression1 1 1000 | head -n1 | auto-transform-square | display-square
 How long do these programs take to run?
 (times are in seconds)
                                 1 mil    10 mil
-step-progression1               0.344     3.865
-step-progression2              61.806  2004.184
-step-progression3               9.934   317.211
-step-progression4              48.073  1605.358
-reverse-step-progression1       0.358     3.844
-fulcrum-progression1            0.385     3.973
-fulcrum-progression2           62.021  1973.596
-fulcrum-progression3            0.558     6.364
-fulcrum-progression4            0.324     3.281
-fulcrum-progression5           47.827  1612.199
-reverse-fulcrum-progression1    0.384     4.179
+step-progression-1               0.344     3.865
+step-progression-2              61.806  2004.184
+step-progression-3               9.934   317.211
+step-progression-4              48.073  1605.358
+reverse-step-progression-1       0.358     3.844
+fulcrum-progression-1            0.385     3.973
+fulcrum-progression-2           62.021  1973.596
+fulcrum-progression-3            0.558     6.364
+fulcrum-progression-4            0.324     3.281
+fulcrum-progression-5           47.827  1612.199
+reverse-fulcrum-progression-1    0.384     4.179
 
 
 How do I build these programs?

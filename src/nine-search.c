@@ -143,7 +143,7 @@ calculate_middle_square (mpz_t c)
     }
 }
 
-static void
+static int
 fill_in (mpz_t s[3][3], mpz_t a, mpz_t b, mpz_t c)
 {
   mpz_t absum, abdiff;
@@ -151,6 +151,11 @@ fill_in (mpz_t s[3][3], mpz_t a, mpz_t b, mpz_t c)
   mpz_add (absum, a, b);
   mpz_sub (abdiff, a, b);
   mpz_sub (s[0][0], c, b);
+  if (!mpz_perfect_square_p (s[0][0]))
+    {
+      mpz_clears (absum, abdiff, NULL);
+      return 0;
+    }
   mpz_sub (s[0][0], c, b);
   mpz_add (s[2][2], c, b);
   mpz_add (s[0][1], c, absum);
@@ -158,6 +163,7 @@ fill_in (mpz_t s[3][3], mpz_t a, mpz_t b, mpz_t c)
   mpz_add (s[1][2], c, abdiff);
   mpz_sub (s[2][1], c, absum);
   mpz_clears (absum, abdiff, NULL);
+  return 1;
 }
 
 static void
@@ -167,7 +173,7 @@ generate_square (mpz_t c, mpz_t a, mpz_t s[3][3], FILE *out)
   mpz_inits (b, NULL);
   mpz_set (s[1][1], c);
   mpz_add (s[2][0], c, a);
-  for (unsigned long long j = 1; j < 100; j++)
+  for (unsigned long long j = 1; j < 10000; j+=1)
     {
       mpz_t h;
       mpz_init (h);
@@ -178,7 +184,7 @@ generate_square (mpz_t c, mpz_t a, mpz_t s[3][3], FILE *out)
       mpz_sub (a, s[2][0], c);
       mpz_sub (s[0][2], c, a);
 
-      for (unsigned long long i = 1; i < 100; i++)
+      for (unsigned long long i = 1; i < 10000; i+=1)
         {
           mpz_init (h);
           mpz_add (h, c, a);
@@ -188,17 +194,18 @@ generate_square (mpz_t c, mpz_t a, mpz_t s[3][3], FILE *out)
           mpz_sub (b, h, c);
           mpz_sub (b, b, a);
           mpz_clear (h);
-          fill_in (s, a, b, c);
-          display_square_record (s, out);
+          if (fill_in (s, a, b, c))
+            display_square_record (s, out);
         }
     }
   mpz_clears (b, NULL);
 }
 
+#define MAX 10
 static void
 nine_search (FILE *out)
 {
-  mpz_t sqs[8], a, c;
+  mpz_t sqs[MAX], a, c;
   mpz_t s[3][3];
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
@@ -212,12 +219,10 @@ nine_search (FILE *out)
       fprintf (out, "Using a center square value of:\n%s\n", buf);
     }
     */
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < MAX; i++)
     mpz_init (sqs[i]);
 
   mpz_set_str (sqs[0], "1141038727000515012471639230946556542452519793198975538605757840922089881600", 10);
-  //mpz_set_str (sqs[0], "1301969376514955827350056968602881708416749345672067025360683326640113771587666155193469956405902674008804368055378079990024552377993237749102018560000", 10);
-  //mpz_set_str (sqs[0], "80565869936317943405011564868041307925877071120461853796097043311951210848117230199832578560000", 10);
 
   mpz_set_str (sqs[1], "382131560986433622039381065319357552636758868499956978538986759782400", 10);
   mpz_set_str (sqs[2], "2953084635046000403178814795705439251046325551366400", 10);
@@ -225,15 +230,17 @@ nine_search (FILE *out)
   mpz_set_str (sqs[4], "82030128751277788977189299880706645862397931982400", 10);
   mpz_set_str (sqs[5], "20507532187819447244297324970176661465599482995600", 10);
   mpz_set_str (sqs[6], "283841275955978508571589272943621611980615681600", 10);
+  mpz_set_str (sqs[7], "1301969376514955827350056968602881708416749345672067025360683326640113771587666155193469956405902674008804368055378079990024552377993237749102018560000", 10);
+  mpz_set_str (sqs[8], "80565869936317943405011564868041307925877071120461853796097043311951210848117230199832578560000", 10);
 
-  mpz_set (sqs[7], c);
+  mpz_set (sqs[MAX-1], c);
 
   mpz_set_str (a, "54342291404080490827096080", 10);
 
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < MAX; i++)
     generate_square (sqs[i], a, s, out);
 
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < MAX; i++)
     mpz_clear (sqs[i]);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)

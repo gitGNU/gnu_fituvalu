@@ -500,7 +500,7 @@ nine_progression_t
 nine_progressions[] = 
 {
     {
-      "step-progression1", FWD_PROGRESSION_1,
+      "step-progression-1", FWD_PROGRESSION_1,
       four_square_to_nine_number_step_progression1,
       count_squares_in_step_progression1,
       "|-----+--+--+-------+--+--+-------+--+--+------|\n"
@@ -508,7 +508,7 @@ nine_progressions[] =
       "      1  2  3       4                           \n"
     },
     {
-      "step-progression2", FWD_PROGRESSION_2,
+      "step-progression-2", FWD_PROGRESSION_2,
       four_square_to_nine_number_step_progression2,
       count_squares_in_step_progression2,
       "|-----+--+--+-------+--+--+-------+--+--+------|\n"
@@ -516,7 +516,7 @@ nine_progressions[] =
       "         1  2       3  4                        \n"
     },
     {
-      "step-progression3", FWD_PROGRESSION_4,
+      "step-progression-3", FWD_PROGRESSION_4,
       four_square_to_nine_number_step_progression3,
       count_squares_in_step_progression3,
       "|------+--+--+-------+--+--+------+--+--+-----|\n"
@@ -524,15 +524,15 @@ nine_progressions[] =
       "       1     2       3     4                   \n"
     },
     {
-      "step-progression4", FWD_PROGRESSION_6,
+      "step-progression-4", FWD_PROGRESSION_6,
       four_square_to_nine_number_step_progression4,
       count_squares_in_step_progression4,
-      "|----+--*--*--------*--+--*--------*--*--+----|\n"
+      "|----+--+--+--------+--+--+--------+--+--+----|\n"
       "        ^  ^        ^     ^                    \n"
       "        1  2        3     4                    \n"
     },
     {
-      "reverse-step-progression1", REV_PROGRESSION_1,
+      "reverse-step-progression-1", REV_PROGRESSION_1,
       four_square_to_nine_number_reverse_step_progression1,
       count_squares_in_reverse_step_progression1,
       "|-----+--+--+-------+--+--+-------+--+--+------|\n"
@@ -540,7 +540,7 @@ nine_progressions[] =
       "                          4       3  2  1       \n"
     },
     {
-      "fulcrum-progression1", FWD_PROGRESSION_3,
+      "fulcrum-progression-1", FWD_PROGRESSION_3,
       four_square_to_nine_number_fulcrum_progression1,
       count_squares_in_fulcrum_progression1,
       "|-+--------+--+-----+--+--+-----+--+--------+--|\n"
@@ -548,7 +548,7 @@ nine_progressions[] =
       "  1        2  3     4                           \n"
     },
     {
-      "fulcrum-progression2", FWD_PROGRESSION_2,
+      "fulcrum-progression-2", FWD_PROGRESSION_2,
       four_square_to_nine_number_fulcrum_progression2,
       count_squares_in_fulcrum_progression2,
       "|-+--------+--+-----+--+--+-----+--+--------+--|\n"
@@ -556,7 +556,7 @@ nine_progressions[] =
       "           1  2     3  4                        \n"
     },
     {
-      "fulcrum-progression3", FWD_PROGRESSION_1,
+      "fulcrum-progression-3", FWD_PROGRESSION_1,
       four_square_to_nine_number_fulcrum_progression3,
       count_squares_in_fulcrum_progression3,
       "|-+--------+--+-----+--+--+-----+--+--------+--|\n"
@@ -564,7 +564,7 @@ nine_progressions[] =
       "                    1  2  3     4               \n"
     },
     {
-      "fulcrum-progression4", FWD_PROGRESSION_5,
+      "fulcrum-progression-4", FWD_PROGRESSION_5,
       four_square_to_nine_number_fulcrum_progression4,
       count_squares_in_fulcrum_progression4,
       "|--+--------+--+-----+--+--+-----+--+--------+-|\n"
@@ -572,7 +572,7 @@ nine_progressions[] =
       "   1        2        3     4                    \n"
     },
     {
-      "fulcrum-progression5", FWD_PROGRESSION_6,
+      "fulcrum-progression-5", FWD_PROGRESSION_6,
       four_square_to_nine_number_fulcrum_progression5,
       count_squares_in_fulcrum_progression5,
       "|--+--------+-+-------+-+-+-------+-+--------+-|\n"
@@ -580,7 +580,7 @@ nine_progressions[] =
       "            1 2       3   4                     \n"
     },
     {
-      "reverse-fulcrum-progression1", REV_PROGRESSION_1,
+      "reverse-fulcrum-progression-1", REV_PROGRESSION_1,
       four_square_to_nine_number_reverse_fulcrum_progression1,
       count_squares_in_reverse_fulcrum_progression1,
       "|-+--------+--+-----+--+--+-----+--+--------+--|\n"

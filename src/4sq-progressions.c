@@ -1058,52 +1058,52 @@ optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
 four_square_progression_t
 four_square_progressions[] = 
 {
-    { FWD_PROGRESSION_1, "fwd-progression1", fwd_4sq_progression1,
+    { FWD_PROGRESSION_1, "fwd-progression-1", fwd_4sq_progression1,
       "|--------+--+--+-------+--------|\n"
       "         ^  ^  ^       ^\n"
       "         1  2  3       4\n"
     },
-    { FWD_PROGRESSION_2, "fwd-progression2", fwd_4sq_progression2,
+    { FWD_PROGRESSION_2, "fwd-progression-2", fwd_4sq_progression2,
       "|--------+--+-------+--+--------|\n"
       "         ^  ^       ^  ^\n"
       "         1  2       3  4\n"
     },
-    { FWD_PROGRESSION_3, "fwd-progression3", fwd_4sq_progression3,
+    { FWD_PROGRESSION_3, "fwd-progression-3", fwd_4sq_progression3,
       "|------+--------+--+-----+------|\n"
       "       ^        ^  ^     ^\n"
       "       1        2  3     4\n"
     },
-    { FWD_PROGRESSION_4, "fwd-progression4", fwd_4sq_progression4,
+    { FWD_PROGRESSION_4, "fwd-progression-4", fwd_4sq_progression4,
       "|-----+--------+--+-----+-----|\n"
       "      ^        ^  ^     ^\n"
       "      1        2  3     4\n"
     },
-    { FWD_PROGRESSION_5, "fwd-progression5", fwd_4sq_progression5,
+    { FWD_PROGRESSION_5, "fwd-progression-5", fwd_4sq_progression5,
       "|--+--------+--+-----+--+--+----|\n"
       "   ^        ^        ^     ^\n"
       "   1        2        3     4\n"
     },
-    { FWD_PROGRESSION_6, "fwd-progression6", fwd_4sq_progression6,
+    { FWD_PROGRESSION_6, "fwd-progression-6", fwd_4sq_progression6,
       "|-------+-+---+-+-+-------------|\n"
       "        ^ ^   ^   ^\n"
       "        1 2   3   4\n"
     },
-    { REV_PROGRESSION_1, "rev-progression1", rev_4sq_progression1,
+    { REV_PROGRESSION_1, "rev-progression-1", rev_4sq_progression1,
       "|--------+-------+--+--+--------|\n"
       "         ^       ^  ^  ^\n"
       "         4       3  2  1\n"
     },
-    { FWD_PROGRESSION_1, "opti-fwd-prog1", optimized_fwd_4sq_progression1,
+    { FWD_PROGRESSION_1, "opti-fwd-prog-1", optimized_fwd_4sq_progression1,
       "|--------+--+--+-------+--------|\n"
       "         ^  ^  ^       ^\n"
       "         1  2  3       4\n"
     },
-    { FWD_PROGRESSION_3, "opti-fwd-prog3", optimized_fwd_4sq_progression3,
+    { FWD_PROGRESSION_3, "opti-fwd-prog-3", optimized_fwd_4sq_progression3,
       "|------+--------+--+-----+------|\n"
       "       ^        ^  ^     ^\n"
       "       1        2  3     4\n"
     },
-    { REV_PROGRESSION_1, "opti-rev-prog1", optimized_rev_4sq_progression1,
+    { REV_PROGRESSION_1, "opti-rev-prog-1", optimized_rev_4sq_progression1,
       "|--------+-------+--+--+--------|\n"
       "         ^       ^  ^  ^\n"
       "         4       3  2  1\n"

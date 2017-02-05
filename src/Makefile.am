@@ -13,17 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 bin_PROGRAMS = \
-	     small-step-progression1 step-progression1 \
-             small-step-progression2 step-progression2 \
-	     small-step-progression3 step-progression3 \
-	     small-step-progression4 step-progression4 \
-	     small-reverse-step-progression1 reverse-step-progression1 \
-	     small-fulcrum-progression1 fulcrum-progression1 \
-	     small-fulcrum-progression2 fulcrum-progression2 \
-	     small-fulcrum-progression3 fulcrum-progression3 \
-	     small-fulcrum-progression4 fulcrum-progression4 \
-	     small-fulcrum-progression5 fulcrum-progression5 \
-	     small-reverse-fulcrum-progression1 reverse-fulcrum-progression1 \
+	     small-step-progression-1 step-progression-1 \
+             small-step-progression-2 step-progression-2 \
+	     small-step-progression-3 step-progression-3 \
+	     small-step-progression-4 step-progression-4 \
+	     small-reverse-step-progression-1 reverse-step-progression-1 \
+	     small-fulcrum-progression-1 fulcrum-progression-1 \
+	     small-fulcrum-progression-2 fulcrum-progression-2 \
+	     small-fulcrum-progression-3 fulcrum-progression-3 \
+	     small-fulcrum-progression-4 fulcrum-progression-4 \
+	     small-fulcrum-progression-5 fulcrum-progression-5 \
+	     small-reverse-fulcrum-progression-1 reverse-fulcrum-progression-1 \
              \
 	     permute-square transform-square count-squares reduce-square \
 	     rotate-square type-square sort-square number-square \
@@ -50,71 +50,71 @@ noinst_LTLIBRARIES = libmagicsquareutil.la
 
 bin_SCRIPTS = auto-transform-square uniq-squares
 
-small_step_progression1_SOURCES = small-step-progression1.c
-small_step_progression1_LDADD = -lm libmagicsquareutil.la
+small_step_progression_1_SOURCES = small-step-progression-1.c
+small_step_progression_1_LDADD = -lm libmagicsquareutil.la
 
-step_progression1_SOURCES = step-progression1.c
-step_progression1_LDADD = -lm libmagicsquareutil.la
+step_progression_1_SOURCES = step-progression-1.c
+step_progression_1_LDADD = -lm libmagicsquareutil.la
 
-small_step_progression2_SOURCES = small-step-progression2.c
-small_step_progression2_LDADD = -lm libmagicsquareutil.la
+small_step_progression_2_SOURCES = small-step-progression-2.c
+small_step_progression_2_LDADD = -lm libmagicsquareutil.la
 
-step_progression3_SOURCES = step-progression3.c
-step_progression3_LDADD = -lm libmagicsquareutil.la
+step_progression_3_SOURCES = step-progression-3.c
+step_progression_3_LDADD = -lm libmagicsquareutil.la
 
-small_step_progression3_SOURCES = small-step-progression3.c
-small_step_progression3_LDADD = -lm libmagicsquareutil.la
+small_step_progression_3_SOURCES = small-step-progression-3.c
+small_step_progression_3_LDADD = -lm libmagicsquareutil.la
 
-step_progression4_SOURCES = step-progression4.c
-step_progression4_LDADD = -lm libmagicsquareutil.la
+step_progression_4_SOURCES = step-progression-4.c
+step_progression_4_LDADD = -lm libmagicsquareutil.la
 
-small_step_progression4_SOURCES = small-step-progression4.c
-small_step_progression4_LDADD = -lm libmagicsquareutil.la
+small_step_progression_4_SOURCES = small-step-progression-4.c
+small_step_progression_4_LDADD = -lm libmagicsquareutil.la
 
-step_progression2_SOURCES = step-progression2.c
-step_progression2_LDADD = -lm libmagicsquareutil.la
+step_progression_2_SOURCES = step-progression-2.c
+step_progression_2_LDADD = -lm libmagicsquareutil.la
 
-small_reverse_step_progression1_SOURCES = small-reverse-step-progression1.c
-small_reverse_step_progression1_LDADD = -lm libmagicsquareutil.la
+small_reverse_step_progression_1_SOURCES = small-reverse-step-progression-1.c
+small_reverse_step_progression_1_LDADD = -lm libmagicsquareutil.la
 
-reverse_step_progression1_SOURCES = reverse-step-progression1.c
-reverse_step_progression1_LDADD = -lm libmagicsquareutil.la
+reverse_step_progression_1_SOURCES = reverse-step-progression-1.c
+reverse_step_progression_1_LDADD = -lm libmagicsquareutil.la
 
-small_fulcrum_progression1_SOURCES = small-fulcrum-progression1.c
-small_fulcrum_progression1_LDADD = -lm libmagicsquareutil.la
+small_fulcrum_progression_1_SOURCES = small-fulcrum-progression-1.c
+small_fulcrum_progression_1_LDADD = -lm libmagicsquareutil.la
 
-fulcrum_progression1_SOURCES = fulcrum-progression1.c
-fulcrum_progression1_LDADD = -lm libmagicsquareutil.la
+fulcrum_progression_1_SOURCES = fulcrum-progression-1.c
+fulcrum_progression_1_LDADD = -lm libmagicsquareutil.la
 
-small_fulcrum_progression2_SOURCES = small-fulcrum-progression2.c
-small_fulcrum_progression2_LDADD = -lm libmagicsquareutil.la
+small_fulcrum_progression_2_SOURCES = small-fulcrum-progression-2.c
+small_fulcrum_progression_2_LDADD = -lm libmagicsquareutil.la
 
-fulcrum_progression2_SOURCES = fulcrum-progression2.c
-fulcrum_progression2_LDADD = -lm libmagicsquareutil.la
+fulcrum_progression_2_SOURCES = fulcrum-progression-2.c
+fulcrum_progression_2_LDADD = -lm libmagicsquareutil.la
 
-small_fulcrum_progression3_SOURCES = small-fulcrum-progression3.c
-small_fulcrum_progression3_LDADD = -lm libmagicsquareutil.la
+small_fulcrum_progression_3_SOURCES = small-fulcrum-progression-3.c
+small_fulcrum_progression_3_LDADD = -lm libmagicsquareutil.la
 
-fulcrum_progression3_SOURCES = fulcrum-progression3.c
-fulcrum_progression3_LDADD = -lm libmagicsquareutil.la
+fulcrum_progression_3_SOURCES = fulcrum-progression-3.c
+fulcrum_progression_3_LDADD = -lm libmagicsquareutil.la
 
-small_fulcrum_progression4_SOURCES = small-fulcrum-progression4.c
-small_fulcrum_progression4_LDADD = -lm libmagicsquareutil.la
+small_fulcrum_progression_4_SOURCES = small-fulcrum-progression-4.c
+small_fulcrum_progression_4_LDADD = -lm libmagicsquareutil.la
 
-fulcrum_progression4_SOURCES = fulcrum-progression4.c
-fulcrum_progression4_LDADD = -lm libmagicsquareutil.la
+fulcrum_progression_4_SOURCES = fulcrum-progression-4.c
+fulcrum_progression_4_LDADD = -lm libmagicsquareutil.la
 
-small_fulcrum_progression5_SOURCES = small-fulcrum-progression5.c
-small_fulcrum_progression5_LDADD = -lm libmagicsquareutil.la
+small_fulcrum_progression_5_SOURCES = small-fulcrum-progression-5.c
+small_fulcrum_progression_5_LDADD = -lm libmagicsquareutil.la
 
-fulcrum_progression5_SOURCES = fulcrum-progression5.c
-fulcrum_progression5_LDADD = -lm libmagicsquareutil.la
+fulcrum_progression_5_SOURCES = fulcrum-progression-5.c
+fulcrum_progression_5_LDADD = -lm libmagicsquareutil.la
 
-small_reverse_fulcrum_progression1_SOURCES = small-reverse-fulcrum-progression1.c
-small_reverse_fulcrum_progression1_LDADD = -lm libmagicsquareutil.la
+small_reverse_fulcrum_progression_1_SOURCES = small-reverse-fulcrum-progression-1.c
+small_reverse_fulcrum_progression_1_LDADD = -lm libmagicsquareutil.la
 
-reverse_fulcrum_progression1_SOURCES = reverse-fulcrum-progression1.c
-reverse_fulcrum_progression1_LDADD = -lm libmagicsquareutil.la
+reverse_fulcrum_progression_1_SOURCES = reverse-fulcrum-progression-1.c
+reverse_fulcrum_progression_1_LDADD = -lm libmagicsquareutil.la
 
 permute_square_SOURCES = permute-square.c
 permute_square_LDADD = -lm libmagicsquareutil.la

@@ -9,10 +9,10 @@
 #here is what we expect
 expected=`mktemp $builddir/fituvalu.XXXXXX`
 bindir=$builddir/../src
-$bindir/small-step-progression1 1 100000 >$expected
+$bindir/small-step-progression-1 1 100000 >$expected
 
 #generating our results
-$bindir/sq-seq --out-binary 1 100000 | $bindir/4sq --in-binary --out-binary --type=fwd-progression1 100000 | $bindir/complete-4sq-progression --in-binary --type=step-progression1 -f 5
+$bindir/sq-seq --out-binary 1 100000 | $bindir/4sq --in-binary --out-binary --type=fwd-progression-1 100000 | $bindir/complete-4sq-progression --in-binary --type=step-progression-1 -f 5
 
 #0027.log is simultaneously created as this script runs.
 diff -uNrd $expected $builddir/0027.log

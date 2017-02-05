@@ -9,10 +9,10 @@
 #here is what we expect
 expected=`mktemp $builddir/fituvalu.XXXXXX`
 bindir=$builddir/../src
-$bindir/small-reverse-step-progression1 1 100000 >$expected
+$bindir/small-reverse-step-progression-1 1 100000 >$expected
 
 #generating our results
-$bindir/gen-progression --type=reverse-step-progression1 -4 opti-rev-prog1 -f 5 1 100000
+$bindir/gen-progression --type=reverse-step-progression-1 -4 opti-rev-prog-1 -f 5 1 100000
 
 #0024.log is simultaneously created as this script runs.
 diff -uNrd $expected $builddir/0024.log
