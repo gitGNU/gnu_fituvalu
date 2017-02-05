@@ -17,12 +17,15 @@
 #include <stdlib.h>
 #include <math.h>
 #include <argp.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <string.h>
 #include <gmp.h>
 #include "magicsquareutil.h"
 
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 
+FILE *infile;
 int in_binary;
 int filter_num_squares;
 int num_args;
@@ -168,10 +171,20 @@ morgenstern_search_type_6 (FILE *in, FILE *out)
   mpz_inits (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
              yx1dif, yx1sum, yx2dif, yx2sum,
              NULL);
-  if (in_binary)
-    morgenstern_search_from_binary (max, in, search_type_6, out);
+  if (!infile)
+    {
+      if (in_binary)
+        morgenstern_search_from_binary (max, in, search_type_6, out);
+      else
+        morgenstern_search (max, in, search_type_6, out);
+    }
   else
-    morgenstern_search (max, in, search_type_6, out);
+    {
+      if (in_binary)
+        morgenstern_search_dual_binary (in, infile, search_type_6, out);
+      else
+        morgenstern_search_dual (in, infile, search_type_6, out);
+    }
   mpz_clears (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
               yx1dif, yx1sum, yx2dif, yx2sum, NULL);
   for (int i = 0; i < 3; i++)
@@ -209,7 +222,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
         argp_error (state, "too many arguments");
       else
         {
-          mpz_init_set_str (max, arg, 10);
+          if (access (arg, R_OK) == 0)
+            infile = fopen (arg, "r");
+          else
+            mpz_init_set_str (max, arg, 10);
           num_args++;
         }
       break;
@@ -222,7 +238,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-struct argp argp ={options, parse_opt, "MAX", "Generate 3x3 magic squares with 5 perfect squares or more by creating two arithmetic progressions of three perfect squares with the smallest value in common.\vThe standard input provides the parametric \"MN\" values -- two values per record to assist in the transformation.  Use the \"seq-morgenstern-mn\" program to provide this data on the standard input.  Morgenstern type 6 squares have 5 perfect squares in this configuration:\n\
+struct argp argp ={options, parse_opt, "MAX\nFILE", "Generate 3x3 magic squares with 5 perfect squares or more by creating two arithmetic progressions of three perfect squares with the smallest value in common.\vThe standard input provides the parametric \"MN\" values -- two values per record to assist in the transformation.  Use the \"seq-morgenstern-mn\" program to provide this data on the standard input.  Morgenstern type 6 squares have 5 perfect squares in this configuration:\n\
 +-------+-------+-------+\n\
 |  A^2  |  B^2  |       |\n\
 +-------+-------+-------+\n\

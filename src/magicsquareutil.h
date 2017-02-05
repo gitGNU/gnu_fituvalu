@@ -131,4 +131,6 @@ void reduce_three_square_progression (mpz_t *progression);
 int binary_read_three_numbers_from_stream (FILE *stream, mpz_t (*a)[3], char **line, size_t *len);
 int read_three_numbers_from_stream (FILE *stream, mpz_t (*a)[3], char **line, size_t *len);
 void display_binary_three_record (mpz_t *progression, FILE *out);
+void morgenstern_search_dual (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
+void morgenstern_search_dual_binary (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
 #endif

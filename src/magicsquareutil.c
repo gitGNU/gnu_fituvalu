@@ -828,3 +828,103 @@ reduce_three_square_progression (mpz_t *progression)
     }
   mpz_clear (gcd);
 }
+
+static void
+_dual_inner (FILE *in, mpz_t m, mpz_t n, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+{
+  ssize_t read;
+  char *line = NULL;
+  size_t len = 0;
+  mpz_t r, s;
+  mpz_inits (r, s, NULL);
+  while (1)
+    {
+      read = getdelim (&line, &len, ',', in);
+      if (read == -1)
+        break;
+      char *comma = strchr (line, ',');
+      if (comma)
+        *comma = '\0';
+      mpz_set_str (r, line, 10);
+      read = getline (&line, &len, in);
+      if (read == -1)
+        break;
+      mpz_set_str (s, line, 10);
+      search (m, n, r, s, out);
+    }
+  mpz_clears (r, s, NULL);
+  if (line)
+    free (line);
+}
+
+void
+morgenstern_search_dual (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+{
+  //in2 is rewindable, in1 is not.
+  ssize_t read;
+  char *line = NULL;
+  size_t len = 0;
+  mpz_t m, n;
+  mpz_inits (m, n, NULL);
+  while (1)
+    {
+      read = getdelim (&line, &len, ',', in1);
+      if (read == -1)
+        break;
+      char *comma = strchr (line, ',');
+      if (comma)
+        *comma = '\0';
+      mpz_set_str (m, line, 10);
+      read = getline (&line, &len, in1);
+      if (read == -1)
+        break;
+      mpz_set_str (n, line, 10);
+      rewind (in2);
+      _dual_inner (in2, m, n, search, out);
+    }
+  mpz_clears (m, n, NULL);
+  if (line)
+    free (line);
+  return;
+}
+
+static void
+_dual_binary_inner (FILE *in, mpz_t m, mpz_t n, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+{
+  ssize_t read;
+  mpz_t r, s;
+  mpz_inits (r, s, NULL);
+  while (1)
+    {
+      read = mpz_inp_raw (r, in);
+      if (!read)
+        break;
+      read = mpz_inp_raw (s, in);
+      if (!read)
+        break;
+      search (m, n, r, s, out);
+    }
+  mpz_clears (r, s, NULL);
+  return;
+}
+
+void
+morgenstern_search_dual_binary (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+{
+  ssize_t read;
+  mpz_t m, n;
+  mpz_inits (m, n, NULL);
+  while (1)
+    {
+      read = mpz_inp_raw (m, in1);
+      if (!read)
+        break;
+      read = mpz_inp_raw (n, in1);
+      if (!read)
+        break;
+      rewind (in2);
+      _dual_binary_inner (in2, m, n, search, out);
+    }
+  mpz_clears (m, n, NULL);
+  return;
+}
