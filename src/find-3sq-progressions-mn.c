@@ -23,6 +23,7 @@
 
 mpz_t x1, _y1, z1, m12, n12, yx1dif, yx1sum;
 
+int do_filter;
 int showroot = 1;
 int in_binary;
 void (*display_record) (mpz_t *, mpz_t*, FILE *out) = display_three_record_with_root;
@@ -63,6 +64,40 @@ create_three_square_progression (mpz_t m, mpz_t n, mpz_t *vec, int size, mpz_t *
 }
 
 static int
+filter (mpz_t *vec, int size)
+{
+  int divisors[] = {
+    29,
+    37,
+    41,
+    48,
+    53,
+    61,
+    72,
+    120,
+    168,
+    264,
+    312,
+    408,
+    456,
+    552,
+    744,
+    1032,
+    1128,
+    1608,
+    0};
+  int *i;
+  i = divisors;
+  while (*i != 0)
+    {
+      if (!mpz_divisible_ui_p (vec[1], *i))
+        return 0;
+      i++;
+    }
+  return 1;
+}
+
+static int
 gen_3sq (FILE *in, FILE *out)
 {
   ssize_t read;
@@ -85,7 +120,14 @@ gen_3sq (FILE *in, FILE *out)
         break;
       mpz_set_str (n, line, 10);
       create_three_square_progression (m, n, vec, 3, &finalroot);
-      display_record (vec, &finalroot, out);
+
+      if (do_filter)
+        {
+          if (filter (vec, 3))
+            display_record (vec, &finalroot, out);
+        }
+      else
+        display_record (vec, &finalroot, out);
     }
   mpz_clears (m, n, vec[0], vec[1], vec[2], finalroot, NULL);
   mpz_clears (x1, _y1, z1, m12, n12, yx1dif, yx1sum, NULL);
@@ -123,6 +165,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'f':
+      do_filter = 1;
+      break;
     case 'n':
       showroot = 0;
       break;
@@ -142,6 +187,7 @@ options[] =
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "no-root", 'n', 0, 0, "Don't show the root of the fourth number"},
+  { "filter", 'f', 0, OPTION_HIDDEN, "look for an AP with certain divisors"},
   { 0 }
 };
 
