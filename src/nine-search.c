@@ -151,12 +151,6 @@ fill_in (mpz_t s[3][3], mpz_t a, mpz_t b, mpz_t c)
   mpz_add (absum, a, b);
   mpz_sub (abdiff, a, b);
   mpz_sub (s[0][0], c, b);
-  if (!mpz_perfect_square_p (s[0][0]))
-    {
-      mpz_clears (absum, abdiff, NULL);
-      return 0;
-    }
-  mpz_sub (s[0][0], c, b);
   mpz_add (s[2][2], c, b);
   mpz_add (s[0][1], c, absum);
   mpz_sub (s[1][0], c, abdiff);
@@ -171,9 +165,10 @@ generate_square (mpz_t c, mpz_t a, mpz_t s[3][3], FILE *out)
 {
   mpz_t b;
   mpz_inits (b, NULL);
+  mpz_sqrt (a, a);
   mpz_set (s[1][1], c);
   mpz_add (s[2][0], c, a);
-  for (unsigned long long j = 1; j < 10000; j+=1)
+  for (unsigned long long j = 1; j < 100; j+=1)
     {
       mpz_t h;
       mpz_init (h);
@@ -184,7 +179,7 @@ generate_square (mpz_t c, mpz_t a, mpz_t s[3][3], FILE *out)
       mpz_sub (a, s[2][0], c);
       mpz_sub (s[0][2], c, a);
 
-      for (unsigned long long i = 1; i < 10000; i+=1)
+      for (unsigned long long i = 1; i < 100; i+=1)
         {
           mpz_init (h);
           mpz_add (h, c, a);
@@ -199,6 +194,34 @@ generate_square (mpz_t c, mpz_t a, mpz_t s[3][3], FILE *out)
         }
     }
   mpz_clears (b, NULL);
+}
+
+static void generate_progression (mpz_t num, FILE *out)
+{
+  mpz_t s, t, u, diff;
+  mpz_inits (s, t, u, diff, NULL);
+  mpz_set_str (s, "10000000000000000", 10);
+  mpz_sqrt (t, s);
+  while (1)
+    {
+      mpz_sub (diff, num, s);
+      mpz_add (u, diff, num);
+      if (mpz_perfect_square_p (u))
+        {
+          break;
+        }
+      mpz_cdiv_q_ui (diff, diff, 2);
+      mpz_sub (u, num, diff);
+      if (mpz_perfect_square_p (u))
+        {
+          break;
+        }
+      mpz_add (s, s, t);
+      mpz_add (s, s, t);
+      mpz_add_ui (s, s, 1);
+      mpz_add_ui (t, t, 1);
+    }
+  mpz_clears (s, t, u, diff);
 }
 
 #define MAX 10
@@ -238,7 +261,10 @@ nine_search (FILE *out)
   mpz_set_str (a, "54342291404080490827096080", 10);
 
   for (int i = 0; i < MAX; i++)
-    generate_square (sqs[i], a, s, out);
+  generate_progression (sqs[i], out);
+
+  //for (int i = 0; i < MAX; i++)
+    //generate_square (sqs[i], a, s, out);
 
   for (int i = 0; i < MAX; i++)
     mpz_clear (sqs[i]);
