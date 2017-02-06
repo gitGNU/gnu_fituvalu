@@ -351,6 +351,12 @@ Usage: sort-square [--prefix=NAME]
 Given a magic square, put it in a file called fives, sixes, sevens etc.
 according to how many perfect squares it contains.
 
+program: odd-square
+Usage: odd-square [--invert]
+
+Given a magic square, show it if it's comprised of odd numbers.
+The --invert option shows even instead of odd.
+
 program: number-square
 Usage: number-square [OPTION...]
 
