@@ -23,6 +23,7 @@
 
 mpz_t x1, _y1, z1, m12, n12, yx1dif, yx1sum;
 
+int show_diff;
 int showroot = 1;
 int in_binary;
 void (*display_record) (mpz_t *, mpz_t*, FILE *out) = display_three_record_with_root;
@@ -86,6 +87,21 @@ gen_3sq (FILE *in, FILE *out)
       mpz_set_str (n, line, 10);
       create_three_square_progression (m, n, vec, 3, &finalroot);
 
+      if (show_diff)
+        {
+          mpz_t diff;
+          mpz_init (diff);
+          mpz_sub (diff, vec[1], vec[0]);
+          if (display_record == display_binary_three_record_with_root)
+            mpz_out_raw (out, diff);
+          else
+            {
+              char buf[mpz_sizeinbase (diff, 10) + 2];
+              mpz_get_str (buf, 10, diff);
+              fprintf (out, "%s, ", buf);
+            }
+          mpz_clear (diff);
+        }
       display_record (vec, &finalroot, out);
     }
   mpz_clears (m, n, vec[0], vec[1], vec[2], finalroot, NULL);
@@ -124,6 +140,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'd':
+      show_diff = 1;
+      break;
     case 'n':
       showroot = 0;
       break;
@@ -143,6 +162,7 @@ options[] =
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "no-root", 'n', 0, 0, "Don't show the root of the fourth number"},
+  { "show-diff", 'd', 0, 0, "Also show the diff"},
   { 0 }
 };
 

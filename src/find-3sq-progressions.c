@@ -26,6 +26,7 @@ unsigned long long incr = 1;
 unsigned long long max_tries;
 mpz_t x1, _y1, z1, m12, n12, yx1dif, yx1sum;
 
+int show_diff;
 int in_binary;
 void (*display_record) (mpz_t *, mpz_t*, FILE *out) = display_three_record_with_root;
 
@@ -68,6 +69,18 @@ create_three_square_progression (mpz_t m, mpz_t *vec, int size, mpz_t *finalroot
           mpz_set (vec[0], vec[2]);
           mpz_set (vec[2], vec[1]);
           mpz_set (vec[1], diff);
+          if (show_diff)
+            {
+              mpz_sub (diff, vec[1], vec[0]);
+              if (display_record == display_binary_three_record_with_root)
+                mpz_out_raw (out, diff);
+              else
+                {
+                  char buf[mpz_sizeinbase (diff, 10) + 2];
+                  mpz_get_str (buf, 10, diff);
+                  fprintf (out, "%s, ", buf);
+                }
+            }
           display_record (vec, finalroot, out);
         }
     }
@@ -120,6 +133,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
   char *end = NULL;
   switch (key)
     {
+    case 'd':
+      show_diff = 1;
+      break;
     case 'n':
       showroot = 0;
       break;
@@ -152,6 +168,7 @@ options[] =
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "increment", 'I', "NUM", 0, "Advance by NUM squares instead of 1"},
   { "no-root", 'n', 0, 0, "Don't show the root of the fourth number"},
+  { "show-diff", 'd', 0, 0, "Also show the diff"},
   { 0 }
 };
 
