@@ -23,6 +23,7 @@
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
 int invert;
+int mixed;
 
 static int
 check_func (mpz_t a)
@@ -36,17 +37,35 @@ check_func (mpz_t a)
 static int
 filter (mpz_t a[3][3])
 {
-  int found = 0;
-  for (int i = 0; i < 3; i++)
-    for (int j = 0; j < 3; j++)
-      {
-        if (!check_func (a[i][j]))
+  if (mixed)
+    {
+      int found = 0;
+      int result = check_func (a[0][0]);
+      for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
           {
-            found = 1;
-            break;
+            if (check_func (a[i][j]) != result)
+              {
+                found = 1;
+                break;
+              }
           }
-      }
-  return !found;
+      return found;
+    }
+  else
+    {
+      int found = 0;
+      for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+          {
+            if (!check_func (a[i][j]))
+              {
+                found = 1;
+                break;
+              }
+          }
+      return !found;
+    }
 }
 
 static int
@@ -85,7 +104,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
-    case 'v':
+    case 'm':
+      mixed = 1;
+      break;
+    case 'e':
       invert = 1;
       break;
     case 'i':
@@ -103,7 +125,8 @@ options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { "invert", 'v', 0, 0, "Show the squares that are all even"},
+  { "even", 'e', 0, 0, "Show the squares that are all even"},
+  { "mixed", 'm', 0, 0, "Show the squares comprised of even and odd"},
   { 0 }
 };
 
