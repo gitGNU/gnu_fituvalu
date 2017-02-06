@@ -166,7 +166,7 @@ morgenstern_search_type_1 (FILE *in, FILE *out)
   mpz_inits (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
              yx1dif, yx1sum, yx2dif, yx2sum,
              NULL);
-  small_morgenstern_symmetric_search (max, in, search_type_1, out);
+  small_morgenstern_search (max, in, search_type_1, out);
   mpz_clears (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
               yx1dif, yx1sum, yx2dif, yx2sum, NULL);
   for (int i = 0; i < 3; i++)

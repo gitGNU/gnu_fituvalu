@@ -174,9 +174,9 @@ morgenstern_search_type_4 (FILE *in, FILE *out)
   if (!infile)
     {
       if (in_binary)
-        morgenstern_symmetric_search_from_binary (max, in, search_type_4, out);
+        morgenstern_search_from_binary (max, in, search_type_4, out);
       else
-        morgenstern_symmetric_search (max, in, search_type_4, out);
+        morgenstern_search (max, in, search_type_4, out);
     }
   else
     {

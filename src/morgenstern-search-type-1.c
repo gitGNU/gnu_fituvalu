@@ -172,9 +172,9 @@ morgenstern_search_type_1 (FILE *in, FILE *out)
   if (!infile)
     {
       if (in_binary)
-        morgenstern_symmetric_search_from_binary (max, in, search_type_1, out);
+        morgenstern_search_from_binary (max, in, search_type_1, out);
       else
-        morgenstern_symmetric_search (max, in, search_type_1, out);
+        morgenstern_search (max, in, search_type_1, out);
     }
   else
     {
