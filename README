@@ -387,12 +387,14 @@ The --show-abc option displays the a, b, and c values that generate the
 magic square.
 
 program: progression-type-square
-Usage: progression-type-square [--filter=TYPE]
+Usage: progression-type-square [--filter=TYPE] [--show-def]
 
 Given a magic square on the standard input, determine which of the two
 progression types it is.  1 is to "step progression", and 2 is
 "fulcrum progression".  Using the --filter option, this program filters magic
-squares based on progression type.
+squares based on progression type.  The --show-def option shows the distances
+between the numbers.  For "step progression" squares, it shows 2 distances,
+and for "fulcrum progression" squares" it shows 3 distances.
 
 program: display-square
 Usage: display-square [--number-line] [--no-magic-number] [--show-sums] [--simple]
