@@ -183,7 +183,7 @@ binary_read_numbers_from_stream (FILE *stream, mpz_t (*a)[SIZE], char **line, si
 }
 
 int
-read_three_numbers_from_stream (FILE *stream, mpz_t (*a)[3], char **line, size_t *len)
+read_three_numbers_from_stream (FILE *stream, mpz_t *a, char **line, size_t *len)
 {
   int i;
   ssize_t read;
@@ -198,19 +198,56 @@ read_three_numbers_from_stream (FILE *stream, mpz_t (*a)[3], char **line, size_t
       char *end = strpbrk (*line, ",\n");
       if (end)
         *end = '\0';
-      mpz_set_str ((*a)[i], *line, 10);
+      mpz_set_str (a[i], *line, 10);
     }
   return read;
 }
 
 int
-binary_read_three_numbers_from_stream (FILE *stream, mpz_t (*a)[3], char **line, size_t *len)
+binary_read_three_numbers_from_stream (FILE *stream, mpz_t *a, char **line, size_t *len)
 {
   int i;
   ssize_t read;
   for (i = 0; i < 3; i++)
     {
-      read = mpz_inp_raw ((*a)[i], stream);
+      read = mpz_inp_raw (a[i], stream);
+      if (!read)
+        break;
+    }
+  if (!read)
+    read = -1;
+  return read;
+}
+
+int
+read_four_numbers_from_stream (FILE *stream, mpz_t *a, char **line, size_t *len)
+{
+  int i;
+  ssize_t read;
+  for (i = 0; i < 4; i++)
+    {
+      if (i == 4 - 1)
+        read = getline (line, len, stream);
+      else
+        read = getdelim (line, len, ',', stream);
+      if (read == -1)
+        break;
+      char *end = strpbrk (*line, ",\n");
+      if (end)
+        *end = '\0';
+      mpz_set_str (a[i], *line, 10);
+    }
+  return read;
+}
+
+int
+binary_read_four_numbers_from_stream (FILE *stream, mpz_t *a, char **line, size_t *len)
+{
+  int i;
+  ssize_t read;
+  for (i = 0; i < 4; i++)
+    {
+      read = mpz_inp_raw (a[i], stream);
       if (!read)
         break;
     }
