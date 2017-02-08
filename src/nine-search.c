@@ -198,30 +198,40 @@ generate_square (mpz_t c, mpz_t a, mpz_t s[3][3], FILE *out)
 
 static void generate_progression (mpz_t num, FILE *out)
 {
-  mpz_t s, t, u, diff;
-  mpz_inits (s, t, u, diff, NULL);
-  mpz_set_str (s, "10000000000000000", 10);
-  mpz_sqrt (t, s);
+  mpz_t root, i, j, diff;
+  mpz_inits (root, i, j, diff, NULL);
+  mpz_set (i, num);
+  mpz_sqrt (root, i);
+  mpz_mul (i, root, root);
   while (1)
     {
-      mpz_sub (diff, num, s);
-      mpz_add (u, diff, num);
-      if (mpz_perfect_square_p (u))
+      mpz_add (i, i, root);
+      mpz_add (i, i, root);
+      mpz_add_ui (i, i, 1);
+      mpz_add_ui (root, root, 1);
+
+      mpz_sub (diff, i, num);
+      mpz_sub (j, num, diff);
+      if (mpz_perfect_square_p (j))
         {
-          break;
+            {
+              char buf[mpz_sizeinbase (j, 10) + 2];
+              mpz_get_str (buf, 10, j);
+              fprintf (out, "%s, ", buf);
+            }
+            {
+              char buf[mpz_sizeinbase (num, 10) + 2];
+              mpz_get_str (buf, 10, num);
+              fprintf (out, "%s, ", buf);
+            }
+            {
+              char buf[mpz_sizeinbase (i, 10) + 2];
+              mpz_get_str (buf, 10, i);
+              fprintf (out, "%s\n", buf);
+            }
         }
-      mpz_cdiv_q_ui (diff, diff, 2);
-      mpz_sub (u, num, diff);
-      if (mpz_perfect_square_p (u))
-        {
-          break;
-        }
-      mpz_add (s, s, t);
-      mpz_add (s, s, t);
-      mpz_add_ui (s, s, 1);
-      mpz_add_ui (t, t, 1);
     }
-  mpz_clears (s, t, u, diff);
+  mpz_clears (root, i, j, diff, NULL);
 }
 
 #define MAX 10
@@ -260,8 +270,8 @@ nine_search (FILE *out)
 
   mpz_set_str (a, "54342291404080490827096080", 10);
 
-  for (int i = 0; i < MAX; i++)
-  generate_progression (sqs[i], out);
+  //for (int i = 0; i < MAX; i++)
+  generate_progression (sqs[MAX-1], out);
 
   //for (int i = 0; i < MAX; i++)
     //generate_square (sqs[i], a, s, out);
