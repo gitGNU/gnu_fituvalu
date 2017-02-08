@@ -16,10 +16,36 @@
 #include <stdlib.h>
 #include <math.h>
 #include <argp.h>
+#include <signal.h>
 #include <gmp.h>
 #include <stdbool.h>
 #include "magicsquareutil.h"
-struct argp argp ={0, 0, 0, "Search for a 3x3 magic square of 9 perfect squares.", 0};
+mpz_t sq, lastsq;
+
+static error_t
+parse_opt (int key, char *arg, struct argp_state *state)
+{
+  switch (key)
+    {
+    case 'c':
+      mpz_set_str (sq, arg, 10);
+      break;
+    case ARGP_KEY_INIT:
+      mpz_init (sq);
+      mpz_init (lastsq);
+      break;
+    }
+  return 0;
+}
+
+static struct argp_option
+options[] =
+{
+  { "continue", 'c', "NUM", OPTION_HIDDEN, "Continue at this square"},
+  { 0 }
+};
+
+struct argp argp ={options, parse_opt, 0, "Search for a 3x3 magic square of 9 perfect squares.", 0};
 
 static void
 calculate_middle_square (mpz_t c)
@@ -198,20 +224,22 @@ generate_square (mpz_t c, mpz_t a, mpz_t s[3][3], FILE *out)
 
 static void generate_progression (mpz_t num, FILE *out)
 {
-  mpz_t root, i, j, diff;
-  mpz_inits (root, i, j, diff, NULL);
-  mpz_set (i, num);
-  mpz_sqrt (root, i);
-  mpz_mul (i, root, root);
+  mpz_t root, j, diff;
+  mpz_inits (root, j, diff, NULL);
+  if (mpz_cmp_ui (sq, 0) == 0)
+    mpz_set (sq, num);
+  mpz_sqrt (root, sq);
+  mpz_mul (sq, root, root);
   while (1)
     {
-      mpz_add (i, i, root);
-      mpz_add (i, i, root);
-      mpz_add_ui (i, i, 1);
+      mpz_add (sq, sq, root);
+      mpz_add (sq, sq, root);
+      mpz_add_ui (sq, sq, 1);
       mpz_add_ui (root, root, 1);
 
-      mpz_sub (diff, i, num);
+      mpz_sub (diff, sq, num);
       mpz_sub (j, num, diff);
+      mpz_set (lastsq, sq);
       if (mpz_perfect_square_p (j))
         {
             {
@@ -225,13 +253,13 @@ static void generate_progression (mpz_t num, FILE *out)
               fprintf (out, "%s, ", buf);
             }
             {
-              char buf[mpz_sizeinbase (i, 10) + 2];
-              mpz_get_str (buf, 10, i);
+              char buf[mpz_sizeinbase (sq, 10) + 2];
+              mpz_get_str (buf, 10, sq);
               fprintf (out, "%s\n", buf);
             }
         }
     }
-  mpz_clears (root, i, j, diff, NULL);
+  mpz_clears (root, j, diff, NULL);
 }
 
 #define MAX 10
@@ -301,13 +329,22 @@ nine_search (FILE *out)
 
 }
 
+void intHandler(int dummy)
+{
+  char buf[mpz_sizeinbase (lastsq, 10) + 2];
+  mpz_get_str (buf, 10, lastsq);
+  fprintf (stdout, "\nStopped searching at square: %s\n", buf);
+  exit (1);
+}
+
 int
 main (int argc, char **argv)
 {
+  signal(SIGINT, intHandler);
   argp_parse (&argp, argc, argv, 0, 0, 0);
   nine_search (stdout);
 
   return 0;
 }
 
-//other squares that have the same set of divisors
+//left off at 70960318989100272747165303631984812881434916809
