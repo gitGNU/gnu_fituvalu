@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include "magicsquareutil.h"
 
+int show_def;
 int dump_progression;
 int num_filters;
 int *filter_types;
@@ -88,6 +89,31 @@ get_progression_type (mpz_t vec[], int size)
   for (int i = 1; i < size; i++)
     mpz_sub (diffs[i-1], progression[i], progression[i-1]);
 
+  if (show_def)
+    {
+      mpz_t v[3];
+      for (int i = 0; i < 3; i++)
+        mpz_init (v[i]);
+      if (is_step_progression (diffs, size - 1))
+        {
+          mpz_sub (v[0], progression[1], progression[0]);
+          mpz_sub (v[1], progression[3], progression[2]);
+          display_two_record (&v[0], &v[1], stdout);
+        }
+      else if (is_fulcrum_progression (diffs, size - 1))
+        {
+          mpz_sub (v[0], progression[1], progression[0]);
+          mpz_sub (v[1], progression[2], progression[1]);
+          mpz_sub (v[2], progression[3], progression[2]);
+          display_three_record (v, stdout);
+        }
+      for (int i = 0; i < 3; i++)
+        mpz_clear (v[i]);
+      for (int i = 0; i < size; i++)
+        mpz_clears (progression[i], diffs[i], NULL);
+      return -1;
+    }
+
   if (is_step_progression (diffs, size - 1))
     ret = 1;
   else if (is_fulcrum_progression (diffs, size - 1))
@@ -115,7 +141,7 @@ find_progression_type (FILE *in, FILE *out)
       if (read == -1)
         break;
       int progression_type = get_progression_type (vec, SIZE);
-      if (dump_progression)
+      if (dump_progression || show_def)
         continue;
       if (num_filters)
         {
@@ -143,6 +169,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 's':
+      show_def = 1;
+      break;
     case 'd':
       dump_progression = 1;
       break;
@@ -168,6 +197,7 @@ options[] =
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "filter", 'f', "TYPE", 0, "Only show magic squares that have this progression type"},
   { "dump-progression", 'd', 0, OPTION_HIDDEN, "Just display the progression"},
+  { "show-def", 's', 0, 0, "show the D1, E1 (and F1) values"},
   { 0 }
 };
 
