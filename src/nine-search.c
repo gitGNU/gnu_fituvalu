@@ -273,13 +273,11 @@ nine_search (FILE *out)
       mpz_init (s[i][j]);
   mpz_inits (a, c, NULL);
   calculate_middle_square (c);
-  /*
     {
       char buf[mpz_sizeinbase (c, 10) + 2];
       mpz_get_str (buf, 10, c);
       fprintf (out, "Using a center square value of:\n%s\n", buf);
     }
-    */
   for (int i = 0; i < MAX; i++)
     mpz_init (sqs[i]);
 
@@ -333,7 +331,7 @@ void intHandler(int dummy)
 {
   char buf[mpz_sizeinbase (lastsq, 10) + 2];
   mpz_get_str (buf, 10, lastsq);
-  fprintf (stdout, "\nStopped searching at square: %s\n", buf);
+  fprintf (stderr, "\nStopped searching at square: %s\n", buf);
   exit (1);
 }
 
@@ -347,4 +345,4 @@ main (int argc, char **argv)
   return 0;
 }
 
-//left off at 70960318989100272747165303631984812881434916809
+//left off at 70960318989105125267256960782058383622289540521
