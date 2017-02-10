@@ -224,38 +224,63 @@ generate_square (mpz_t c, mpz_t a, mpz_t s[3][3], FILE *out)
 
 static void generate_progression (mpz_t num, FILE *out)
 {
-  mpz_t root, nroot, j, diff;
-  mpz_inits (root, nroot, j, diff, NULL);
+  mpz_t root, nroot, j, r, s, prevr, diff;
+  mpz_inits (root, nroot, j, r, s, prevr, diff, NULL);
   if (mpz_cmp_ui (sq, 0) == 0)
     mpz_set (sq, num);
   mpz_sqrt (root, sq);
   mpz_mul (sq, root, root);
   int incr = 1;
-  mpz_mul_ui (nroot, root, incr);
+  /*
+   * go forward by 1 square at a time until we find one that is 1 mod 24
+   * then switch to every 4, and then then every 2
+   * if the one after us is zero, the next one is 2 away
+   */
+  int i = 1;
   while (1)
     {
-      mpz_add (sq, sq, nroot);
-      mpz_add (sq, sq, nroot);
-      mpz_add_ui (sq, sq, incr);
-      mpz_add_ui (root, root, incr);
-
-      if (incr == 1)
+      for (int k = 0; k < i; k++)
         {
-          if (!mpz_divisible_ui_p (sq, 24))
+          mpz_mul_ui (nroot, root, incr);
+          mpz_add (sq, sq, nroot);
+          mpz_add (sq, sq, nroot);
+          mpz_add_ui (sq, sq, incr);
+          mpz_add_ui (root, root, incr);
+        }
+
+      if (incr == 1 && i == 1)
+        {
+          mpz_set (prevr, r);
+          mpz_mod_ui (r, sq, 24);
+          if (mpz_cmp_ui (r, 1) != 0)
             continue;
           else
             {
               char buf[mpz_sizeinbase (sq, 10) + 2];
               mpz_get_str (buf, 10, sq);
-              fprintf(out, "found square %s is mod 24, now checking every 12th square.\n", buf);
-              incr = 12;
-              mpz_mul_ui (nroot, root, incr);
+              if (mpz_cmp_ui (prevr, 0) == 0 ||
+                  mpz_cmp_ui (prevr, 12) == 0)
+                {
+                  fprintf (out, "got %s as 1 mod 24, continuing by 4s and 2s\n", buf);
+                  i = 4;
+                }
+              else
+                {
+                  fprintf (out, "got %s as 1 mod 24, continuing by 2s and 4s\n", buf);
+                  i = 2;
+                }
             }
         }
+      else if (i == 2)
+        i = 4;
+      else if (i == 4)
+        i = 2;
+
       mpz_sub (diff, sq, num);
       mpz_sub (j, num, diff);
       mpz_set (lastsq, sq);
-      if (!mpz_divisible_ui_p (j, 24))
+      mpz_mod_ui (s, j, 24);
+      if (mpz_cmp_ui (s, 1) != 0)
         continue;
       if (mpz_perfect_square_p (j))
         {
@@ -276,7 +301,7 @@ static void generate_progression (mpz_t num, FILE *out)
             }
         }
     }
-  mpz_clears (root, j, nroot, diff, NULL);
+  mpz_clears (root, j, r, s, prevr, nroot, diff, NULL);
 }
 
 #define MAX 10
