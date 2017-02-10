@@ -20,6 +20,7 @@
 #include "magicsquareutil.h"
 
 int num_args;
+int brute;
 mpz_t max, min;
 
 void (*display_record)(mpz_t*, mpz_t*, FILE *) = display_two_record;
@@ -97,6 +98,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'b':
+      brute = 1;
+      break;
     case 'o':
       display_record = display_binary_two_record;
       break;
@@ -133,15 +137,35 @@ static struct argp_option
 options[] =
 {
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "brute", 'b', 0, OPTION_HIDDEN, ""},
   { 0 }
 };
 struct argp argp ={options, parse_opt, "MAX\nMIN MAX", "Compute an MN list.\vThe output of this program is suitable for input into the \"morgenstern-search-type-*\" programs, as well as \"3sq\".  This sequence of numbers has the form:\nM > N > 0, where M and N are coprime, and with one number being even, and the other number being odd." , 0};
+
+static int
+morgenstern_brute (FILE *out, char *start)
+{
+  mpz_t i;
+  mpz_init_set_str (i, start, 10);
+  for (; ; mpz_add_ui (i, i, 2))
+    {
+      char buf[mpz_sizeinbase (i, 10) + 2];
+      mpz_get_str (buf, 10, i);
+      fprintf (out, "%s, %d\n", buf, 1);
+    }
+  mpz_clear (i);
+  return 0;
+}
 
 int
 main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  int ret = morgenstern_seq (stdout);
+  int ret = 0;
+  if (brute)
+    ret = morgenstern_brute (stdout, "54342291404080490827096080");
+  else
+    ret = morgenstern_seq (stdout);
   return ret;
 }
