@@ -23,12 +23,15 @@
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
 int invert;
+int doubly_even;
 int mixed;
 
 static int
 check_func (mpz_t a)
 {
-  if (invert)
+  if (doubly_even)
+    return mpz_divisible_ui_p (a, 4);
+  else if (invert)
     return mpz_even_p (a);
   else
     return mpz_odd_p (a);
@@ -110,6 +113,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'e':
       invert = 1;
       break;
+    case 'E':
+      doubly_even = 1;
+      break;
     case 'i':
       read_square = binary_read_square_from_stream;
       break;
@@ -126,6 +132,7 @@ options[] =
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "even", 'e', 0, 0, "Show the squares that are all even"},
+  { "doubly-even", 'E', 0, 0, "Show the squares that are divisible by 4"},
   { "mixed", 'm', 0, 0, "Show the squares comprised of even and odd"},
   { 0 }
 };

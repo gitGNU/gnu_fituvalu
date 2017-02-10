@@ -352,10 +352,12 @@ Given a magic square, put it in a file called fives, sixes, sevens etc.
 according to how many perfect squares it contains.
 
 program: odd-square
-Usage: odd-square [--even]
+Usage: odd-square [--even] [--mixed] [--doubly-even]
 
 Given a magic square, show it if it's comprised of odd numbers.
-The --even option shows even instead of odd.
+The --even option shows even instead of odd, --doubly-even shows the squares
+where all the numbers are divisible by 4, and --mixed has both odd numbers
+and even numbers.
 
 program: number-square
 Usage: number-square [OPTION...]
