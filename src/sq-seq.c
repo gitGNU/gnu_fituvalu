@@ -54,14 +54,14 @@ sq_seq (mpz_t start, mpz_t finish, mpz_t incr, FILE *out)
 
   while (mpz_cmp (root, lastroot) < 0)
     {
-      mpz_mul (nroot, root, incr);
-      mpz_add (i, i, nroot);
-      mpz_add (i, i, nroot);
-      mpz_add (i, i, incr);
-
+      for (int j = 0; mpz_cmp_ui (incr, j) > 0; j++)
+        {
+          mpz_add (i, i, root);
+          mpz_add (i, i, root);
+          mpz_add_ui (i, i, 1);
+          mpz_add_ui (root, root, 1);
+        }
       dump_func (&i, out);
-
-      mpz_add (root, root, incr);
     }
   mpz_clears (i, root, nroot, lastroot, NULL);
   free (buf);
