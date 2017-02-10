@@ -23,6 +23,7 @@
 
 mpz_t x1, _y1, z1, m12, n12, yx1dif, yx1sum;
 
+int has_divisors;
 int show_diff;
 int showroot = 1;
 int in_binary;
@@ -64,6 +65,43 @@ create_three_square_progression (mpz_t m, mpz_t n, mpz_t *vec, int size, mpz_t *
 }
 
 static int
+divisor_filter (mpz_t *v)
+{
+  int divisors[] = {
+    29,
+    37,
+    41,
+    48,
+    53,
+    61,
+    72,
+    120,
+    168,
+    264,
+    312,
+    408,
+    456,
+    552,
+    744,
+    1032,
+    1128,
+    1608,
+    0};
+  int *i;
+  i = divisors;
+  while (*i != 0)
+    {
+      for (int j = 0; j < 3; j++)
+        {
+          if (!mpz_divisible_ui_p (v[j], *i))
+            return 0;
+        }
+      i++;
+    }
+  return 1;
+}
+
+static int
 gen_3sq (FILE *in, FILE *out)
 {
   ssize_t read;
@@ -87,6 +125,8 @@ gen_3sq (FILE *in, FILE *out)
       mpz_set_str (n, line, 10);
       create_three_square_progression (m, n, vec, 3, &finalroot);
 
+      if (has_divisors && !divisor_filter (vec))
+        continue;
       if (show_diff)
         {
           mpz_t diff;
@@ -140,6 +180,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'h':
+      has_divisors = 1;
+      break;
     case 'd':
       show_diff = 1;
       break;
@@ -163,6 +206,7 @@ options[] =
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "no-root", 'n', 0, 0, "Don't show the root of the fourth number"},
   { "show-diff", 'd', 0, 0, "Also show the diff"},
+  { "has-divisors", 'h', 0, OPTION_HIDDEN, ""},
   { 0 }
 };
 
