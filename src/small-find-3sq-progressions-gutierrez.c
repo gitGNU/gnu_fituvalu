@@ -68,7 +68,7 @@ gutierrez (FILE *out)
       delta2 = nc2 - nb2;
       //printf ("%d, %d, %d, %d, %d, %d, %d, %d\n", a, b, c, f, na, nb, nc, delta);
       if (delta1 == delta2)
-        printf ("%lld, %lld, %lld,\n", nc2, nb2, na2);
+        printf ("%lld, %lld, %lld, \n", nc2, nb2, na2);
       b += e;
       c += g;
     }
