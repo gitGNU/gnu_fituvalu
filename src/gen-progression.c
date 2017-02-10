@@ -126,24 +126,26 @@ generate_progression (FILE *out)
   else
     func = extend_and_display_progression;
   void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
-  mpz_t root, nroot, i;
-  mpz_inits (root, nroot, i, NULL);
+  mpz_t root, i;
+  mpz_inits (root, i, NULL);
   mpz_set (i, start);
   mpz_sqrt (root, i);
   mpz_mul (i, root, root);
   progression (i, start, finish, incr, func, out);
   while (1)
     {
-      mpz_mul_ui (nroot, root, incr);
-      mpz_add (i, i, nroot);
-      mpz_add (i, i, nroot);
-      mpz_add_ui (i, i, incr);
+      for (int j = 0; j < incr; j++)
+        {
+          mpz_add (i, i, root);
+          mpz_add (i, i, root);
+          mpz_add_ui (i, i, 1);
+          mpz_add_ui (root, root, 1);
+        }
       if (mpz_cmp (i, finish) >= 0)
         break;
       progression (i, start, finish, incr, func, out);
-      mpz_add_ui (root, root, incr);
     }
-  mpz_clears (root, nroot, i, NULL);
+  mpz_clears (root, i, NULL);
 }
 
 static error_t

@@ -33,18 +33,20 @@ void (*display_record) (mpz_t *, mpz_t*, FILE *out) = display_three_record_with_
 static void
 create_three_square_progression (mpz_t m, mpz_t *vec, int size, mpz_t *finalroot, FILE *out)
 {
-  mpz_t root, nroot, diff;
-  mpz_inits (root, nroot, diff, NULL);
+  mpz_t root, diff;
+  mpz_inits (root, diff, NULL);
   mpz_sqrt (root, m);
   mpz_set (vec[0], m);
   mpz_set (vec[1], vec[0]);
   for (unsigned long long count = 0; count < max_tries; count++)
     {
-      mpz_mul_ui (nroot, root, incr);
-      mpz_add (vec[1], vec[1], nroot);
-      mpz_add (vec[1], vec[1], nroot);
-      mpz_add_ui (vec[1], vec[1], incr);
-      mpz_add_ui (root, root, incr);
+      for (int i = 0; i < incr; i++)
+        {
+          mpz_add (vec[1], vec[1], root);
+          mpz_add (vec[1], vec[1], root);
+          mpz_add_ui (vec[1], vec[1], 1);
+          mpz_add_ui (root, root, 1);
+        }
 
       mpz_sub (diff, vec[1], vec[0]);
       mpz_add (vec[2], vec[1], diff);
@@ -84,7 +86,7 @@ create_three_square_progression (mpz_t m, mpz_t *vec, int size, mpz_t *finalroot
           display_record (vec, finalroot, out);
         }
     }
-  mpz_clears (root, nroot, diff, NULL);
+  mpz_clears (root, diff, NULL);
 }
 
 static int

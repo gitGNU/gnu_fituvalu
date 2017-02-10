@@ -111,24 +111,26 @@ generate_4sq (FILE *out)
 {
   mpz_t i;
   mpz_init (i);
-  mpz_t root, nroot;
-  mpz_inits (root, nroot, NULL);
+  mpz_t root;
+  mpz_inits (root, NULL);
   mpz_sqrt (root, start);
   mpz_mul (i, root, root);
   func (i, start, finish, incr, display_squares, stdout);
   while (1)
     {
-      mpz_mul_ui (nroot, root, incr);
-      mpz_add (i, i, nroot);
-      mpz_add (i, i, nroot);
-      mpz_add_ui (i, i, incr);
+      for (int j = 0; j < incr; j++)
+        {
+          mpz_add (i, i, root);
+          mpz_add (i, i, root);
+          mpz_add_ui (i, i, 1);
+          mpz_add_ui (root, root, 1);
+        }
 
       if (mpz_cmp (i, finish) >= 0)
         break;
       func (i, start, finish, incr, display_squares, out);
-      mpz_add_ui (root, root, incr);
     }
-  mpz_clears (root, nroot, NULL);
+  mpz_clears (root, NULL);
   mpz_clear (i);
 }
 

@@ -29,18 +29,17 @@ unsigned long long max_tries;
 static void
 advance (mpz_t *vec, mpz_t root, FILE *out)
 {
-  mpz_t nroot;
-  mpz_init (nroot);
   for (unsigned long long i = 0; i < max_tries; i++)
     {
-      mpz_mul_ui (nroot, root, incr);
-      mpz_add (vec[3], vec[3], nroot);
-      mpz_add (vec[3], vec[3], nroot);
-      mpz_add_ui (vec[3], vec[3], incr);
+      for (int i = 0; i < incr; i++)
+        {
+          mpz_add (vec[3], vec[3], root);
+          mpz_add (vec[3], vec[3], root);
+          mpz_add_ui (vec[3], vec[3], 1);
+          mpz_add_ui (root, root, 1);
+        }
       display_record (vec, out);
-      mpz_add_ui (root, root, incr);
     }
-  mpz_clear (nroot);
 }
 
 static int

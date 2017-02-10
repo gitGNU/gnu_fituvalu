@@ -129,33 +129,25 @@ lookup_four_square_progression_by_kind (four_square_progression_enum_t kind)
 static void
 inc (mpz_t *j, mpz_t *jroot, unsigned long long incr)
 {
-  static int initd = 0;
-  static mpz_t nroot;
-  if (!initd)
+  for (int i = 0; i < incr; i++)
     {
-      mpz_init (nroot);
-      initd = 0;
+      mpz_add (*j, *j, *jroot);
+      mpz_add (*j, *j, *jroot);
+      mpz_add_ui (*j, *j, 1);
+      mpz_add_ui (*jroot, *jroot, 1);
     }
-  mpz_mul_ui (nroot, *jroot, incr);
-  mpz_add (*j, *j, nroot);
-  mpz_add (*j, *j, nroot);
-  mpz_add_ui (*j, *j, incr);
 }
 
 static void
 dec (mpz_t *j, mpz_t *jroot, unsigned long long incr)
 {
-  static int initd = 0;
-  static mpz_t nroot;
-  if (!initd)
+  for (int i = 0; i < incr; i++)
     {
-      mpz_init (nroot);
-      initd = 0;
+      mpz_sub_ui (*jroot, *jroot, 1);
+      mpz_sub (*j, *j, *jroot);
+      mpz_sub (*j, *j, *jroot);
+      mpz_sub_ui (*j, *j, 1);
     }
-  mpz_mul_ui (nroot, *jroot, incr);
-  mpz_sub (*j, *j, nroot);
-  mpz_sub (*j, *j, nroot);
-  mpz_sub_ui (*j, *j, incr);
 }
 
 void
@@ -190,7 +182,6 @@ fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
             {
               mpz_clear (next);
               mpz_clear (diff);
-              mpz_add_ui (jroot, jroot, incr);
               continue;
             }
           mpz_t kroot;
@@ -206,12 +197,10 @@ fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
               if (mpz_cmp_ui (amt, 0) > 0 && mpz_cmp (next, k) != 0)
                 func (progression, i, j, next, k, out);
               mpz_clear (amt);
-              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (next);
           mpz_clear (kroot);
         }
-      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
@@ -251,9 +240,8 @@ fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
           mpz_set (next, j);
           mpz_t kroot;
           mpz_init (kroot);
-          mpz_add_ui (kroot, jroot, incr);
+          mpz_set (kroot, jroot);
           inc (&next, &kroot, incr);
-          mpz_add_ui (kroot, kroot, incr);
           for (mpz_set (k, next); mpz_cmp (kroot, lastroot) < 0;)
             {
               inc (&k, &kroot, incr);
@@ -263,19 +251,16 @@ fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
               if (!mpz_perfect_square_p (fourth))
                 {
                   mpz_clears (amt, fourth, NULL);
-                  mpz_add_ui (kroot, kroot, incr);
                   continue;
                 }
               mpz_sub (amt, k, j);
               if (mpz_cmp_ui (amt, 0) > 0)
                 func (progression, i, j, k, fourth, out);
               mpz_clears (amt, fourth, NULL);
-              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (next);
           mpz_clear (kroot);
         }
-      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
@@ -315,7 +300,6 @@ fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
             {
               mpz_clear (next);
               mpz_clear (diff);
-              mpz_add_ui (jroot, jroot, incr);
               continue;
             }
           mpz_t kroot, lastkroot;
@@ -327,12 +311,10 @@ fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
               inc (&k, &kroot, incr);
               if (mpz_cmp (k, j) != 0)
                 func (progression, i, j, k, next, out);
-              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (next);
           mpz_clears (kroot, lastkroot, NULL);
         }
-      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
@@ -373,10 +355,7 @@ fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
       mpz_init (diff);
       mpz_sub (diff, j, i);
       if (!mpz_divisible_ui_p (diff, 24))
-        {
-          mpz_add_ui (jroot, jroot, incr);
-          continue;
-        }
+        continue;
       if (mpz_cmp_ui (diff, 0) > 0)
         {
           mpz_t kroot;
@@ -391,16 +370,13 @@ fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
               if (!mpz_perfect_square_p (next))
                 {
                   mpz_clear (next);
-                  mpz_add_ui (kroot, kroot, incr);
                   continue;
                 }
               func (progression, i, j, k, next, out);
               mpz_clear (next);
-              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (kroot);
         }
-      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clear (nexti);
@@ -440,7 +416,6 @@ fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
           mpz_add (next, j, diff);
           if (!mpz_perfect_square_p (next))
             {
-              mpz_add_ui (jroot, jroot, incr);
               mpz_clear (next);
               continue;
             }
@@ -459,18 +434,15 @@ fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
               if (mpz_odd_p (nextkdiff))
                 {
                   mpz_clear (nextkdiff);
-                  mpz_add_ui (kroot, kroot, incr);
                   continue;
                 }
               mpz_clear (nextkdiff);
               if (mpz_cmp (j, k) != 0)
                 func (progression, i, j, next, k, out);
-              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (next);
           mpz_clears (kroot, lastkroot, NULL);
         }
-      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
@@ -516,10 +488,7 @@ fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
               inc (&k, &kroot, incr);
               mpz_sub (diff, k, j);
               if (mpz_odd_p (diff))
-                {
-                  mpz_add_ui (kroot, kroot, incr);
-                  continue;
-                }
+                continue;
               mpz_t d1, next;
               mpz_inits (d1, next, NULL);
               mpz_cdiv_q_ui (d1, diff, 2);
@@ -528,17 +497,14 @@ fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
               if (!mpz_perfect_square_p (next))
                 {
                   mpz_clear (next);
-                  mpz_add_ui (kroot, kroot, incr);
                   continue;
                 }
               if (mpz_cmp (next, j) < 0)
                 func (progression, i, next, j, k, out);
               mpz_clear (next);
-              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (kroot);
         }
-      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
@@ -567,7 +533,6 @@ rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
   mpz_sqrt (jroot, i);
   for (mpz_set (j, i); mpz_cmp (jroot, lastroot) > 0;)
     {
-      mpz_sub_ui (jroot, jroot, incr);
       dec (&j, &jroot, incr);
       mpz_t diff;
       mpz_init (diff);
@@ -588,7 +553,6 @@ rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
           mpz_sqrt (kroot, next);
           for (mpz_set (k, next); mpz_cmp (kroot, lastroot) > 0;)
             {
-              mpz_sub_ui (kroot, kroot, incr);
               dec (&k, &kroot, incr);
               mpz_t amt;
               mpz_init (amt);
@@ -897,19 +861,13 @@ optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
       inc (&j, &jroot, incr);
       mpz_sub (diff, j, i);
       if (!mpz_divisible_ui_p (diff, 24))
-        {
-          mpz_add_ui (jroot, jroot, incr);
-          continue;
-        }
+        continue;
       if (mpz_cmp_ui (diff, 0) > 0)
         {
           mpz_add (next, j, diff);
           mpz_sqrtrem (kroot, nextrem, next);
           if (mpz_cmp_ui (nextrem, 0) != 0)
-            {
-              mpz_add_ui (jroot, jroot, incr);
-              continue;
-            }
+            continue;
 
           for (mpz_set (k, next); mpz_cmp (kroot, lastroot) < 0;)
             {
@@ -918,10 +876,8 @@ optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
               mpz_add (amt, amt, diff);
               if (mpz_cmp_ui (amt, 0) > 0 && mpz_cmp (next, k) != 0)
                 func (progression, i, j, next, k, out);
-              mpz_add_ui (kroot, kroot, incr);
             }
         }
-      mpz_add_ui (jroot, jroot, incr);
     }
   mpz_clears (progression[0], progression[1], progression[2],
               progression[3], progression[4], progression[5],
@@ -948,7 +904,6 @@ optimized_rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
   mpz_sqrt (jroot, i);
   for (mpz_set (j, i); mpz_cmp (jroot, lastroot) > 0;)
     {
-      mpz_sub_ui (jroot, jroot, incr);
       dec (&j, &jroot, incr);
       mpz_t diff;
       mpz_init (diff);
@@ -971,7 +926,6 @@ optimized_rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
           mpz_sqrt (kroot, next);
           for (mpz_set (k, next); mpz_cmp (kroot, lastroot) > 0;)
             {
-              mpz_sub_ui (kroot, kroot, incr);
               dec (&k, &kroot, incr);
               mpz_t amt;
               mpz_init (amt);
@@ -1016,10 +970,7 @@ optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
       mpz_init (diff);
       mpz_sub (diff, j, i);
       if (!mpz_divisible_ui_p (diff, 24))
-        {
-          mpz_add_ui (jroot, jroot, incr);
-          continue;
-        }
+        continue;
       if (mpz_cmp_ui (diff, 0) > 0)
         {
           mpz_t next;
@@ -1029,7 +980,6 @@ optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
             {
               mpz_clear (next);
               mpz_clear (diff);
-              mpz_add_ui (jroot, jroot, incr);
               continue;
             }
           mpz_t kroot, lastkroot;
@@ -1041,12 +991,10 @@ optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
               inc (&k, &kroot, incr);
               if (mpz_cmp (k, j) != 0)
                 func (progression, i, j, k, next, out);
-              mpz_add_ui (kroot, kroot, incr);
             }
           mpz_clear (next);
           mpz_clears (kroot, lastkroot, NULL);
         }
-      mpz_add_ui (jroot, jroot, incr);
       mpz_clear (diff);
     }
   mpz_clears (progression[0], progression[1], progression[2],
