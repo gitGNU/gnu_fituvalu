@@ -41,8 +41,8 @@ static int
 sq_seq (mpz_t start, mpz_t finish, mpz_t incr, FILE *out)
 {
   buf = malloc (mpz_sizeinbase (finish, 10) + 2);
-  mpz_t i, root, nroot, lastroot;
-  mpz_inits (i, root, nroot, lastroot, NULL);
+  mpz_t i, root, lastroot;
+  mpz_inits (i, root, lastroot, NULL);
   mpz_set (i, start);
   mpz_sqrt (root, i);
   if (mpz_cmp_ui (root, 0) == 0)
@@ -63,7 +63,7 @@ sq_seq (mpz_t start, mpz_t finish, mpz_t incr, FILE *out)
         }
       dump_func (&i, out);
     }
-  mpz_clears (i, root, nroot, lastroot, NULL);
+  mpz_clears (i, root, lastroot, NULL);
   free (buf);
   return 0;
 }
