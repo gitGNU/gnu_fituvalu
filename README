@@ -370,7 +370,7 @@ Given a set of 9 numbers on the standard input, check if it's a magic square.
 Only display it if it is.
 
 program: lucas-square
-Usage: lucas-square [--show-abc] [--in-binary] [--out-binary] [--inverse]
+Usage: lucas-square [--show-abc] [--in-binary] [--out-binary] [--inverse] [--from-abc]
 
 Given a 3x3 magic square on the standard input, only show it if it is in the
 Lucas family of squares.  The Lucas family has the following structure:
@@ -384,7 +384,8 @@ Lucas family of squares.  The Lucas family has the following structure:
 
 The --inverse option only shows squares that aren't in the Lucas family.
 The --show-abc option displays the a, b, and c values that generate the
-magic square.
+magic square.  The --from-abc option takes in a, b, and c values from the
+standard input and generates a 3x3 magic square.
 
 program: progression-type-square
 Usage: progression-type-square [--filter=TYPE] [--show-def]
