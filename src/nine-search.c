@@ -224,8 +224,8 @@ generate_square (mpz_t c, mpz_t a, mpz_t s[3][3], FILE *out)
 
 static void generate_progression (mpz_t num, FILE *out)
 {
-  mpz_t root, nroot, j, r, s, prevr, diff;
-  mpz_inits (root, nroot, j, r, s, prevr, diff, NULL);
+  mpz_t root, j, r, s, prevr, diff;
+  mpz_inits (root, j, r, s, prevr, diff, NULL);
   if (mpz_cmp_ui (sq, 0) == 0)
     mpz_set (sq, num);
   mpz_sqrt (root, sq);
@@ -242,9 +242,8 @@ static void generate_progression (mpz_t num, FILE *out)
     {
       for (int k = 0; k < i; k++)
         {
-          mpz_mul_ui (nroot, root, incr);
-          mpz_add (sq, sq, nroot);
-          mpz_add (sq, sq, nroot);
+          mpz_add (sq, sq, root);
+          mpz_add (sq, sq, root);
           mpz_add_ui (sq, sq, incr);
           mpz_add_ui (root, root, incr);
         }
@@ -307,7 +306,7 @@ static void generate_progression (mpz_t num, FILE *out)
             }
         }
     }
-  mpz_clears (root, j, r, s, prevr, nroot, diff, NULL);
+  mpz_clears (root, j, r, s, prevr, diff, NULL);
 }
 
 #define MAX 10
