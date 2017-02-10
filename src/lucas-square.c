@@ -22,8 +22,10 @@
 
 int invert;
 int show_abc;
+int from_abc;
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
+int (*read_numbers)(FILE *, mpz_t *, char **, size_t *) = read_three_numbers_from_stream;
 static int
 check_one_of_four (mpz_t num, mpz_t *others)
 {
@@ -121,7 +123,63 @@ lucas_square (FILE *in, FILE *out)
     }
 
   for (i = 0; i < 3; i++)
-      mpz_clear (abc[i]);
+    mpz_clear (abc[i]);
+
+  for (i = 0; i < 3; i++)
+    for (j = 0; j < 3; j++)
+      mpz_clear (a[i][j]);
+
+  if (line)
+    free (line);
+  return 0;
+}
+
+static void
+generate_lucas_square (mpz_t a[3][3], mpz_t *abc)
+{
+  mpz_t absum, abdif;
+  mpz_inits (absum, abdif, NULL);
+  mpz_add (absum, abc[0], abc[1]);
+  mpz_sub (abdif, abc[0], abc[1]);
+  mpz_set (a[1][1], abc[2]);
+  mpz_sub (a[0][0], abc[2], abc[1]);
+  mpz_add (a[0][1], abc[2], absum);
+  mpz_sub (a[0][2], abc[2], abc[0]);
+  mpz_sub (a[1][0], abc[2], abdif);
+  mpz_add (a[1][2], abc[2], abdif);
+  mpz_add (a[2][0], abc[2], abc[0]);
+  mpz_sub (a[2][1], abc[2], absum);
+  mpz_add (a[2][2], abc[2], abc[1]);
+  mpz_clears (absum, abdif, NULL);
+}
+
+static int
+generate_lucas_squares (FILE *in, FILE *out)
+{
+  char *line = NULL;
+  size_t len = 0;
+  ssize_t read;
+  mpz_t a[3][3];
+  mpz_t abc[3];
+
+  int i, j;
+  for (i = 0; i < 3; i++)
+    for (j = 0; j < 3; j++)
+      mpz_init (a[i][j]);
+
+  for (i = 0; i < 3; i++)
+    mpz_init (abc[i]);
+  while (1)
+    {
+      read = read_numbers (in, abc, &line, &len);
+      if (read == -1)
+        break;
+      generate_lucas_square (a, abc);
+      display_square (a, out);
+    }
+
+  for (i = 0; i < 3; i++)
+    mpz_clear (abc[i]);
 
   for (i = 0; i < 3; i++)
     for (j = 0; j < 3; j++)
@@ -139,6 +197,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     {
     case 'i':
       read_square = binary_read_square_from_stream;
+      read_numbers = binary_read_three_numbers_from_stream;
       break;
     case 'o':
       display_square = display_binary_square_record;
@@ -148,6 +207,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
     case 'v':
       invert = 1;
+      break;
+    case 'f':
+      from_abc = 1;
       break;
     }
   return 0;
@@ -160,6 +222,7 @@ options[] =
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "inverse", 'v', 0, 0, "Show the squares that are not in the lucas family"},
   { "show-abc", 'a', 0, 0, "Instead of the showing the square, show the A, B, and C values"},
+  { "from-abc", 'f', 0, 0, "Make a square from A, B, C values"},
   { 0 }
 };
 
@@ -178,5 +241,8 @@ main (int argc, char **argv)
 {
   argp_parse (&argp, argc, argv, 0, 0, 0);
   is_magic_square_init ();
-  return lucas_square (stdin, stdout);
+  if (from_abc)
+    generate_lucas_squares (stdin, stdout);
+  else
+    return lucas_square (stdin, stdout);
 }
