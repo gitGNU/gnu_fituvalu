@@ -236,6 +236,7 @@ static void generate_progression (mpz_t num, FILE *out)
    * then switch to every 4, and then then every 2
    * if the one after us is zero, the next one is 2 away
    */
+  mpz_set_si (r, -1);
   int i = 1;
   while (1)
     {
@@ -258,6 +259,11 @@ static void generate_progression (mpz_t num, FILE *out)
             {
               char buf[mpz_sizeinbase (sq, 10) + 2];
               mpz_get_str (buf, 10, sq);
+              if (mpz_cmp_si (prevr, -1) == 0)
+                {
+                  printf("crappers. we have some work to do here\n");
+                  break;
+                }
               if (mpz_cmp_ui (prevr, 0) == 0 ||
                   mpz_cmp_ui (prevr, 12) == 0)
                 {
