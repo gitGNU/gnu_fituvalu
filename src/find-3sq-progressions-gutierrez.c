@@ -79,7 +79,11 @@ gutierrez (FILE *out)
       mpz_sub (d, twob, oc);
       mpz_sub_ui (d, d, 1);
       mpz_mul_ui (d, d, 2);
-      mpz_fdiv_q (f, s, d);
+      if (mpz_cmp_ui (d, 0) < 0)
+        mpz_fdiv_q (f, s, d);
+      else
+        mpz_cdiv_q (f, s, d);
+      //printf("s is %d, d is %d\n", mpz_get_si (s), mpz_get_si (d));
       mpz_add (na, a, f);
       mpz_add (nb, b, f);
       mpz_add (nc, c, f);
@@ -88,6 +92,7 @@ gutierrez (FILE *out)
       mpz_mul (na2, na, na);
       mpz_sub (delta1, nb2, na2);
       mpz_sub (delta2, nc2, nb2);
+      //printf ("%d, %d, %d, %d, %d, %d, %d, %d, %d\n", mpz_get_si(a), mpz_get_si(b), mpz_get_si(c), mpz_get_si(f), mpz_get_si(na), mpz_get_si(nb), mpz_get_si(nc), mpz_get_si(delta1), mpz_get_si(delta2));
       if (mpz_cmp (delta1, delta2) == 0)
         {
           mpz_t root;
