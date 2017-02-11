@@ -98,6 +98,13 @@ gutierrez (FILE *out)
           mpz_init_set (progression[0], nc2);
           mpz_init_set (progression[1], nb2);
           mpz_init_set (progression[2], na2);
+          if (show_diff)
+            {
+              mpz_abs (delta1, delta1);
+              char buf[mpz_sizeinbase (delta1, 10) + 2];
+              mpz_get_str (buf, 10, delta1);
+              fprintf (out, "%s, ", buf);
+            }
           display_record (progression, &root, out);
           for (int i = 0; i < 3; i++)
             mpz_clear (progression[i]);
