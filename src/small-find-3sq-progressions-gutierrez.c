@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 int num_args;
-unsigned long long max, startc = 3, starte;
+long long max, startc = 3, starte;
 
 //from:
 //http://www.oddwheel.com/square_sequence%20tableGV.html
