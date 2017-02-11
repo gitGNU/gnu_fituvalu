@@ -43,12 +43,13 @@ bin_PROGRAMS = \
              \
 	     mine-3sq-progressions \
 	     find-3sq-progressions-mn find-3sq-progressions \
+	     small-find-3sq-progressions-gutierrez \
+	     find-3sq-progressions-gutierrez \
 	     complete-3sq-progression reduce-3sq-progression \
 	     nine-search 3sq-pair-search odd-square \
 	     \
-	     siamese-square \
-	     small-find-3sq-progressions-gutierrez \
-	     find-3sq-progressions-gutierrez
+	     siamese-square
+#gutierrez-square
 
 noinst_LTLIBRARIES = libmagicsquareutil.la
 
@@ -263,6 +264,9 @@ odd_square_LDADD = -lm libmagicsquareutil.la
 
 siamese_square_SOURCES = siamese-square.c
 siamese_square_LDADD = -lm libmagicsquareutil.la
+
+#gutierrez_square_SOURCES = gutierrez-square.c
+#gutierrez_square_LDADD = -lm libmagicsquareutil.la
 
 AM_CFLAGS=-Wall
 
