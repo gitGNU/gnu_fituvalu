@@ -24,7 +24,7 @@ int showroot = 1;
 int show_diff;
 int in_binary;
 void (*display_record) (mpz_t *, mpz_t*, FILE *out) = display_three_record_with_root;
-mpz_t max, startc, starte;
+mpz_t max, startc, starte, startb;
 
 //from:
 //http://www.oddwheel.com/square_sequence%20tableGV.html
@@ -42,7 +42,7 @@ gutierrez (FILE *out)
   mpz_inits (a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2, c2, na, nb, nc, delta1, delta2, na2, nb2, nc2, ob, oc, fourcfourbdiff, fourcfourbdiffen, onetwob2dif, onetwob2difc2sum, NULL);
 
   mpz_set_ui (a, 1);
-  mpz_set_ui (b, 1);
+  mpz_set (b, startb);
   mpz_set (c, startc);
 
   if (mpz_cmp_ui (starte, 0) == 0)
@@ -58,7 +58,8 @@ gutierrez (FILE *out)
   mpz_mul_ui (fourc, oc, 4);
   mpz_mul_ui (fourb, ob, 4);
   mpz_mul_ui (twob, ob, 2);
-  mpz_add (twob2, twob, twob);
+  mpz_mul (twob2, ob, ob);
+  mpz_mul_ui (twob2, twob2, 2);
   for (mpz_set_ui (n, 0); mpz_cmp (n, max) < 0; mpz_add_ui (n, n, 1))
     {
       mpz_mul (n2, n, n);
@@ -79,10 +80,23 @@ gutierrez (FILE *out)
       mpz_sub (d, twob, oc);
       mpz_sub_ui (d, d, 1);
       mpz_mul_ui (d, d, 2);
-      if (mpz_cmp_ui (d, 0) < 0)
-        mpz_fdiv_q (f, s, d);
+      //dogs breakfast starting here
+      if (mpz_cmp_ui (ob, 0) < 0)
+        {
+          if (mpz_cmp_ui (d, 0) < 0)
+            mpz_cdiv_q (f, s, d);
+          else
+            mpz_fdiv_q (f, s, d);
+        }
       else
-        mpz_cdiv_q (f, s, d);
+        {
+          if (mpz_cmp_ui (d, 0) < 0)
+            mpz_fdiv_q (f, s, d);
+          else
+            mpz_cdiv_q (f, s, d);
+        }
+      //and ending here.
+
       //printf("s is %d, d is %d\n", mpz_get_si (s), mpz_get_si (d));
       mpz_add (na, a, f);
       mpz_add (nb, b, f);
@@ -140,7 +154,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       display_record = display_binary_three_record_with_root;
       break;
     case ARGP_KEY_ARG:
-      if (num_args == 3)
+      if (num_args == 4)
         argp_error (state, "too many arguments");
       else
         {
@@ -150,9 +164,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
               mpz_set_str (max, arg, 10);
               break;
             case 1:
-              mpz_set_str (startc, arg, 10);
+              mpz_set_str (startb, arg, 10);
               break;
             case 2:
+              mpz_set_str (startc, arg, 10);
+              break;
+            case 3:
               mpz_set_str (starte, arg, 10);
               break;
             }
@@ -160,6 +177,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
         }
       break;
     case ARGP_KEY_INIT:
+      mpz_init_set_ui (startb, 1);
       mpz_init_set_ui (startc, 3);
       mpz_init (starte);
       mpz_init (max);

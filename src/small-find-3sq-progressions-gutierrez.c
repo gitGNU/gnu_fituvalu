@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 int num_args;
-long long max, startc = 3, starte;
+long long max, startc = 3, starte, startb = 1;
 
 //from:
 //http://www.oddwheel.com/square_sequence%20tableGV.html
@@ -35,11 +35,11 @@ gutierrez (FILE *out)
   long long na, nb, nc, delta1, delta2, na2, nb2, nc2;
   long long ob, oc;
   a = 1;
-  b = 1;
+  b = startb;
   c = startc;
 
   if (!starte)
-    e = c - b;
+    e = abs (c - b);
   else
     e = starte;
   g = 2 * e;
@@ -53,11 +53,13 @@ gutierrez (FILE *out)
       c2 = oc * oc;
       fourc = 4 * oc;
       fourb = 4 * ob;
-      twob = 2 * ob;
-      twob2 = twob + twob;
+      twob = ob + ob;
+      twob2 =  2 * ob * ob;
       s = (2 * e2 * n2) + (fourc - fourb) * en + (1 - twob2 + c2);
+      //printf("last part is %d\n", (1 - twob2 + c2));
       d = 2 * (twob - oc - 1);
       f = rintl ((long double)s / (long double)d);
+      //printf("s is %d, d is %d\n", s, d);
       na = a + f;
       nb = b + f;
       nc = c + f;
@@ -81,7 +83,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
   switch (key)
     {
     case ARGP_KEY_ARG:
-      if (num_args == 3)
+      if (num_args == 4)
         argp_error (state, "too many arguments");
       else
         {
@@ -92,9 +94,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
               max = strtoull (arg, &end, 10);
               break;
             case 1:
-              startc = strtoull (arg, &end, 10);
+              startb = strtoull (arg, &end, 10);
               break;
             case 2:
+              startc = strtoull (arg, &end, 10);
+              break;
+            case 3:
               starte = strtoull (arg, &end, 10);
               break;
             }
@@ -108,13 +113,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-struct argp argp ={NULL, parse_opt, "MAX [C [E]]", "Find an arithmetic progression consisting of three squares, and that is suitable to be the right diagonal of a 3x3 magic square.\vMAX is how many times we're going to try to make a progression in the sequence.  C is a prime number, and E is an even number over 3 and under C." , 0};
+struct argp argp ={NULL, parse_opt, "MAX [B [C [E]]]", "Find an arithmetic progression consisting of three squares, and that is suitable to be the right diagonal of a 3x3 magic square.\vMAX is how many times we're going to try to make a progression in the sequence.  C is a prime number, and E is an even number over 3 and under C." , 0};
 
 int
 main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  int ret = gutierrez (stdout);
+  int ret = 0;
+  ret = gutierrez (stdout);
   return ret;
 }

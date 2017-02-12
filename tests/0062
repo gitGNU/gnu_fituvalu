@@ -1,0 +1,37 @@
+#!/bin/bash
+# Copyright (C) 2017 Ben Asselstine
+# 
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
+
+#here is what we expect
+expected=`mktemp $builddir/fituvalu.XXXXXX`
+bindir=$builddir/../src
+cat << EOF | cut -f5,6,7 -d, | while IFS=, read col1 col2 col3; do r1=`echo "$col1 * $col1" | bc`; r2=`echo "$col2 * $col2" | bc`;r3=`echo "$col3 * $col3" | bc`; echo "$r3, $r2, $r1, " ; done > $expected
+1, 33, 1, -17, -16, 16, -16, 0
+1, 41, 17, -24, -23, 17, -7, -240
+1, 49, 33, -29, -28, 20, 4, -384
+1, 57, 49, -32, -31, 25, 17, -336
+1, 65, 65, -33, -32, 32, 32, 0
+1, 73, 81, -32, -31, 41, 49, 720
+1, 81, 97, -29, -28, 52, 68, 1920
+1, 89, 113, -24, -23, 65, 89, 3696
+1, 97, 129, -17, -16, 80, 112, 6144
+1, 105, 145, -8, -7, 97, 137, 9360
+1, 113, 161, 3, 4, 116, 164, 13440
+1, 121, 177, 16, 17, 137, 193, 18480
+1, 129, 193, 31, 32, 160, 224, 24576
+EOF
+
+#generating our results
+$bindir/find-3sq-progressions-gutierrez -n -- 13 33 1 8
+
+#0062.log is simultaneously created as this script runs.
+diff -uNrd $expected $builddir/0062.log
+retval=$?
+
+#cleanup
+rm $expected
+exit $retval
