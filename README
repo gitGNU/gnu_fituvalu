@@ -492,17 +492,36 @@ This program generates useful input for "complete-3sq-progression", and
 "3sq-pair-search".
 
 program: find-3sq-progressions-gutierrez
-Usage: find-3sq-progressions-gutierrez [--show-diff] [--in-binary] [--no-root] [--out-binary] MAX [C [E]]
+Usage: find-3sq-progressions-gutierrez [--show-diff] [--in-binary] [--no-root] [--out-binary] MAX [B [C [E]]]
 
 An implementation of an algorithm described by Eddie N. Gutierrez on
 www.oddwheel.com, for generating progressions of perfect squares.  These
 progressions are suitable for the diagonal line of a 3x3 magic square, as seen
-in Andrew Bremner's magic square of 7 squares.
-MAX is how many times the program will iterate its sequence of numbers forward.
-C is a prime number, and the default is 3.  E is an even number below C, the 
-default is 2.  I am unsure of how these parameters work together.  I know that
-C controls the distance of the numbers between each other.  E is still a
-mystery to me.
+in Andrew Bremner's magic square of 7 squares.  It seems that B and C are
+always prime numbers, and E is always even, but that's all I know.  MAX is how
+many times the program will iterate its sequence of numbers forward.
+Here are the values I've tested:
+  MAX   B   C  E
+  --- --- --- --
+  100   1  -3  2
+  100   1 -13 14
+  100   1 -17  6
+  100   1 -19 10
+  100   1 -79 20
+  100   1   3  2
+  100   1  11 10
+  100   1  17  4
+  100   1  19  6
+  100   1  57 28
+  100  -3   1  4
+  100  -7   1  8
+  100 -15   1  8
+  100 -17   1 18
+  100   3   1  2
+  100   9   1  4
+  100  33   1  8
+  100  65   1 16
+
 
 program: complete-3sq-progression
 Usage: complete-3sq-progression NUM [--increment=NUM]
