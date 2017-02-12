@@ -498,8 +498,9 @@ An implementation of an algorithm described by Eddie N. Gutierrez on
 www.oddwheel.com, for generating progressions of perfect squares.  These
 progressions are suitable for the diagonal line of a 3x3 magic square, as seen
 in Andrew Bremner's magic square of 7 squares.  It seems that B and C are
-always prime numbers, and E is always even, but that's all I know.  MAX is how
-many times the program will iterate its sequence of numbers forward.
+always prime numbers, and E is always even, but that's all I know.  When E is
+not specified, a faster algorithm is used.  MAX is how many times the program
+will iterate its sequence of numbers forward.
 Here are the values I've tested:
   MAX   B   C  E
   --- --- --- --
