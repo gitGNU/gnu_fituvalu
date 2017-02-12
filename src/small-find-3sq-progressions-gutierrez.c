@@ -77,6 +77,74 @@ gutierrez (FILE *out)
   return 0;
 }
 
+static int
+gutierrezk (FILE *out)
+{
+  long long a, b, c, k, m, d, s, f, na, nb, nc, delta1, delta2, j, e, g;
+
+  a = 1;
+  b = startb;
+  c = startc;
+
+  if (startc != 1 && startb != 1)
+    return 0;
+  else if (startc != 1)
+    {
+      k = startc;
+      // FIXME: there is a bug with startc being < 0 here
+      // every other row gets skipped/misaligned wrt delta1/delta2
+      m = (k - 1) / 2;
+      d = -4 * m;
+      j = (k-1) % 64;
+    }
+  else if (startb != 1)
+    {
+      k = startb;
+      m = k - 1;
+      d = 4 * m;
+      j = k % 64;
+    }
+  else
+    return 0;
+
+  switch (j)
+    {
+    case 1:
+    case 33:
+      e = d/16;
+      break;
+    case 9:
+    case 17:
+    case 25:
+    case 41:
+    case 49:
+    case 57:
+      e = d/8;
+      break;
+    default:
+      e = d/4;
+      break;
+    }
+  g = 2 * e;
+  for (long long i = 0; i < max; i++)
+    {
+      s = (a*a) + (b*b) + (c*c) - (3*b*b);
+      f = rintl ((long double)s / (long double)d);
+      na = a + f;
+      nb = b + f;
+      nc = c + f;
+      delta1 = (nb*nb) - (na*na);
+      delta2 = (nc*nc) - (nb*nb);
+
+      //printf ("%d, %d, %d, %d, %d, %d, %d, %d, %d\n", a, b, c, f, na, nb, nc, delta1, delta2);
+      if (delta1 == delta2)
+        fprintf (out, "%lld, %lld, %lld, \n", nc*nc, nb*nb, na*na);
+      b += e;
+      c += g;
+    }
+  return 0;
+}
+
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -121,6 +189,9 @@ main (int argc, char **argv)
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
   int ret = 0;
-  ret = gutierrez (stdout);
+  if (starte == 0 && (startb != 1 || startc != 1))
+    ret = gutierrezk (stdout);
+  else
+    ret = gutierrez (stdout);
   return ret;
 }

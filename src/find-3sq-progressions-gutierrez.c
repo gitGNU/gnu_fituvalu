@@ -136,6 +136,122 @@ gutierrez (FILE *out)
   return 0;
 }
 
+static int
+gutierrezk (FILE *out)
+{
+  mpz_t a, b, c, k, m, d, s, f, na, nb, nc, delta1, delta2, j, e, g, a2, b2, c2, threeb2, na2, nb2, nc2, n;
+  mpz_inits (a, b, c, k, m, d, s, f, na, nb, nc, delta1, delta2, j, e, g, a2, b2, c2, threeb2, na2, nb2, nc2, n, NULL);
+
+  mpz_set_ui (a, 1);
+  mpz_set (b, startb);
+  mpz_set (c, startc);
+
+  if (mpz_cmp_ui (startc, 1) != 0 &&
+      mpz_cmp_ui (startb, 1) != 0)
+    return 0;
+  else if (mpz_cmp_ui (startc, 1) != 0)
+    {
+      mpz_set (k, startc);
+      // FIXME: there is a bug with startc being < 0 here
+      // every other row gets skipped/misaligned wrt delta1/delta2
+      mpz_sub_ui (m, k, 1);
+      mpz_cdiv_q_ui (m, m, 2);
+      mpz_mul_si (d, m, -4);
+      mpz_sub_ui (j, k, 1);
+      mpz_mod_ui (j, j, 64);
+    }
+  else if (mpz_cmp_ui (startb, 1) != 0)
+    {
+      mpz_set (k, startb);
+      mpz_sub_ui (m, k, 1);
+      mpz_mul_ui (d, m, 4);
+      mpz_mod_ui (j, k, 64);
+    }
+  else
+    return 0;
+
+  switch (mpz_get_ui (j))
+    {
+    case 1:
+    case 33:
+      mpz_cdiv_q_ui (e, d, 16);
+      break;
+    case 9:
+    case 17:
+    case 25:
+    case 41:
+    case 49:
+    case 57:
+      mpz_cdiv_q_ui (e, d, 8);
+      break;
+    default:
+      mpz_cdiv_q_ui (e, d, 4);
+      break;
+    }
+  mpz_mul_ui (g, e, 2);
+  for (mpz_set_ui (n, 0); mpz_cmp (n, max) < 0; mpz_add_ui (n, n, 1))
+    {
+      mpz_mul (a2, a, a);
+      mpz_mul (b2, b, b);
+      mpz_mul (c2, c, c);
+      mpz_add (s, a2, b2);
+      mpz_add (s, s, c2);
+      mpz_mul_ui (threeb2, b2, 3);
+      mpz_sub (s, s, threeb2);
+      //s = (a*a) + (b*b) + (c*c) - (3*b*b);
+      if (mpz_cmp_ui (startb, 0) < 0)
+        {
+          if (mpz_cmp_ui (d, 0) < 0)
+            mpz_cdiv_q (f, s, d);
+          else
+            mpz_fdiv_q (f, s, d);
+        }
+      else
+        {
+          if (mpz_cmp_ui (d, 0) < 0)
+            mpz_fdiv_q (f, s, d);
+          else
+            mpz_cdiv_q (f, s, d);
+        }
+      mpz_add (na, a, f);
+      mpz_add (nb, b, f);
+      mpz_add (nc, c, f);
+      mpz_mul (na2, na, na);
+      mpz_mul (nb2, nb, nb);
+      mpz_mul (nc2, nc, nc);
+      mpz_sub (delta1, nb2, na2);
+      mpz_sub (delta2, nc2, nb2);
+
+      //printf ("%d, %d, %d, %d, %d, %d, %d, %d, %d\n", mpz_get_si(a), mpz_get_si(b), mpz_get_si(c), mpz_get_si(f), mpz_get_si(na), mpz_get_si(nb), mpz_get_si(nc), mpz_get_si(delta1), mpz_get_si(delta2));
+      if (mpz_cmp (delta1, delta2) == 0)
+        {
+          mpz_t root;
+          mpz_init (root);
+          if (showroot)
+            mpz_sqrt (root, na2);
+          mpz_t progression[3];
+          mpz_init_set (progression[0], nc2);
+          mpz_init_set (progression[1], nb2);
+          mpz_init_set (progression[2], na2);
+          if (show_diff)
+            {
+              mpz_abs (delta1, delta1);
+              char buf[mpz_sizeinbase (delta1, 10) + 2];
+              mpz_get_str (buf, 10, delta1);
+              fprintf (out, "%s, ", buf);
+            }
+          display_record (progression, &root, out);
+          for (int i = 0; i < 3; i++)
+            mpz_clear (progression[i]);
+          mpz_clear (root);
+        }
+      mpz_add (b, b, e);
+      mpz_add (c, c, g);
+    }
+  mpz_clears (a, b, c, k, m, d, s, f, na, nb, nc, delta1, delta2, j, e, g, a2, b2, c2, threeb2, na2, nb2, nc2, n, NULL);
+  return 0;
+}
+
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -206,6 +322,12 @@ main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  int ret = gutierrez (stdout);
+  int ret;
+  if (mpz_cmp_ui (starte, 0) == 0 && 
+      (mpz_cmp_ui (startb, 1) != 0 || 
+       mpz_cmp_ui (startc, 1) != 0))
+    ret = gutierrezk (stdout);
+  else
+    ret = gutierrez (stdout);
   return ret;
 }
