@@ -28,7 +28,7 @@ long long max, startc = 3, starte, startb = 1;
 //it looks like c must be a prime number
 //but getting an e value is more difficult
 //any even number over 3 and under c?
-static int
+int
 gutierrez (FILE *out)
 {
   long long a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2, c2;
@@ -125,6 +125,8 @@ gutierrezk (FILE *out)
       e = d/4;
       break;
     }
+  if (starte)
+    e = starte;
   g = 2 * e;
   for (long long i = 0; i < max; i++)
     {
@@ -188,10 +190,6 @@ main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  int ret = 0;
-  if (starte == 0 && (startb != 1 || startc != 1))
-    ret = gutierrezk (stdout);
-  else
-    ret = gutierrez (stdout);
+  int ret = gutierrezk (stdout);
   return ret;
 }

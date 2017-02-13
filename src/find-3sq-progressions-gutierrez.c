@@ -33,7 +33,7 @@ mpz_t max, startc, starte, startb;
 //it looks like c must be a prime number
 //but getting an e value is more difficult
 //any even number over 3 and under c?
-static int
+int
 gutierrez (FILE *out)
 {
   mpz_t a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2, c2;
@@ -188,6 +188,8 @@ gutierrezk (FILE *out)
       mpz_cdiv_q_ui (e, d, 4);
       break;
     }
+  if (mpz_cmp_ui (starte, 0) != 0)
+    mpz_set (e, starte);
   mpz_mul_ui (g, e, 2);
   for (mpz_set_ui (n, 0); mpz_cmp (n, max) < 0; mpz_add_ui (n, n, 1))
     {
@@ -322,12 +324,6 @@ main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  int ret;
-  if (mpz_cmp_ui (starte, 0) == 0 && 
-      (mpz_cmp_ui (startb, 1) != 0 || 
-       mpz_cmp_ui (startc, 1) != 0))
-    ret = gutierrezk (stdout);
-  else
-    ret = gutierrez (stdout);
+  int ret = gutierrezk (stdout);
   return ret;
 }
