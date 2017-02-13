@@ -410,6 +410,7 @@ display_three_record (mpz_t *progression, FILE *out)
       fprintf (out, ", ");
     }
   fprintf (out, "\n");
+  fflush (out);
 }
 
 void
@@ -421,6 +422,7 @@ display_four_record (mpz_t *progression, FILE *out)
       fprintf (out, ", ");
     }
   fprintf (out, "\n");
+  fflush (out);
 }
 
 void
@@ -444,13 +446,15 @@ display_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out)
       fprintf (out, ", ");
     }
   fprintf (out, "\n");
+  fflush (out);
 }
 
 void
 display_binary_three_record (mpz_t *progression, FILE *out)
 {
   for (int i = 0; i < 3; i++)
-      mpz_out_raw (out, progression[i]);
+    mpz_out_raw (out, progression[i]);
+  fflush (out);
 }
 
 void
@@ -460,6 +464,7 @@ display_binary_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *ou
       mpz_out_raw (out, progression[i]);
   if (mpz_cmp_ui (*root, 0) != 0)
     mpz_out_raw (out, *root);
+  fflush (out);
 }
 
 void
@@ -471,13 +476,15 @@ display_nine_record (mpz_t *progression, FILE *out)
       fprintf (out, ", ");
     }
   fprintf (out, "\n");
+  fflush (out);
 }
 
 void
 display_binary_two_record (mpz_t *one, mpz_t *two, FILE *out)
 {
-    mpz_out_raw (out, *one);
-    mpz_out_raw (out, *two);
+  mpz_out_raw (out, *one);
+  mpz_out_raw (out, *two);
+  fflush (out);
 }
 
 void
@@ -487,6 +494,7 @@ display_two_record (mpz_t *one, mpz_t *two, FILE *out)
   fprintf (out, ", ");
   dump_num (two, out);
   fprintf (out, "\n");
+  fflush (out);
 }
 
 void
@@ -494,6 +502,7 @@ display_binary_nine_record (mpz_t *progression, FILE *out)
 {
   for (int i = 0; i < 9; i++)
     mpz_out_raw (out, progression[i]);
+  fflush (out);
 }
 
 void
@@ -506,6 +515,7 @@ display_square_record (mpz_t s[3][3], FILE *out)
         fprintf (out, ", ");
       }
   fprintf (out, "\n");
+  fflush (out);
 }
 
 void
@@ -514,6 +524,7 @@ display_binary_square_record (mpz_t s[3][3], FILE *out)
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       mpz_out_raw (out, s[i][j]);
+  fflush (out);
 }
 
 static void
