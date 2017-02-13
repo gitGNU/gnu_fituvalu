@@ -139,9 +139,12 @@ gutierrez (FILE *out)
 static int
 gutierrezk (FILE *out)
 {
-  mpz_t a, b, c, k, m, d, s, f, na, nb, nc, delta1, delta2, j, e, g, a2, b2, c2, threeb2, na2, nb2, nc2, n;
-  mpz_inits (a, b, c, k, m, d, s, f, na, nb, nc, delta1, delta2, j, e, g, a2, b2, c2, threeb2, na2, nb2, nc2, n, NULL);
-
+  mpz_t a, b, c, k, m, d, s, f, na, nb, nc, delta1, delta2, j, e, g, a2, b2,
+        c2, threeb2, na2, nb2, nc2, n, root, progression[3];
+  mpz_inits (a, b, c, k, m, d, s, f, na, nb, nc, delta1, delta2, j, e, g, a2,
+             b2, c2, threeb2, na2, nb2, nc2, n, root, NULL);
+  for (int i = 0; i < 3; i++)
+    mpz_init (progression[i]);
   mpz_set_ui (a, 1);
   mpz_set (b, startb);
   mpz_set (c, startc);
@@ -227,14 +230,11 @@ gutierrezk (FILE *out)
       //printf ("%d, %d, %d, %d, %d, %d, %d, %d, %d\n", mpz_get_si(a), mpz_get_si(b), mpz_get_si(c), mpz_get_si(f), mpz_get_si(na), mpz_get_si(nb), mpz_get_si(nc), mpz_get_si(delta1), mpz_get_si(delta2));
       if (mpz_cmp (delta1, delta2) == 0)
         {
-          mpz_t root;
-          mpz_init (root);
           if (showroot)
             mpz_sqrt (root, na2);
-          mpz_t progression[3];
-          mpz_init_set (progression[0], nc2);
-          mpz_init_set (progression[1], nb2);
-          mpz_init_set (progression[2], na2);
+          mpz_set (progression[0], nc2);
+          mpz_set (progression[1], nb2);
+          mpz_set (progression[2], na2);
           if (show_diff)
             {
               mpz_abs (delta1, delta1);
@@ -243,14 +243,14 @@ gutierrezk (FILE *out)
               fprintf (out, "%s, ", buf);
             }
           display_record (progression, &root, out);
-          for (int i = 0; i < 3; i++)
-            mpz_clear (progression[i]);
-          mpz_clear (root);
         }
       mpz_add (b, b, e);
       mpz_add (c, c, g);
     }
-  mpz_clears (a, b, c, k, m, d, s, f, na, nb, nc, delta1, delta2, j, e, g, a2, b2, c2, threeb2, na2, nb2, nc2, n, NULL);
+  mpz_clears (a, b, c, k, m, d, s, f, na, nb, nc, delta1, delta2, j, e, g, a2,
+              b2, c2, threeb2, na2, nb2, nc2, n, root, NULL);
+  for (int i = 0; i < 3; i++)
+    mpz_clear (progression[i]);
   return 0;
 }
 
