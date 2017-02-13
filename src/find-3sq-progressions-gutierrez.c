@@ -317,7 +317,7 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "MAX [B [C [E][]", "Find an arithmetic progression consisting of three squares, and that is suitable to be the right diagonal of a 3x3 magic square.\vMAX is how many times we're going to try to make a progression in the sequence.  C is a prime number, and E is another step value." , 0};
+struct argp argp ={options, parse_opt, "MAX [B [C [E][]", "Find an arithmetic progression consisting of three squares, and that is suitable to be the right diagonal of a 3x3 magic square.\vMAX is how many times we're going to try to make a progression in the sequence.  Either B or C must be 1, and the other must be prime, and E is another step value." , 0};
 
 int
 main (int argc, char **argv)

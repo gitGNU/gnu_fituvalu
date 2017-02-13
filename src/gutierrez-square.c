@@ -234,7 +234,7 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "MAX [B [C [E]]]", "Generate a 3x3 magic square according to Eddie N. Gutierrez' algorithm outlined on www.oddwheel.com.\vMAX is how many times we're going to try to make a progression in the sequence.  Either B or C must be 1, the other must be prime." , 0};
+struct argp argp ={options, parse_opt, "MAX [B [C [E]]]", "Generate a 3x3 magic square according to Eddie N. Gutierrez' algorithm outlined on www.oddwheel.com.\vMAX is how many times we're going to try to make a progression in the sequence.  Either B or C must be 1, the other must be prime.  E is another step value." , 0};
 
 int
 main (int argc, char **argv)
