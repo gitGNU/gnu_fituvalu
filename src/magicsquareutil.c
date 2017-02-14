@@ -816,3 +816,17 @@ morgenstern_search_dual_binary (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz
   mpz_clears (m, n, NULL);
   return;
 }
+
+void
+display_textual_number (mpz_t *i, FILE *out)
+{
+  char buf[mpz_sizeinbase (*i, 10) + 2];
+  mpz_get_str (buf, 10, *i);
+  fprintf (out, "%s\n", buf);
+}
+
+void
+display_binary_number (mpz_t *i, FILE *out)
+{
+  mpz_out_raw (out, *i);
+}

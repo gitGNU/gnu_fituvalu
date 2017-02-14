@@ -130,4 +130,6 @@ int binary_read_four_numbers_from_stream (FILE *stream, mpz_t *a, char **line, s
 void display_binary_three_record (mpz_t *progression, FILE *out);
 void morgenstern_search_dual (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
 void morgenstern_search_dual_binary (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
+void display_textual_number (mpz_t *i, FILE *out);
+void display_binary_number (mpz_t *i, FILE *out);
 #endif

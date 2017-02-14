@@ -48,7 +48,7 @@ bin_PROGRAMS = \
 	     complete-3sq-progression reduce-3sq-progression \
 	     nine-search 3sq-pair-search odd-square \
 	     \
-	     siamese-square gutierrez-square
+	     siamese-square gutierrez-square check-divisors
 
 noinst_LTLIBRARIES = libmagicsquareutil.la
 
@@ -266,6 +266,9 @@ siamese_square_LDADD = -lm libmagicsquareutil.la
 
 gutierrez_square_SOURCES = gutierrez-square.c
 gutierrez_square_LDADD = -lm libmagicsquareutil.la
+
+check_divisors_SOURCES = check-divisors.c
+check_divisors_LDADD = -lm libmagicsquareutil.la
 
 AM_CFLAGS=-Wall
 
