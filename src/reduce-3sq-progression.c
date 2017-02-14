@@ -21,7 +21,7 @@
 #include "magicsquareutil.h"
 
 void (*display_tuple) (mpz_t s[3], FILE *out) = display_three_record;
-int (*read_tuple) (FILE *, mpz_t (*)[3], char **, size_t *) = read_three_numbers_from_stream;
+int (*read_tuple) (FILE *, mpz_t *, char **, size_t *) = read_three_numbers_from_stream;
 
 static int
 reduce (FILE *stream, FILE *out)
@@ -36,7 +36,7 @@ reduce (FILE *stream, FILE *out)
 
   while (1)
     {
-      read = read_tuple (stream, &a, &line, &len);
+      read = read_tuple (stream, a, &line, &len);
       if (read == -1)
         break;
       reduce_three_square_progression (a);

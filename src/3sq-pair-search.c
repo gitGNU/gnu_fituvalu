@@ -27,7 +27,7 @@ int num_args;
 int tries = 1;
 mpz_t advsq;
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
-int (*read_tuple) (FILE *, mpz_t (*)[3], char **, size_t *) = read_three_numbers_from_stream;
+int (*read_tuple) (FILE *, mpz_t *, char **, size_t *) = read_three_numbers_from_stream;
 
 mpz_t match[3];
 static void
@@ -259,14 +259,14 @@ pair_search (mpz_t *target, FILE *in, FILE *out)
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
-  mpz_t  b[3];
+  mpz_t b[3];
 
   for (int i = 0; i < 3; i++)
     mpz_init (b[i]);
 
   while (1)
     {
-      read = read_tuple (in, &b, &line, &len);
+      read = read_tuple (in, b, &line, &len);
       if (read == -1)
         break;
       converge_and_create (target, b, out);
@@ -287,13 +287,13 @@ _pair_search_file (mpz_t *a, FILE *out)
   size_t len = 0;
   ssize_t read;
   rewind (infile);
-  mpz_t  b[3];
+  mpz_t b[3];
   for (int i = 0; i < 3; i++)
     mpz_init (b[i]);
 
   while (1)
     {
-      read = read_tuple (infile, &b, &line, &len);
+      read = read_tuple (infile, b, &line, &len);
       if (read == -1)
         break;
       converge_and_create (a, b, out);
@@ -312,13 +312,13 @@ pair_search_file (FILE *in, FILE *out)
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
-  mpz_t  a[3];
+  mpz_t a[3];
   for (int i = 0; i < 3; i++)
     mpz_init (a[i]);
 
   while (1)
     {
-      read = read_tuple (in, &a, &line, &len);
+      read = read_tuple (in, a, &line, &len);
       if (read == -1)
         break;
       _pair_search_file (a, out);
