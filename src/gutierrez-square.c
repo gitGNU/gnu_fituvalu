@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include "magicsquareutil.h"
 
+int slow_method;
 int num_args;
 int in_binary;
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
@@ -71,6 +72,95 @@ generate_gutierrez_squares (mpz_t sq[3][3], mpz_t d, mpz_t e, mpz_t f, mpz_t del
     }
 
   mpz_clears (a, b, c, absum, abdif, NULL);
+}
+
+static int
+slow_gutierrez (FILE *out)
+{
+  mpz_t a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2, c2;
+  mpz_t na, nb, nc, delta1, delta2, na2, nb2, nc2, sq[3][3];
+  mpz_t ob, oc, fourcfourbdiff, fourcfourbdiffen, onetwob2dif, onetwob2difc2sum;
+  mpz_inits (a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2, c2, na, nb, nc, delta1, delta2, na2, nb2, nc2, ob, oc, fourcfourbdiff, fourcfourbdiffen, onetwob2dif, onetwob2difc2sum, NULL);
+  for (int x = 0; x < 3; x++)
+    for (int y = 0; y < 3; y++)
+      mpz_init (sq[x][y]);
+
+  mpz_set_ui (a, 1);
+  mpz_set (b, startb);
+  mpz_set (c, startc);
+
+  if (mpz_cmp_ui (starte, 0) == 0)
+    mpz_sub (e, c, b);
+  else
+    mpz_set (e, starte);
+  mpz_mul_ui (g, e, 2);
+  mpz_mul (e2, e, e);
+  mpz_set (ob, b);
+  mpz_set (oc, c);
+
+  mpz_mul (c2, oc, oc);
+  mpz_mul_ui (fourc, oc, 4);
+  mpz_mul_ui (fourb, ob, 4);
+  mpz_mul_ui (twob, ob, 2);
+  mpz_mul (twob2, ob, ob);
+  mpz_mul_ui (twob2, twob2, 2);
+  for (mpz_set_ui (n, 0); mpz_cmp (n, max) < 0; mpz_add_ui (n, n, 1))
+    {
+      mpz_mul (n2, n, n);
+      mpz_mul (en, e, n);
+
+      mpz_mul (s, e2, n2);
+      mpz_mul_ui (s, s, 2);
+
+      mpz_sub (fourcfourbdiff, fourc, fourb);
+      mpz_mul (fourcfourbdiffen, fourcfourbdiff, en);
+      mpz_add (s, s, fourcfourbdiffen);
+
+      mpz_set_ui (onetwob2dif, 1);
+      mpz_sub (onetwob2dif, onetwob2dif, twob2);
+      mpz_add (onetwob2difc2sum, onetwob2dif, c2);
+      mpz_add (s, s, onetwob2difc2sum);
+
+      mpz_sub (d, twob, oc);
+      mpz_sub_ui (d, d, 1);
+      mpz_mul_ui (d, d, 2);
+      //dogs breakfast starting here
+      if (mpz_cmp_ui (ob, 0) < 0)
+        {
+          if (mpz_cmp_ui (d, 0) < 0)
+            mpz_cdiv_q (f, s, d);
+          else
+            mpz_fdiv_q (f, s, d);
+        }
+      else
+        {
+          if (mpz_cmp_ui (d, 0) < 0)
+            mpz_fdiv_q (f, s, d);
+          else
+            mpz_cdiv_q (f, s, d);
+        }
+      //and ending here.
+
+      //printf("s is %d, d is %d\n", mpz_get_si (s), mpz_get_si (d));
+      mpz_add (na, a, f);
+      mpz_add (nb, b, f);
+      mpz_add (nc, c, f);
+      mpz_mul (nc2, nc, nc);
+      mpz_mul (nb2, nb, nb);
+      mpz_mul (na2, na, na);
+      mpz_sub (delta1, nb2, na2);
+      mpz_sub (delta2, nc2, nb2);
+      //printf ("%d, %d, %d, %d, %d, %d, %d, %d, %d\n", mpz_get_si(a), mpz_get_si(b), mpz_get_si(c), mpz_get_si(f), mpz_get_si(na), mpz_get_si(nb), mpz_get_si(nc), mpz_get_si(delta1), mpz_get_si(delta2));
+      if (mpz_cmp (delta1, delta2) == 0)
+        generate_gutierrez_squares (sq, nc2, nb2, na2, delta1, out);
+      mpz_add (b, b, e);
+      mpz_add (c, c, g);
+    }
+  mpz_clears (a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2, c2, na, nb, nc, delta1, delta2, na2, nb2, nc2, ob, oc, fourcfourbdiff, fourcfourbdiffen, onetwob2dif, onetwob2difc2sum, NULL);
+  for (int x = 0; x < 3; x++)
+    for (int y = 0; y < 3; y++)
+      mpz_clear (sq[x][y]);
+  return 0;
 }
 
 static int
@@ -184,6 +274,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 's':
+      slow_method = 1;
+      break;
     case 'i':
       in_binary = 1;
       break;
@@ -231,6 +324,7 @@ options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "slow-method", 's', 0, OPTION_HIDDEN, "Use the slow method for calculations"},
   { 0 }
 };
 
@@ -241,6 +335,10 @@ main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  int ret = gutierrez (stdout);
+  int ret;
+  if (slow_method)
+    ret = slow_gutierrez (stdout);
+  else
+    ret = gutierrez (stdout);
   return ret;
 }
