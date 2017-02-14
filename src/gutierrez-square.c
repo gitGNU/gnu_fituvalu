@@ -43,6 +43,10 @@ generate_gutierrez_squares (mpz_t sq[3][3], mpz_t d, mpz_t e, mpz_t f, mpz_t del
   mpz_sub (a, sq[1][1], sq[0][2]);
   mpz_set (c, e);
   mpz_set (b, a);
+  if (mpz_cmp (d, e) == 0)
+    return;
+  if (mpz_cmp (e, f) == 0)
+    return;
   mpz_add_ui (b, b, 1);
   for (;mpz_cmp (b, c) < 0; mpz_add_ui (b, b, 1))
     {
@@ -152,7 +156,12 @@ slow_gutierrez (FILE *out)
       mpz_sub (delta2, nc2, nb2);
       //printf ("%d, %d, %d, %d, %d, %d, %d, %d, %d\n", mpz_get_si(a), mpz_get_si(b), mpz_get_si(c), mpz_get_si(f), mpz_get_si(na), mpz_get_si(nb), mpz_get_si(nc), mpz_get_si(delta1), mpz_get_si(delta2));
       if (mpz_cmp (delta1, delta2) == 0)
-        generate_gutierrez_squares (sq, nc2, nb2, na2, delta1, out);
+        {
+          if (mpz_cmp (nc2, na2) > 0)
+            generate_gutierrez_squares (sq, na2, nb2, nc2, delta1, out);
+          else
+            generate_gutierrez_squares (sq, nc2, nb2, na2, delta1, out);
+        }
       mpz_add (b, b, e);
       mpz_add (c, c, g);
     }
@@ -257,7 +266,12 @@ gutierrez (FILE *out)
 
       //printf ("%d, %d, %d, %d, %d, %d, %d, %d, %d\n", mpz_get_si(a), mpz_get_si(b), mpz_get_si(c), mpz_get_si(f), mpz_get_si(na), mpz_get_si(nb), mpz_get_si(nc), mpz_get_si(delta1), mpz_get_si(delta2));
       if (mpz_cmp (delta1, delta2) == 0)
-        generate_gutierrez_squares (sq, nc2, nb2, na2, delta1, out);
+        {
+          if (mpz_cmp (nc2, na2) > 0)
+            generate_gutierrez_squares (sq, na2, nb2, nc2, delta1, out);
+          else
+            generate_gutierrez_squares (sq, nc2, nb2, na2, delta1, out);
+        }
       mpz_add (b, b, e);
       mpz_add (c, c, g);
     }

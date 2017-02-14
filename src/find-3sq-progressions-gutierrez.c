@@ -114,9 +114,18 @@ gutierrez (FILE *out)
           if (showroot)
             mpz_sqrt (root, na2);
           mpz_t progression[3];
-          mpz_init_set (progression[0], nc2);
-          mpz_init_set (progression[1], nb2);
-          mpz_init_set (progression[2], na2);
+          if (mpz_cmp (nc2, na2) > 0)
+            {
+              mpz_init_set (progression[0], na2);
+              mpz_init_set (progression[1], nb2);
+              mpz_init_set (progression[2], nc2);
+            }
+          else
+            {
+              mpz_init_set (progression[0], nc2);
+              mpz_init_set (progression[1], nb2);
+              mpz_init_set (progression[2], na2);
+            }
           if (show_diff)
             {
               mpz_abs (delta1, delta1);
@@ -232,9 +241,18 @@ gutierrezk (FILE *out)
         {
           if (showroot)
             mpz_sqrt (root, na2);
-          mpz_set (progression[0], nc2);
-          mpz_set (progression[1], nb2);
-          mpz_set (progression[2], na2);
+          if (mpz_cmp (nc2, na2) > 0)
+            {
+              mpz_set (progression[0], na2);
+              mpz_set (progression[1], nb2);
+              mpz_set (progression[2], nc2);
+            }
+          else
+            {
+              mpz_set (progression[0], nc2);
+              mpz_set (progression[1], nb2);
+              mpz_set (progression[2], na2);
+            }
           if (show_diff)
             {
               mpz_abs (delta1, delta1);
