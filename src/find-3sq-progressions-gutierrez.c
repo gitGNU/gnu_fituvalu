@@ -107,26 +107,16 @@ gutierrez (FILE *out)
       mpz_sub (delta1, nb2, na2);
       mpz_sub (delta2, nc2, nb2);
       //printf ("%d, %d, %d, %d, %d, %d, %d, %d, %d\n", mpz_get_si(a), mpz_get_si(b), mpz_get_si(c), mpz_get_si(f), mpz_get_si(na), mpz_get_si(nb), mpz_get_si(nc), mpz_get_si(delta1), mpz_get_si(delta2));
-      if (mpz_cmp (delta1, delta2) == 0 &&
-          mpz_cmp (na2, nb2) != 0 && mpz_cmp (na2, nc2) != 0)
+      if (mpz_cmp (delta1, delta2) == 0)
         {
           mpz_t root;
           mpz_init (root);
           if (showroot)
             mpz_sqrt (root, na2);
           mpz_t progression[3];
-          if (mpz_cmp (nc2, na2) > 0)
-            {
-              mpz_init_set (progression[0], na2);
-              mpz_init_set (progression[1], nb2);
-              mpz_init_set (progression[2], nc2);
-            }
-          else
-            {
-              mpz_init_set (progression[0], nc2);
-              mpz_init_set (progression[1], nb2);
-              mpz_init_set (progression[2], na2);
-            }
+          mpz_init_set (progression[0], nc2);
+          mpz_init_set (progression[1], nb2);
+          mpz_init_set (progression[2], na2);
           if (show_diff)
             {
               mpz_abs (delta1, delta1);
@@ -238,23 +228,13 @@ gutierrezk (FILE *out)
       mpz_sub (delta2, nc2, nb2);
 
       //printf ("%d, %d, %d, %d, %d, %d, %d, %d, %d\n", mpz_get_si(a), mpz_get_si(b), mpz_get_si(c), mpz_get_si(f), mpz_get_si(na), mpz_get_si(nb), mpz_get_si(nc), mpz_get_si(delta1), mpz_get_si(delta2));
-      if (mpz_cmp (delta1, delta2) == 0 &&
-          mpz_cmp (na2, nb2) != 0 && mpz_cmp (na2, nc2) != 0)
+      if (mpz_cmp (delta1, delta2) == 0)
         {
           if (showroot)
             mpz_sqrt (root, na2);
-          if (mpz_cmp (nc2, na2) > 0)
-            {
-              mpz_set (progression[0], na2);
-              mpz_set (progression[1], nb2);
-              mpz_set (progression[2], nc2);
-            }
-          else
-            {
-              mpz_set (progression[0], nc2);
-              mpz_set (progression[1], nb2);
-              mpz_set (progression[2], na2);
-            }
+          mpz_set (progression[0], nc2);
+          mpz_set (progression[1], nb2);
+          mpz_set (progression[2], na2);
           if (show_diff)
             {
               mpz_abs (delta1, delta1);
