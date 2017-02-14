@@ -12,7 +12,7 @@ bindir=$builddir/../src
 $bindir/small-find-3sq-progressions-gutierrez -- 1000 3 1 2 >$expected
 
 #generating our results
-$bindir/find-3sq-progressions-gutierrez -n -- 1000 3 1 2
+$bindir/find-3sq-progressions-gutierrez -un -- 1000 3 1 2
 
 #0045.log is simultaneously created as this script runs.
 diff -uNrd $expected $builddir/0045.log

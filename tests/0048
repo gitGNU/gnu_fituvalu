@@ -26,7 +26,7 @@ cat << EOF | cut -f5,6,7 -d, | while IFS=, read col1 col2 col3; do r1=`echo "$co
 EOF
 
 #generating our results
-$bindir/find-3sq-progressions-gutierrez -n -- 13 1 -17 6
+$bindir/find-3sq-progressions-gutierrez -un -- 13 1 -17 6
 
 #0048.log is simultaneously created as this script runs.
 diff -uNrd $expected $builddir/0048.log

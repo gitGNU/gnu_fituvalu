@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include "magicsquareutil.h"
 
+int sorted = 1;
 int num_args;
 int showroot = 1;
 int show_diff;
@@ -114,9 +115,27 @@ gutierrez (FILE *out)
           if (showroot)
             mpz_sqrt (root, na2);
           mpz_t progression[3];
-          mpz_init_set (progression[0], nc2);
-          mpz_init_set (progression[1], nb2);
-          mpz_init_set (progression[2], na2);
+          if (sorted)
+            {
+              if (mpz_cmp (nc2, na2) > 0)
+                {
+                  mpz_init_set (progression[0], na2);
+                  mpz_init_set (progression[1], nb2);
+                  mpz_init_set (progression[2], nc2);
+                }
+              else
+                {
+                  mpz_init_set (progression[0], nc2);
+                  mpz_init_set (progression[1], nb2);
+                  mpz_init_set (progression[2], na2);
+                }
+            }
+          else
+            {
+              mpz_init_set (progression[0], nc2);
+              mpz_init_set (progression[1], nb2);
+              mpz_init_set (progression[2], na2);
+            }
           if (show_diff)
             {
               mpz_abs (delta1, delta1);
@@ -232,9 +251,27 @@ gutierrezk (FILE *out)
         {
           if (showroot)
             mpz_sqrt (root, na2);
-          mpz_set (progression[0], nc2);
-          mpz_set (progression[1], nb2);
-          mpz_set (progression[2], na2);
+          if (sorted)
+            {
+              if (mpz_cmp (nc2, na2) > 0)
+                {
+                  mpz_init_set (progression[0], na2);
+                  mpz_init_set (progression[1], nb2);
+                  mpz_init_set (progression[2], nc2);
+                }
+              else
+                {
+                  mpz_init_set (progression[0], nc2);
+                  mpz_init_set (progression[1], nb2);
+                  mpz_init_set (progression[2], na2);
+                }
+            }
+          else
+            {
+              mpz_set (progression[0], nc2);
+              mpz_set (progression[1], nb2);
+              mpz_set (progression[2], na2);
+            }
           if (show_diff)
             {
               mpz_abs (delta1, delta1);
@@ -259,6 +296,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'u':
+      sorted = 0;
+      break;
     case 'd':
       show_diff = 1;
       break;
@@ -314,6 +354,7 @@ options[] =
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "no-root", 'n', 0, 0, "Don't show the root of the fourth number"},
   { "show-diff", 'd', 0, 0, "Also show the diff"},
+  { "unsorted", 'u', 0, OPTION_HIDDEN, "Don't sort the results"},
   { 0 }
 };
 
