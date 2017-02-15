@@ -21,7 +21,6 @@
 
 int slow_method;
 int num_args;
-int in_binary;
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 mpz_t max, startb, startc, starte;
 
@@ -291,9 +290,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 's':
       slow_method = 1;
       break;
-    case 'i':
-      in_binary = 1;
-      break;
     case 'o':
       display_square = display_binary_square_record;
       break;
@@ -336,7 +332,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 static struct argp_option
 options[] =
 {
-  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "slow-method", 's', 0, OPTION_HIDDEN, "Use the slow method for calculations"},
   { 0 }
