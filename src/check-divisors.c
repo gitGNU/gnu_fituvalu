@@ -21,7 +21,7 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 int in_binary;
-void (*display_number) (mpz_t *number, FILE *out) = display_textual_number;
+int num_columns;
 
 int default_divisors[] = 
 {
@@ -62,18 +62,31 @@ check (mpz_t *num)
 static void
 binary_check_divisors (FILE *in, FILE *out)
 {
-  mpz_t i;
-  mpz_init (i);
   ssize_t read;
+  mpz_t vec[num_columns];
+  for (int j = 0; j < num_columns; j++)
+    mpz_init (vec[j]);
   while (1)
     {
-      read = mpz_inp_raw (i, in);
+      for (int j = 0; j < num_columns; j++)
+        {
+          read = mpz_inp_raw (vec[j], in);
+          if (!read)
+            break;
+        }
       if (!read)
         break;
-      if (check (&i))
-        display_number (&i, out);
+      for (int j = 0; j < num_columns; j++)
+        {
+          if (check (&vec[j]))
+            {
+              disp_record (vec, num_columns, out);
+              break;
+            }
+        }
     }
-  mpz_clear (i);
+  for (int j = 0; j < num_columns; j++)
+    mpz_clear (vec[j]);
 }
 
 static void
@@ -81,6 +94,7 @@ check_divisors (FILE *in, FILE *out)
 {
   ssize_t read;
   char *line = NULL;
+  char *orig_line;
   size_t len = 0;
   char *sav;
   mpz_t i;
@@ -90,13 +104,15 @@ check_divisors (FILE *in, FILE *out)
       read = getline (&line, &len, in);
       if (read == -1)
         break;
+      orig_line = strdup (line);
       for (char *l = strtok_r (line, ",\n", &sav); l;
            l = strtok_r (NULL, ",\n", &sav))
         {
           mpz_set_str (i, l, 10);
           if (check (&i))
-            display_number (&i, out);
+            fprintf (out, "%s", orig_line);
         }
+      free (orig_line);
     }
   mpz_clear (i);
   if (line)
@@ -108,13 +124,14 @@ check_divisors (FILE *in, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  char *end = NULL;
   switch (key)
     {
     case 'i':
       in_binary = 1;
       break;
-    case 'o':
-      display_number = display_binary_number;
+    case 'n':
+      num_columns = strtoull (arg, &end, 10);
       break;
     case ARGP_KEY_ARG:
         {
@@ -144,6 +161,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
           divisors = default_divisors;
           num_divisors = 18;
         }
+      if (!num_columns && in_binary)
+        argp_error (state, "when using -i, you must also use -n.");
       break;
     }
   return 0;
@@ -153,11 +172,11 @@ static struct argp_option
 options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
-  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "num-columns", 'n', "NUM", 0, "How many columns there are in a record (with -i)"},
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "[FILE]", "Display the numbers on the standard input that are divisible by a set of a divisors.\vThe default divisors are: 29, 37, 41, 48, 53, 61, 72, 120, 168, 264, 312, 408, 456, 552, 744, 1032, 1128, and 1608.  Alternative divisors can be specified in FILE.", 0 };
+struct argp argp ={options, parse_opt, "[FILE]", "Display the records from the standard input that have a number that is divisible by a set of a divisors.\vThe default divisors are: 29, 37, 41, 48, 53, 61, 72, 120, 168, 264, 312, 408, 456, 552, 744, 1032, 1128, and 1608.  Alternative divisors can be specified in FILE.", 0 };
 
 int
 main (int argc, char **argv)
