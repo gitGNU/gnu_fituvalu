@@ -38,9 +38,11 @@ int
 gutierrez (FILE *out)
 {
   mpz_t a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2, c2;
-  mpz_t na, nb, nc, delta1, delta2, na2, nb2, nc2;
+  mpz_t na, nb, nc, delta1, delta2, na2, nb2, nc2, root;
   mpz_t ob, oc, fourcfourbdiff, fourcfourbdiffen, onetwob2dif, onetwob2difc2sum;
-  mpz_inits (a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2, c2, na, nb, nc, delta1, delta2, na2, nb2, nc2, ob, oc, fourcfourbdiff, fourcfourbdiffen, onetwob2dif, onetwob2difc2sum, NULL);
+  mpz_inits (a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2,
+             c2, na, nb, nc, delta1, delta2, na2, nb2, nc2, ob, oc,
+             fourcfourbdiff, fourcfourbdiffen, onetwob2dif, onetwob2difc2sum, root, NULL);
 
   mpz_set_ui (a, 1);
   mpz_set (b, startb);
@@ -61,6 +63,9 @@ gutierrez (FILE *out)
   mpz_mul_ui (twob, ob, 2);
   mpz_mul (twob2, ob, ob);
   mpz_mul_ui (twob2, twob2, 2);
+  mpz_t progression[3];
+  for (int i = 0; i < 3; i++)
+    mpz_init (progression[i]);
   for (mpz_set_ui (n, 0); mpz_cmp (n, max) < 0; mpz_add_ui (n, n, 1))
     {
       mpz_mul (n2, n, n);
@@ -110,31 +115,28 @@ gutierrez (FILE *out)
       //printf ("%d, %d, %d, %d, %d, %d, %d, %d, %d\n", mpz_get_si(a), mpz_get_si(b), mpz_get_si(c), mpz_get_si(f), mpz_get_si(na), mpz_get_si(nb), mpz_get_si(nc), mpz_get_si(delta1), mpz_get_si(delta2));
       if (mpz_cmp (delta1, delta2) == 0)
         {
-          mpz_t root;
-          mpz_init (root);
           if (showroot)
             mpz_sqrt (root, na2);
-          mpz_t progression[3];
           if (sorted)
             {
               if (mpz_cmp (nc2, na2) > 0)
                 {
-                  mpz_init_set (progression[0], na2);
-                  mpz_init_set (progression[1], nb2);
-                  mpz_init_set (progression[2], nc2);
+                  mpz_set (progression[0], na2);
+                  mpz_set (progression[1], nb2);
+                  mpz_set (progression[2], nc2);
                 }
               else
                 {
-                  mpz_init_set (progression[0], nc2);
-                  mpz_init_set (progression[1], nb2);
-                  mpz_init_set (progression[2], na2);
+                  mpz_set (progression[0], nc2);
+                  mpz_set (progression[1], nb2);
+                  mpz_set (progression[2], na2);
                 }
             }
           else
             {
-              mpz_init_set (progression[0], nc2);
-              mpz_init_set (progression[1], nb2);
-              mpz_init_set (progression[2], na2);
+              mpz_set (progression[0], nc2);
+              mpz_set (progression[1], nb2);
+              mpz_set (progression[2], na2);
             }
           if (show_diff)
             {
@@ -144,14 +146,16 @@ gutierrez (FILE *out)
               fprintf (out, "%s, ", buf);
             }
           display_record (progression, &root, out);
-          for (int i = 0; i < 3; i++)
-            mpz_clear (progression[i]);
-          mpz_clear (root);
         }
       mpz_add (b, b, e);
       mpz_add (c, c, g);
     }
-  mpz_clears (a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2, c2, na, nb, nc, delta1, delta2, na2, nb2, nc2, ob, oc, fourcfourbdiff, fourcfourbdiffen, onetwob2dif, onetwob2difc2sum, NULL);
+  for (int i = 0; i < 3; i++)
+    mpz_clear (progression[i]);
+  mpz_clears (a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2,
+              c2, na, nb, nc, delta1, delta2, na2, nb2, nc2, ob, oc,
+              fourcfourbdiff, fourcfourbdiffen, onetwob2dif, onetwob2difc2sum,
+              root, NULL);
   return 0;
 }
 
@@ -255,15 +259,15 @@ gutierrezk (FILE *out)
             {
               if (mpz_cmp (nc2, na2) > 0)
                 {
-                  mpz_init_set (progression[0], na2);
-                  mpz_init_set (progression[1], nb2);
-                  mpz_init_set (progression[2], nc2);
+                  mpz_set (progression[0], na2);
+                  mpz_set (progression[1], nb2);
+                  mpz_set (progression[2], nc2);
                 }
               else
                 {
-                  mpz_init_set (progression[0], nc2);
-                  mpz_init_set (progression[1], nb2);
-                  mpz_init_set (progression[2], na2);
+                  mpz_set (progression[0], nc2);
+                  mpz_set (progression[1], nb2);
+                  mpz_set (progression[2], na2);
                 }
             }
           else
