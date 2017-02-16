@@ -401,12 +401,13 @@ dump_num (mpz_t *i, FILE *out)
   fprintf (out, "%s", buf);
 }
 
+
 void
-display_three_record (mpz_t *progression, FILE *out)
+disp_record (mpz_t *vec, int size, FILE *out)
 {
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < size; i++)
     {
-      dump_num (&progression[i], out);
+      dump_num (&vec[i], out);
       fprintf (out, ", ");
     }
   fprintf (out, "\n");
@@ -414,22 +415,28 @@ display_three_record (mpz_t *progression, FILE *out)
 }
 
 void
+disp_binary_record (mpz_t *vec, int size, FILE *out)
+{
+  for (int i = 0; i < size; i++)
+    mpz_out_raw (out, vec[i]);
+}
+void
+display_three_record (mpz_t *progression, FILE *out)
+{
+  disp_record (progression, 3, out);
+}
+
+void
 display_four_record (mpz_t *progression, FILE *out)
 {
-  for (int i = 0; i < 4; i++)
-    {
-      dump_num (&progression[i], out);
-      fprintf (out, ", ");
-    }
-  fprintf (out, "\n");
+  disp_record (progression, 4, out);
   fflush (out);
 }
 
 void
 display_binary_four_record (mpz_t *progression, FILE *out)
 {
-  for (int i = 0; i < 4; i++)
-    mpz_out_raw (out, progression[i]);
+  disp_binary_record (progression, 4, out);
 }
 
 void
@@ -452,9 +459,7 @@ display_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out)
 void
 display_binary_three_record (mpz_t *progression, FILE *out)
 {
-  for (int i = 0; i < 3; i++)
-    mpz_out_raw (out, progression[i]);
-  fflush (out);
+  disp_binary_record (progression, 3, out);
 }
 
 void
@@ -470,13 +475,7 @@ display_binary_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *ou
 void
 display_nine_record (mpz_t *progression, FILE *out)
 {
-  for (int i = 0; i < 9; i++)
-    {
-      dump_num (&progression[i], out);
-      fprintf (out, ", ");
-    }
-  fprintf (out, "\n");
-  fflush (out);
+  disp_record (progression, 9, out);
 }
 
 void
@@ -500,9 +499,7 @@ display_two_record (mpz_t *one, mpz_t *two, FILE *out)
 void
 display_binary_nine_record (mpz_t *progression, FILE *out)
 {
-  for (int i = 0; i < 9; i++)
-    mpz_out_raw (out, progression[i]);
-  fflush (out);
+  disp_binary_record (progression, 9, out);
 }
 
 void
@@ -820,13 +817,14 @@ morgenstern_search_dual_binary (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz
 void
 display_textual_number (mpz_t *i, FILE *out)
 {
-  char buf[mpz_sizeinbase (*i, 10) + 2];
-  mpz_get_str (buf, 10, *i);
-  fprintf (out, "%s\n", buf);
+  dump_num (i, out);
+  fprintf (out, "\n");
+  fflush (out);
 }
 
 void
 display_binary_number (mpz_t *i, FILE *out)
 {
   mpz_out_raw (out, *i);
+  fflush (out);
 }
