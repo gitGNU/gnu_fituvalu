@@ -22,6 +22,7 @@
 //from:
 //http://www.multimagie.com/English/Morgenstern06.htm
 int in_binary;
+int show_ratio;
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 
 static void
@@ -124,7 +125,43 @@ hillyer (FILE *in, FILE *out)
         break;
       mpz_set_str (l, line, 10);
       generate_hillyer_square (sq, k, l);
-      display_square (sq, out);
+      if (show_ratio)
+        {
+          mpf_t sum1f, sum2f, ratio;
+          mpz_t sum1, sum2;
+          mpz_inits (sum1, sum2, NULL);
+          mpz_add (sum1, sq[0][0], sq[0][1]);
+          mpz_add (sum1, sum1, sq[0][2]);
+          mpz_add (sum2, sq[0][2], sq[1][1]);
+          mpz_add (sum2, sum2, sq[2][0]);
+          mpf_inits (sum1f, sum2f, ratio, NULL);
+          mpf_set_z (sum1f, sum1);
+          mpf_set_z (sum2f, sum2);
+          if (mpz_cmp (sum1, sum2) > 0)
+            mpf_div (ratio, sum1f, sum2f);
+          else
+            mpf_div (ratio, sum2f, sum1f);
+            {
+              mpf_out_str (out, 10, 0, ratio);
+              fprintf (out, ", ");
+            }
+          mpf_clears (sum1f, sum2f, ratio, NULL);
+
+            {
+              char buf[mpz_sizeinbase (k, 10) + 2];
+              mpz_get_str (buf, 10, k);
+              fprintf (out, "%s, ", buf);
+            }
+            {
+              char buf[mpz_sizeinbase (l, 10) + 2];
+              mpz_get_str (buf, 10, l);
+              fprintf (out, "%s\n", buf);
+              fflush (out);
+            }
+          mpz_clears (sum1, sum2, NULL);
+        }
+      else
+        display_square (sq, out);
     }
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
@@ -173,6 +210,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'o':
       display_square = display_binary_square_record;
       break;
+    case 's':
+      show_ratio = 1;
+      break;
     }
   return 0;
 }
@@ -182,6 +222,7 @@ options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "show-ratio", 's', 0, 0, "Instead of showing squares, show how close they are to magic"},
   { 0 }
 };
 
