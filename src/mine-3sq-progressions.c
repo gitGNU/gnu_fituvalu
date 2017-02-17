@@ -23,7 +23,7 @@ int squares;
 int show_sum;
 int show_diff;
 int show_root;
-int (*read_numbers)(FILE *, mpz_t (*)[SIZE], char **, size_t *) = read_numbers_from_stream;
+int (*read_numbers)(FILE *, mpz_t *, int size, char **, size_t *) = read_numbers_from_stream;
 
 int
 compar (const void *left, const void *right)
@@ -257,7 +257,7 @@ mine_3sq_progressions (FILE *in, FILE *out)
     mpz_inits (vec[i], orig[i], NULL);
   while (1)
     {
-      read = read_numbers (in, &vec, &line, &len);
+      read = read_numbers (in, vec, SIZE, &line, &len);
       if (read == -1)
         break;
       mine_progression (vec, SIZE, out);

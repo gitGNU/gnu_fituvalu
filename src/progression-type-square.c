@@ -23,7 +23,7 @@ int show_def;
 int dump_progression;
 int num_filters;
 int *filter_types;
-int (*read_numbers)(FILE *, mpz_t (*)[SIZE], char **, size_t *) = read_numbers_from_stream;
+int (*read_numbers)(FILE *, mpz_t *, int, char **, size_t *) = read_numbers_from_stream;
 void (*display_record) (mpz_t *, FILE *) = display_nine_record;
 
 int
@@ -137,7 +137,7 @@ find_progression_type (FILE *in, FILE *out)
     mpz_inits (vec[i], orig[i], NULL);
   while (1)
     {
-      read = read_numbers (in, &vec, &line, &len);
+      read = read_numbers (in, vec, SIZE, &line, &len);
       if (read == -1)
         break;
       int progression_type = get_progression_type (vec, SIZE);

@@ -22,7 +22,7 @@
 
 
 int display_errors = 1;
-int (*read_numbers)(FILE *, mpz_t (*)[SIZE], char **, size_t *) = read_numbers_from_stream;
+int (*read_numbers)(FILE *, mpz_t *, int, char **, size_t *) = read_numbers_from_stream;
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 /*
 So you've generated some progressions and now you want to turn them into
@@ -125,7 +125,7 @@ transform_magic_square (FILE *stream)
 
   while (1)
     {
-      read = read_numbers (stream, &a, &line, &len);
+      read = read_numbers (stream, a, SIZE, &line, &len);
       if (read == -1)
         break;
       transform_square (a, SIZE, stdout);
@@ -163,7 +163,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
             mpz_init (a[i]);
           while (1)
             {
-              ssize_t read = read_numbers_from_stream (fp, &a, &line, &len);
+              ssize_t read = read_numbers_from_stream (fp, a, SIZE, &line, &len);
               if (read == -1)
                 break;
               transformations = realloc (transformations, 

@@ -20,7 +20,7 @@
 #include "magicsquareutil.h"
 //http://stackoverflow.com/questions/2710713/algorithm-to-generate-all-possible-permutations-of-a-list by user Horacio in 2015.
 
-int (*read_numbers)(FILE *, mpz_t (*)[SIZE], char **, size_t *) = read_numbers_from_stream;
+int (*read_numbers)(FILE *, mpz_t *, int, char **, size_t *) = read_numbers_from_stream;
 void (*display_record) (mpz_t *, FILE *) = display_nine_record;
 
 int invert;
@@ -110,7 +110,7 @@ find_combinations (FILE *stream)
   while (1)
     {
       int found = 0;
-      read = read_numbers (stream, &vec, &line, &len);
+      read = read_numbers (stream, vec, SIZE, &line, &len);
       if (read == -1)
         break;
       if (display_offset)
