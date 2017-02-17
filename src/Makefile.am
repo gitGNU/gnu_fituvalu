@@ -49,7 +49,7 @@ bin_PROGRAMS = \
 	     nine-search 3sq-pair-search odd-square \
 	     \
 	     siamese-square gutierrez-square check-divisors \
-	     hillyer-square
+	     hillyer-square multiply-3sq-progression
 
 noinst_LTLIBRARIES = libmagicsquareutil.la
 
@@ -273,6 +273,9 @@ check_divisors_LDADD = -lm libmagicsquareutil.la
 
 hillyer_square_SOURCES = hillyer-square.c
 hillyer_square_LDADD = -lm libmagicsquareutil.la
+
+multiply_3sq_progression_SOURCES = multiply-3sq-progression.c
+multiply_3sq_progression_LDADD = -lm libmagicsquareutil.la
 
 AM_CFLAGS=-Wall
 
