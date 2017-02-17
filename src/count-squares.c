@@ -62,7 +62,10 @@ display_square_count (FILE *stream)
             }
         }
       else
-        fprintf (stdout, "%d\n", count);
+        {
+          fprintf (stdout, "%d\n", count);
+          fflush (stdout);
+        }
     }
 
   for (i = 0; i < 3; i++)
