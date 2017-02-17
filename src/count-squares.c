@@ -20,9 +20,10 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+int num_columns = 9;
 int *only_show;
 int num_only_show;
-int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
+int (*read_numbers)(FILE *, mpz_t *, int, char **, size_t *) = read_numbers_from_stream;
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 
 static int
@@ -31,32 +32,30 @@ display_square_count (FILE *stream)
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
-  mpz_t a[3][3];
+  mpz_t a[num_columns];
 
-  int i, j;
-  for (i = 0; i < 3; i++)
-    for (j = 0; j < 3; j++)
-      mpz_init (a[i][j]);
+  int i;
+  for (i = 0; i < num_columns; i++)
+    mpz_init (a[i]);
 
   while (1)
     {
-      read = read_square (stream, &a, &line, &len);
+      read = read_numbers (stream, a, num_columns, &line, &len);
       if (read == -1)
         break;
       int count = 0;
-      for (i = 0; i < 3; i++)
-        for (j = 0; j < 3; j++)
-          {
-            if (mpz_perfect_square_p (a[i][j]))
-              count++;
-          }
+      for (i = 0; i < num_columns; i++)
+        {
+          if (mpz_perfect_square_p (a[i]))
+            count++;
+        }
       if (num_only_show)
         {
           for (int i = 0; i < num_only_show; i++)
             {
               if (only_show[i] == count)
                 {
-                  display_square (a, stdout);
+                  disp_record (a, num_columns, stdout);
                   break;
                 }
             }
@@ -68,9 +67,8 @@ display_square_count (FILE *stream)
         }
     }
 
-  for (i = 0; i < 3; i++)
-    for (j = 0; j < 3; j++)
-      mpz_clear (a[i][j]);
+  for (i = 0; i < num_columns; i++)
+    mpz_clear (a[i]);
 
   if (line)
     free (line);
@@ -82,8 +80,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'n':
+      num_columns = atoi (arg);
+      break;
     case 'i':
-      read_square = binary_read_square_from_stream;
+      read_numbers = binary_read_numbers_from_stream;
       break;
     case 'o':
       display_square = display_binary_square_record;
@@ -112,6 +113,7 @@ options[] =
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "filter", 'f', "NUM-SQUARES", 0, "Instead of showing the count, show the magic square if it has NUM-SQUARES perfect squares"},
+  { "num-columns", 'n', "COLS", 0, "Instead of reading in 9 numbers read in this many"},
   { 0 }
 };
 
