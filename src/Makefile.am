@@ -45,6 +45,7 @@ bin_PROGRAMS = \
 	     find-3sq-progressions-mn find-3sq-progressions \
 	     small-find-3sq-progressions-gutierrez \
 	     find-3sq-progressions-gutierrez \
+	     find-3sq-progressions-dist \
 	     complete-3sq-progression reduce-3sq-progression \
 	     nine-search 3sq-pair-search odd-square \
 	     \
@@ -231,6 +232,9 @@ mine_3sq_progressions_LDADD = -lm libmagicsquareutil.la
 
 find_3sq_progressions_mn_SOURCES = find-3sq-progressions-mn.c
 find_3sq_progressions_mn_LDADD = -lm libmagicsquareutil.la
+
+find_3sq_progressions_dist_SOURCES = find-3sq-progressions-dist.c
+find_3sq_progressions_dist_LDADD = -lm libmagicsquareutil.la
 
 find_3sq_progressions_SOURCES = find-3sq-progressions.c
 find_3sq_progressions_LDADD = -lm libmagicsquareutil.la
