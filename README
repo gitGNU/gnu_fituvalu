@@ -287,6 +287,29 @@ against a single progression by passing in N1..N3 as arguments on the
 command-line.
 
 
+program: scissor-square
+Usage: scissor-square [--in-binary] [--out-binary] N1, N2, N3,
+  or:  scissor-square [--in-binary] [--out-binary] FILE
+
+Try to create a 3x3 of magic square from two progressions of three squares that
+have the same difference between the squares, or the differences must be
+divisible.  This program tries create a magic square with the following layout:
++------+------+------+
+|      |  X3  |  N2  |
++------+------+------+
+|  N3  |      |  X1  |
++------+------+------+
+|  X2  |  N1  |      |
++------+------+------+
+
+The first progression is given as the arguments N1, N2, N3.  The second progression is
+passed in on the standard input.  Alternatively you can try the progressions on the
+standard input with a set of progressions by passing in FILE.
+
+The three values must be perfect squares, separated by a comma and terminated
+by a newline, and must be in ascending order.  This program also generates 3x3
+nearly-magic squares. 
+
 
 Helper Programs
 ---------------
@@ -543,7 +566,6 @@ DISTANCE is not provided as an argument, it is read from the standard input.
 By default this program checks 5 million squares for a progression with the
 given distance.  It searches every perfect square starting at 1, for two other
 perfect squares DISTANCE apart.
-
 
 program: complete-3sq-progression
 Usage: complete-3sq-progression NUM [--increment=NUM]
