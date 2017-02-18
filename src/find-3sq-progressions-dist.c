@@ -21,6 +21,7 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+int break_after;
 int in_binary;
 mpz_t distance, start, max_tries;
 int showsum;
@@ -31,6 +32,7 @@ void (*display_record) (mpz_t *, mpz_t*, FILE *out) = display_three_record_with_
 static int
 gen_3sq (FILE *out)
 {
+  int count = 0;
   if (mpz_odd_p (distance) || mpz_cmp_ui (distance, 0) < 0)
     return 0;
   mpz_t m, vec[3], finalroot, root, i, j;
@@ -38,7 +40,7 @@ gen_3sq (FILE *out)
   mpz_set (i, start);
   mpz_sqrt (root, i);
   mpz_mul (i, root, root);
-  for (mpz_set_ui (j, 1); mpz_cmp (j, max_tries) < 0; mpz_add_ui (j, j, 1))
+  for (mpz_set_ui (j, 1); break_after || mpz_cmp (j, max_tries) < 0; mpz_add_ui (j, j, 1))
     {
       mpz_set (vec[0], i);
       mpz_add (vec[1], vec[0], distance);
@@ -47,6 +49,7 @@ gen_3sq (FILE *out)
           mpz_add (vec[2], vec[1], distance);
           if (mpz_perfect_square_p (vec[2]))
             {
+              count++;
               if (showsum)
                 {
                   mpz_t sum;
@@ -77,6 +80,8 @@ gen_3sq (FILE *out)
               if (showroot)
                 mpz_sqrt (finalroot, vec[2]);
               display_record (vec, &finalroot, out);
+              if (break_after && count >= break_after)
+                break;
             }
         }
       mpz_add (i, i, root);
@@ -125,6 +130,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'b':
+      break_after = atoi (arg);
+      break;
     case 's':
       showsum = 1;
       break;
@@ -177,6 +185,7 @@ options[] =
   { "start", 'S', "NUM", 0, "Start at NUM instead of 1"},
   { "show-sum", 's', 0, 0, "Also show the sum"},
   { "tries", 't', "NUM", 0, "Loop forward to a total of NUM squares"},
+  { "break-after", 'b', "NUM", OPTION_HIDDEN, "Break after NUM found"},
   { 0 }
 };
 
