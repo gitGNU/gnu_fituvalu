@@ -293,14 +293,15 @@ Usage: scissor-square [--in-binary] [--out-binary] N1, N2, N3,
 
 Try to create a 3x3 of magic square from two progressions of three squares that
 have the same difference between the squares, or the differences must be
-divisible.  This program tries create a magic square with the following layout:
-+------+------+------+
-|      |  X3  |  N2  |
-+------+------+------+
-|  N3  |      |  X1  |
-+------+------+------+
-|  X2  |  N1  |      |
-+------+------+------+
+divisible.  This program tries create a magic square with the following layouts:
++------+------+------+     +------+------+------+
+|      |  X3  |  N2  |     |  X2  |      |  N3  |
++------+------+------+     +------+------+------+
+|  N3  |      |  X1  | and |      |  N2  |  X1  |
++------+------+------+     +------+------+------+
+|  X2  |  N1  |      |     |  N1  |  X3  |      |
++------+------+------+     +------+------+------+
+
 
 The first progression is given as the arguments N1, N2, N3.  The second progression is
 passed in on the standard input.  Alternatively you can try the progressions on the
