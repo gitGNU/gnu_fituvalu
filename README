@@ -728,11 +728,10 @@ And so on.  The results get dumped to "data", and we just manually stop when it
 gets filled with 3 records.
 
 We picked the ending point of "seq" (25578614457001433088040) by estimating
-based on prior runs.  It is the first value of the first of the three
-progressions from the prior run, multiplied by ten.  Maybe it's too big, or
-maybe it's too small to find the progressions we're looking for.  If it's too
-small, we'll know where we haven't searched and if it's too big, we can stop it
-early.
+based on prior runs.  It is the first value of the first progression from the
+prior run, multiplied by ten.  Maybe it's too big, or maybe it's too small to
+find the progressions we're looking for.  If it's too small, we'll know where
+we haven't searched and if it's too big, we can stop it early.
 
 One more example to illustrate where a beginner might go wrong:
 $ step-progression-1 1 1000 | head -n1 | display-square 
