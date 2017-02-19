@@ -715,7 +715,7 @@ In this case we know there are several three square progressions that have a
 delta of 377850167358576840913440.  We got this number by repeatedly
 multiplying 3360 by 13.  We use "find-3sq-progressions-dist" to find
 progressions with a specific distance, but it would take a long time to find
-the answer using only a single core, so we employ paralellization.
+the answer using only a single core, so we employ parallellization.
 
 "seq" gives us the starting point, which gets passed to the --start option.
 On the first core, GNU parallel will run this:
