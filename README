@@ -560,13 +560,19 @@ Here are the values I've tested:
   100  65   1 16
 
 program: find-3sq-progressions-dist
-Usage: find-3sq-progressions-dist [--show-diff] [--in-binary] [--no-root] [--out-binary] [--show-sum] [--start=NUM] [--tries=NUM] [DISTANCE]
+Usage: find-3sq-progressions-dist [--show-diff] [--in-binary] [--no-root] [--out-binary] [--show-sum] [--start=NUM] [--tries=NUM] [--range=NUM] [--no-second] [--no-third] [DISTANCE]
 
 Generate arithmetic progressions of three squares, that are DISTANCE apart.  If
 DISTANCE is not provided as an argument, it is read from the standard input.
 By default this program checks 5 million squares for a progression with the
 given distance.  It searches every perfect square starting at 1, for two other
 perfect squares DISTANCE apart.
+
+The --range=NUM options stops the program from checking when we get NUM away
+from the starting point.
+
+The --no-second and --no-third options generate progressions where the 2nd
+or 3rd numbers are not perfect squares.
 
 program: complete-3sq-progression
 Usage: complete-3sq-progression NUM [--increment=NUM]
