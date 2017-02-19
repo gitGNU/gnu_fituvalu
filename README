@@ -701,6 +701,33 @@ This method avoids the overhead of regularly setting up and tearing down ssh
 connections, as well as starting up and tearing down program executions.
 It has a drawback of the output data not being flushed to 'data' immediately.
 
+Here's another example of parallelization.
+
+$ seq 1 5000000000000000000 25578614457001433088040  |  parallel --tmpdir=. -S 3/:  'find-3sq-progressions-dist --start={} --range=5000000000000000000' 377850167358576840913440 > data
+
+In this case we know there are several three square progressions that have a
+delta of 377850167358576840913440.  We got this number by repeatedly
+multiplying 3360 by 13.  We use "find-3sq-progressions-dist" to find
+progressions with a specific distance, but it would take a long time to find
+the answer using only a single core, so we employ paralellization.
+
+"seq" gives us the starting point, which gets passed to the --start option.
+On the first core, GNU parallel will run this:
+find-3sq-progressions-dist --start=1 --range=5000000000000000000' 377850167358576840913440
+
+And on the second core, it runs this:
+find-3sq-progressions-dist --start=5000000000000000001 --range=5000000000000000000' 377850167358576840913440
+
+And so on.  The results get dumped to "data", and we just manually stop when it
+gets filled with 3 records.
+
+We picked the ending point of "seq" (25578614457001433088040) by estimating
+based on prior runs.  It is the first value of the first of the three
+progressions from the prior run, multiplied by ten.  Maybe it's too big, or
+maybe it's too small to find the progressions we're looking for.  If it's too
+small, we'll know where we haven't searched and if it's too big, we can stop it
+early.
+
 One more example to illustrate where a beginner might go wrong:
 $ step-progression-1 1 1000 | head -n1 | display-square 
                     435

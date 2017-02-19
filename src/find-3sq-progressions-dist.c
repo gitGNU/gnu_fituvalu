@@ -21,9 +21,11 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+int no_second;
+int no_third;
 int break_after;
 int in_binary;
-mpz_t distance, start, max_tries;
+mpz_t distance, start, max_tries, iter;
 int showsum;
 int showroot = 1;
 int showdiff;
@@ -35,19 +37,21 @@ gen_3sq (FILE *out)
   int count = 0;
   if (mpz_odd_p (distance) || mpz_cmp_ui (distance, 0) < 0)
     return 0;
-  mpz_t m, vec[3], finalroot, root, i, j;
-  mpz_inits (m, vec[0], vec[1], vec[2], finalroot, j, i, root, NULL);
+  mpz_t m, vec[3], finalroot, root, i, j, k;
+  mpz_inits (m, vec[0], vec[1], vec[2], finalroot, j, i, root, k, NULL);
   mpz_set (i, start);
   mpz_sqrt (root, i);
   mpz_mul (i, root, root);
-  for (mpz_set_ui (j, 1); break_after || mpz_cmp (j, max_tries) < 0; mpz_add_ui (j, j, 1))
+  for (mpz_set_ui (j, 1);
+       mpz_cmp_ui (iter, 0) != 0 || break_after || mpz_cmp (j, max_tries) < 0;
+       mpz_add_ui (j, j, 1))
     {
       mpz_set (vec[0], i);
       mpz_add (vec[1], vec[0], distance);
-      if (mpz_perfect_square_p (vec[1]))
+      if (mpz_perfect_square_p (vec[1]) || no_second)
         {
           mpz_add (vec[2], vec[1], distance);
-          if (mpz_perfect_square_p (vec[2]))
+          if (mpz_perfect_square_p (vec[2]) || no_third)
             {
               count++;
               if (showsum)
@@ -88,8 +92,14 @@ gen_3sq (FILE *out)
       mpz_add (i, i, root);
       mpz_add_ui (i, i, 1);
       mpz_add_ui (root, root, 1);
+      if (mpz_cmp_ui (iter, 0) != 0)
+        {
+          mpz_sub (k, i, start);
+          if (mpz_cmp (k, iter) > 0)
+            break;
+        }
     }
-  mpz_clears (m, vec[0], vec[1], vec[2], finalroot, root, i, j, NULL);
+  mpz_clears (m, vec[0], vec[1], vec[2], finalroot, root, i, j, k, NULL);
   return 0;
 }
 
@@ -130,6 +140,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'r':
+      mpz_set_str (iter, arg, 10);
+      break;
+    case '2':
+      no_second = 1;
+      break;
+    case '3':
+      no_third = 1;
+      break;
     case 'b':
       break_after = atoi (arg);
       break;
@@ -167,7 +186,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
         }
       break;
     case ARGP_KEY_INIT:
-      mpz_inits (distance, start, max_tries, NULL);
+      mpz_inits (distance, start, max_tries, iter, NULL);
       mpz_set_ui (start, 1);
       mpz_set_ui (max_tries, 5000000);
       break;
@@ -186,6 +205,9 @@ options[] =
   { "show-sum", 's', 0, 0, "Also show the sum"},
   { "tries", 't', "NUM", 0, "Loop forward to a total of NUM squares"},
   { "break-after", 'b', "NUM", OPTION_HIDDEN, "Break after NUM found"},
+  { "no-second", '2', 0, 0, "The second number doesn't have to be square"},
+  { "no-third", '3', 0, 0, "The third number doesn't have to be square"},
+  { "range", 'r', "NUM", 0, "Iterate until the value has NUM more than start"},
   { 0 }
 };
 
