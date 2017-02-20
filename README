@@ -385,10 +385,11 @@ where all the numbers are divisible by 4, and --mixed has both odd numbers
 and even numbers.
 
 program: number-square
-Usage: number-square [OPTION...]
+Usage: number-square [--min] [--max]
 
 Given a 3x3 magic square on the standard input, output the magic number.  Only
 do so if the square is a magic square.
+Use --min and --max to display the smallest and largest values in the square.
 
 program: check-square
 Usage: check-square [OPTION...]
