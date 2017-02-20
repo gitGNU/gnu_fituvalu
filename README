@@ -707,6 +707,17 @@ This method avoids the overhead of regularly setting up and tearing down ssh
 connections, as well as starting up and tearing down program executions.
 It has a drawback of the output data not being flushed to 'data' immediately.
 
+Maybe you've done that already and you want to extend your search.  Here's how!
+
+In this case we'll be extending our search from 3500 to 5000.
+
+$ seq-morgenstern-mn 3500 > /tmp/3500
+$ seq-morgenstern-mn 5000 > /tmp/5000
+$ diff --new-line-format="" --unchanged-line-format="" /tmp/5000 /tmp/3500 > /tmp/5000.diff
+
+Now /tmp/5000.diff contains the new values we need to search with.  Split and
+convert, and you're searching for new magic squares.
+
 Here's another example of parallelization.
 
 $ seq 1 5000000000000000000 25578614457001433088040  |  parallel --tmpdir=. -S 3/:  'find-3sq-progressions-dist --start={} --range=5000000000000000000' 377850167358576840913440 > data
