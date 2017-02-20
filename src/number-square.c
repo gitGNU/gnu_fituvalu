@@ -20,7 +20,34 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+int showmax;
+int showmin;
+int showdiff;
 int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
+
+static void
+get_lowest_number (mpz_t a[3][3], mpz_t *low)
+{
+  mpz_set_si (*low, -1);
+
+  int j, k;
+  for (j = 0; j < 3; j++)
+    for (k = 0; k < 3; k++)
+      {
+        if (mpz_cmp (a[j][k], *low) < 0 || mpz_cmp_si (*low, -1) == 0)
+          mpz_set (*low, a[j][k]);
+      }
+}
+
+static void
+get_largest_number (mpz_t sq[3][3], mpz_t m)
+{
+  mpz_set_ui (m, 0);
+  for (int i = 0; i < 3; i++)
+  for (int j = 0; j < 3; j++)
+    if (mpz_cmp (sq[i][j], m) > 0)
+      mpz_set (m, sq[i][j]);
+}
 
 static int
 display_magic_number (FILE *stream)
@@ -40,15 +67,48 @@ display_magic_number (FILE *stream)
       read = read_square (stream, &a, &line, &len);
       if (read == -1)
         break;
-      mpz_t sum;
-      mpz_init (sum);
-      mpz_set (sum, a[0][0]);
-      mpz_add (sum, sum, a[0][1]);
-      mpz_add (sum, sum, a[0][2]);
-      char buf[mpz_sizeinbase (sum, 10) + 2];
-      mpz_get_str (buf, 10, sum);
-      fprintf (stdout, "%s\n", buf);
-      mpz_clear (sum);
+      if (showmax)
+        {
+          mpz_t m;
+          mpz_init (m);
+          get_largest_number (a, m);
+          display_textual_number (&m, stdout);
+          mpz_clear (m);
+        }
+      else if (showmin)
+        {
+          mpz_t m;
+          mpz_init (m);
+          get_lowest_number (a, &m);
+          display_textual_number (&m, stdout);
+          mpz_clear (m);
+        }
+      else if (showdiff)
+        {
+          mpz_t mi, ma, diff;
+          mpz_inits (mi, ma, diff, NULL);
+          get_lowest_number (a, &mi);
+          get_largest_number (a, ma);
+          if (mpz_cmp_ui (mi, 0) < 0)
+            {
+              mpz_abs (mi, mi);
+              mpz_add (diff, ma, mi);
+            }
+          else
+            mpz_sub (diff, ma, mi);
+          display_textual_number (&diff, stdout);
+          mpz_clears (mi, ma, diff, NULL);
+        }
+      else
+        {
+          mpz_t sum;
+          mpz_init (sum);
+          mpz_set (sum, a[0][0]);
+          mpz_add (sum, sum, a[0][1]);
+          mpz_add (sum, sum, a[0][2]);
+          display_textual_number (&sum, stdout);
+          mpz_clear (sum);
+        }
     }
 
   for (i = 0; i < 3; i++)
@@ -65,6 +125,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'd':
+      showdiff = 1;
+      break;
+    case 'm':
+      showmax = 1;
+      break;
+    case 'M':
+      showmin = 1;
+      break;
     case 'i':
       read_square = binary_read_square_from_stream;
       break;
@@ -76,6 +145,9 @@ static struct argp_option
 options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
+  { "max", 'm', 0, 0, "Show the largest value instead of the magic number"},
+  { "min", 'M', 0, 0, "Show the smallest value instead of the magic number"},
+  { "diff", 'd', 0, OPTION_HIDDEN, "Show the difference between the largest value and the smallest value"},
   { 0 },
 };
 
