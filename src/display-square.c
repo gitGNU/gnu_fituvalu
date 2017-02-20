@@ -22,6 +22,7 @@
 #include "magicsquareutil.h"
 int simple;
 int show_sums;
+int csvthree;
 int magic_number = 1;
 int number_line;
 int cr_no_lf;
@@ -375,6 +376,14 @@ display_number_line (mpz_t a[3][3], FILE *out)
   fflush (out);
 }
 
+static void
+display_csv_three_rows (mpz_t a[3][3], FILE *out)
+{
+  display_three_record (a[0], out);
+  display_three_record (a[1], out);
+  display_three_record (a[2], out);
+}
+
 static int
 display_square (FILE *stream)
 {
@@ -395,6 +404,8 @@ display_square (FILE *stream)
         break;
       if (number_line)
         display_number_line (a, stdout);
+      else if (csvthree)
+        display_csv_three_rows (a, stdout);
       else if (is_magic_square (a, 1) && !show_sums)
         {
           if (simple)
@@ -420,6 +431,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case '3':
+      csvthree = 1;
+      break;
     case 'i':
       read_square = binary_read_square_from_stream;
       break;
@@ -450,6 +464,7 @@ options[] =
   { "show-sums", 's', 0, 0, "Show row and column totals"},
   { "number-line", 'n', 0, 0, "Chart the numbers"},
   { "cr-no-lf", 'c', 0, 0, "With -n, redraw on the same line"},
+  { "csv-three", '3', 0, 0, "Dump the square in csv format, 3 numbers per row"},
   { 0 }
 };
 struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and display it.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
