@@ -65,7 +65,7 @@ rotatefile=`mktemp`
 while IFS='' read -r line || [[ -n "$line" ]]; do
   grep "^$line$" $rotatefile 2>/dev/null >/dev/null
   if [ "$?" != "0" ]; then
-    echo "$line" | rotate-square >> $rotatefile
+    echo "$line" | rotate-square | sort | uniq >> $rotatefile
     echo $line
   fi
 done < $tmpfile
