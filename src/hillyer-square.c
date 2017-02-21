@@ -113,14 +113,14 @@ hillyer (FILE *in, FILE *out)
       mpz_init (sq[i][j]);
   while (1)
     {
-      read = getdelim (&line, &len, ',', in);
+      read = fv_getdelim (&line, &len, ',', in);
       if (read == -1)
         break;
       char *comma = strchr (line, ',');
       if (comma)
         *comma = '\0';
       mpz_set_str (k, line, 10);
-      read = getline (&line, &len, in);
+      read = fv_getline (&line, &len, in);
       if (read == -1)
         break;
       mpz_set_str (l, line, 10);

@@ -80,7 +80,7 @@ generate_progression_from_input (FILE *in, FILE *out)
   void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
   while (1)
     {
-      read = getline (&line, &len, in);
+      read = fv_getline (&line, &len, in);
       if (read == -1)
         break;
       char *end = strchr (line, '\n');

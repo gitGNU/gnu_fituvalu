@@ -52,28 +52,28 @@ complete_3sq (FILE *in, FILE *out)
   mpz_inits (vec[0], vec[1], vec[2], vec[3], root, NULL);
   while (1)
     {
-      read = getdelim (&line, &len, ',', in);
+      read = fv_getdelim (&line, &len, ',', in);
       if (read == -1)
         break;
       char *comma = strchr (line, ',');
       if (comma)
         *comma = '\0';
       mpz_set_str (vec[0], line, 10);
-      read = getdelim (&line, &len, ',', in);
+      read = fv_getdelim (&line, &len, ',', in);
       if (read == -1)
         break;
       comma = strchr (line, ',');
       if (comma)
         *comma = '\0';
       mpz_set_str (vec[1], line, 10);
-      read = getdelim (&line, &len, ',', in);
+      read = fv_getdelim (&line, &len, ',', in);
       if (read == -1)
         break;
       comma = strchr (line, ',');
       if (comma)
         *comma = '\0';
       mpz_set_str (vec[2], line, 10);
-      read = getline (&line, &len, in);
+      read = fv_getline (&line, &len, in);
       if (read == -1)
         break;
       comma = strchr (line, ',');

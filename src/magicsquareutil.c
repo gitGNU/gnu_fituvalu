@@ -108,9 +108,9 @@ read_square_from_stream (FILE *stream, mpz_t (*a)[3][3], char **line, size_t *le
       for (j = 0; j < 3; j++)
         {
           if (i == 2 && j == 2)
-            read = getline (line, len, stream);
+            read = fv_getline (line, len, stream);
           else
-            read = getdelim (line, len, ',', stream);
+            read = fv_getdelim (line, len, ',', stream);
           if (read == -1)
             break;
           char *end = strpbrk (*line, ",\n");
@@ -153,9 +153,9 @@ read_numbers_from_stream (FILE *stream, mpz_t *a, int size, char **line, size_t 
   for (i = 0; i < size; i++)
     {
       if (i == size - 1)
-        read = getline (line, len, stream);
+        read = fv_getline (line, len, stream);
       else
-        read = getdelim (line, len, ',', stream);
+        read = fv_getdelim (line, len, ',', stream);
       if (read == -1)
         break;
       char *end = strpbrk (*line, ",\n");
@@ -228,7 +228,7 @@ small_read_square_and_run (FILE *stream, void (*iterfunc)(unsigned long long, un
   char *end = NULL;
   while (1)
     {
-      read = getline (&line, &len, stream);
+      read = fv_getline (&line, &len, stream);
       if (read == -1)
         break;
       end = NULL;
@@ -249,7 +249,7 @@ read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigne
   size_t len = 0;
   while (1)
     {
-      read = getline (&line, &len, stream);
+      read = fv_getline (&line, &len, stream);
       if (read == -1)
         break;
       char *end = strchr (line, '\n');
@@ -560,12 +560,12 @@ small_morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsi
   char *end = NULL;
   while (1)
     {
-      read = getdelim (&line, &len, ',', in);
+      read = fv_getdelim (&line, &len, ',', in);
       if (read == -1)
         break;
       end = NULL;
       m = strtoull (line, &end, 10);
-      read = getline (&line, &len, in);
+      read = fv_getline (&line, &len, in);
       if (read == -1)
         break;
       end = NULL;
@@ -589,14 +589,14 @@ morgenstern_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mp
   mpz_set_ui (startn, 2);
   while (1)
     {
-      read = getdelim (&line, &len, ',', in);
+      read = fv_getdelim (&line, &len, ',', in);
       if (read == -1)
         break;
       char *comma = strchr (line, ',');
       if (comma)
         *comma = '\0';
       mpz_set_str (m, line, 10);
-      read = getline (&line, &len, in);
+      read = fv_getline (&line, &len, in);
       if (read == -1)
         break;
       mpz_set_str (n, line, 10);
@@ -674,14 +674,14 @@ _dual_inner (FILE *in, mpz_t m, mpz_t n, void (*search)(mpz_t, mpz_t, mpz_t, mpz
   mpz_inits (r, s, NULL);
   while (1)
     {
-      read = getdelim (&line, &len, ',', in);
+      read = fv_getdelim (&line, &len, ',', in);
       if (read == -1)
         break;
       char *comma = strchr (line, ',');
       if (comma)
         *comma = '\0';
       mpz_set_str (r, line, 10);
-      read = getline (&line, &len, in);
+      read = fv_getline (&line, &len, in);
       if (read == -1)
         break;
       mpz_set_str (s, line, 10);
@@ -703,14 +703,14 @@ morgenstern_search_dual (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz
   mpz_inits (m, n, NULL);
   while (1)
     {
-      read = getdelim (&line, &len, ',', in1);
+      read = fv_getdelim (&line, &len, ',', in1);
       if (read == -1)
         break;
       char *comma = strchr (line, ',');
       if (comma)
         *comma = '\0';
       mpz_set_str (m, line, 10);
-      read = getline (&line, &len, in1);
+      read = fv_getline (&line, &len, in1);
       if (read == -1)
         break;
       mpz_set_str (n, line, 10);
@@ -777,4 +777,59 @@ display_binary_number (mpz_t *i, FILE *out)
 {
   mpz_out_raw (out, *i);
   fflush (out);
+}
+
+int
+fv_getline (char **line, size_t *len, FILE *stream)
+{
+  ssize_t read;
+  while (1)
+    {
+      read = getline (line, len, stream);
+      if (read == -1)
+        break;
+      if ((*line)[0] == '#')
+        continue;
+      break;
+    }
+  return read;
+}
+
+int
+fv_getdelim (char **line, size_t *len, int delim, FILE *stream)
+{
+  ssize_t read;
+  while (1)
+    {
+      read = getdelim (line, len, delim, stream);
+      if (read == -1)
+        break;
+      if ((*line)[0] == '#')
+        {
+          if (strchr (*line, '\n'))
+            {
+              /* crapola, we're in a special case here.
+               * we've sucked in a comment and gone clear over
+               * a number to the next comma. */
+              char *nl = strrchr (*line, '\n');
+              nl++;
+              if (nl[0] == '#')
+                {
+                  read = getline (line, len, stream);
+                  continue;
+                }
+              memcpy (*line, nl, strlen (nl) + 1);
+              break;
+            }
+          else
+            {
+              read = getline (line, len, stream);
+              if (read == -1)
+                break;
+            }
+          continue;
+        }
+      break;
+    }
+  return read;
 }

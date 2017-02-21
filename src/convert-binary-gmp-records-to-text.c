@@ -93,9 +93,9 @@ convert_text_records (FILE *in, FILE *out)
       for (int i = 0; i < num_columns; i++)
         {
           if (i < num_columns - 1)
-            read = getdelim (&line, &len, ',', in);
+            read = fv_getdelim (&line, &len, ',', in);
           else
-            read = getline (&line, &len, in);
+            read = fv_getline (&line, &len, in);
           if (read == -1)
             break;
           char *comma = strchr (line, ',');

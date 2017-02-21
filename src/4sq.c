@@ -93,7 +93,7 @@ generate_4sq_from_input (FILE *in, FILE *out)
   mpz_init (i);
   while (1)
     {
-      read = getline (&line, &len, in);
+      read = fv_getline (&line, &len, in);
       if (read == -1)
         break;
       char *end = strchr (line, '\n');

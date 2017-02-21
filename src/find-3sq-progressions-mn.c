@@ -112,14 +112,14 @@ gen_3sq (FILE *in, FILE *out)
   mpz_inits (x1, _y1, z1, m12, n12, yx1dif, yx1sum, NULL);
   while (1)
     {
-      read = getdelim (&line, &len, ',', in);
+      read = fv_getdelim (&line, &len, ',', in);
       if (read == -1)
         break;
       char *comma = strchr (line, ',');
       if (comma)
         *comma = '\0';
       mpz_set_str (m, line, 10);
-      read = getline (&line, &len, in);
+      read = fv_getline (&line, &len, in);
       if (read == -1)
         break;
       mpz_set_str (n, line, 10);

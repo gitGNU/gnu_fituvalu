@@ -101,7 +101,7 @@ check_divisors (FILE *in, FILE *out)
   mpz_init (i);
   while (1)
     {
-      read = getline (&line, &len, in);
+      read = fv_getline (&line, &len, in);
       if (read == -1)
         break;
       orig_line = strdup (line);
@@ -141,7 +141,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
           FILE *fp = fopen (arg, "r");
           while (1)
             {
-              read = getline (&line, &len, fp);
+              read = fv_getline (&line, &len, fp);
               if (read != -1)
                 break;
               divisors = realloc (divisors,

@@ -67,9 +67,9 @@ complete_four_square_progression (FILE *in, FILE *out)
       for (int j = 0; j < 4; j++)
         {
           if (j == 3)
-            read = getline (&line, &len, in);
+            read = fv_getline (&line, &len, in);
           else
-            read = getdelim (&line, &len, ',', in);
+            read = fv_getdelim (&line, &len, ',', in);
           if (read == -1)
             break;
           char *end = strpbrk (line, ",\n");

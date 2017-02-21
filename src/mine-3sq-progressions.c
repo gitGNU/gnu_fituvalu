@@ -292,7 +292,7 @@ mine_3sq_progressions_sq (FILE *in, FILE *out)
         }
       else
         {
-          read = getline (&line, &len, in);
+          read = fv_getline (&line, &len, in);
           if (read == -1)
             break;
           mpz_set_str (sq, line, 10);

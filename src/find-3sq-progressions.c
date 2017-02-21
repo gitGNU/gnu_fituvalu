@@ -99,7 +99,7 @@ gen_3sq (FILE *in, FILE *out)
   mpz_inits (m, vec[0], vec[1], vec[2], finalroot, NULL);
   while (1)
     {
-      read = getline (&line, &len, in);
+      read = fv_getline (&line, &len, in);
       if (read == -1)
         break;
       mpz_set_str (m, line, 10);
