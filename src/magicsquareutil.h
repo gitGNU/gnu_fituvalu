@@ -136,4 +136,5 @@ void disp_binary_record (mpz_t *vec, int size, FILE *out);
 void disp_record (mpz_t *vec, int size, FILE *out);
 int fv_getline (char **line, size_t *len, FILE *stream);
 int fv_getdelim (char **line, size_t *len, int delim, FILE *stream);
+void reduce_square (mpz_t a[3][3]);
 #endif

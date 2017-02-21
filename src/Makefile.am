@@ -51,7 +51,7 @@ bin_PROGRAMS = \
 	     \
 	     siamese-square gutierrez-square check-divisors \
 	     hillyer-square multiply-3sq-progression scissor-square \
-	     seq-mul
+	     seq-mul unique-squares
 
 noinst_LTLIBRARIES = libmagicsquareutil.la
 
@@ -287,6 +287,9 @@ multiply_3sq_progression_LDADD = -lm libmagicsquareutil.la
 
 scissor_square_SOURCES = scissor-square.c
 scissor_square_LDADD = -lm libmagicsquareutil.la
+
+unique_squares_SOURCES = unique-squares.c
+unique_squares_LDADD = -lm libmagicsquareutil.la
 
 AM_CFLAGS=-Wall
 

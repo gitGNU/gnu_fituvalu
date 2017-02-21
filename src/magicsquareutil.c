@@ -833,3 +833,68 @@ fv_getdelim (char **line, size_t *len, int delim, FILE *stream)
     }
   return read;
 }
+
+static void
+get_lowest (mpz_t a[3][3], mpz_t *low)
+{
+  mpz_t i;
+  mpz_set_si (*low, -1);
+  mpz_init (i);
+
+  int j, k;
+  for (j = 0; j < 3; j++)
+    for (k = 0; k < 3; k++)
+      {
+        if (mpz_sgn (a[j][k]) > 0 &&
+            (mpz_cmp (a[j][k], *low) < 0 || mpz_cmp_si (*low, -1) == 0))
+          mpz_set (*low, a[j][k]);
+      }
+  if (mpz_sgn (*low) < 0)
+    mpz_abs (*low, *low);
+  mpz_clear (i);
+}
+
+void
+reduce_square (mpz_t a[3][3])
+{
+  int j, k;
+  mpz_t low, gcd;
+  mpz_inits (low, gcd, NULL);
+  get_lowest (a, &low);
+  mpz_set (gcd, low);
+  for (j = 0; j < 3; j++)
+    for (k = 0; k < 3; k++)
+      {
+        if (mpz_cmp (a[j][k], low) == 0)
+          continue;
+        mpz_gcd (gcd, gcd, a[j][k]);
+      }
+  if (mpz_cmp_ui (gcd, 1) > 0)
+    {
+      mpz_t d;
+      mpz_init (d);
+      int squares_retained = 1;
+      for (j = 0; j < 3; j++)
+        for (k = 0; k < 3; k++)
+          {
+            mpz_cdiv_q (d, a[j][k], gcd);
+            if (mpz_perfect_square_p (a[j][k]))
+              {
+                if (!mpz_perfect_square_p (d))
+                  {
+                    squares_retained = 0;
+                    break;
+                  }
+              }
+          }
+      mpz_clear (d);
+
+      if (squares_retained)
+        {
+          for (j = 0; j < 3; j++)
+            for (k = 0; k < 3; k++)
+              mpz_cdiv_q (a[j][k], a[j][k], gcd);
+        }
+    }
+  mpz_clears (low, gcd, NULL);
+}
