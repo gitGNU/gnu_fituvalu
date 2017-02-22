@@ -23,6 +23,7 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+int inmem = 0;
 FILE *infile;
 void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
 
@@ -179,9 +180,19 @@ morgenstern_search_type_1 (FILE *in, FILE *out)
   else
     {
       if (in_binary)
-        morgenstern_search_dual_binary (in, infile, search_type_1, out);
+        {
+          if (inmem)
+            morgenstern_search_dual_binary_mem (in, infile, search_type_1, out);
+          else
+            morgenstern_search_dual_binary (in, infile, search_type_1, out);
+        }
       else
-        morgenstern_search_dual (in, infile, search_type_1, out);
+        {
+          if (inmem)
+            morgenstern_search_dual_mem (in, infile, search_type_1, out);
+          else
+            morgenstern_search_dual (in, infile, search_type_1, out);
+        }
     }
   mpz_clears (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
               yx1dif, yx1sum, yx2dif, yx2sum, NULL);
@@ -197,6 +208,7 @@ options[] =
   { "filter", 'f', "NUM", 0, "Only show magic squares that have at least NUM perfect squares" },
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
+  { "mem", 'm', 0, 0, "Load numbers from FILE and stdin into memory"},
   { 0 }
 };
 
@@ -205,6 +217,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'm':
+      inmem = 1;
+      break;
     case 'i':
       in_binary = 1;
       break;
@@ -230,7 +245,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing argument");
       break;
-    case ARGP_KEY_INIT:
+    case ARGP_KEY_FINI:
+      if (inmem && !infile)
+        argp_error (state, "-m must be used with FILE specified as argument");
       break;
     }
   return 0;

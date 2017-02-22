@@ -143,7 +143,7 @@ Usage: reverse-fulcrum-progression-1 [--squares=FILE] [--in-binary] [--out-binar
 
 program: morgenstern-search-type-1
 Usage: morgenstern-search-type-1 [--filter=NUM] [--out-binary] MAX
- or:   morgenstern-search-type-1 [--filter=NUM] [--out-binary] FILE
+ or:   morgenstern-search-type-1 [--filter=NUM] [--out-binary] [--mem] FILE
 
 Whereas the prior programs generate 3x3 magic squares with 4 perfect
 squares and then hope that a 5th, 6th, or 7th perfect square shows up, the
@@ -163,6 +163,8 @@ each of the records passed in on the standard input.  If you pass in a FILE,
 it will iterate each of the records in FILE against each of the records passed
 in on the standard input.  This method is slightly faster because there's no
 calculation involved.
+
+The --filter=NUM option displays magic squares that have NUM or more perfect squares.  The --mem option reads FILE and the standard input into memory, instead of rewinding and re-reading data on disk.  When the FILE and the standard input are identical, the --mem option avoids the generation of duplicate magic squares.
 
 Morgenstern type 1 squares have 5 perfect squares in this configuration:
 +-------+-------+-------+

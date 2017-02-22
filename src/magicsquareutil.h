@@ -137,4 +137,6 @@ void disp_record (mpz_t *vec, int size, FILE *out);
 int fv_getline (char **line, size_t *len, FILE *stream);
 int fv_getdelim (char **line, size_t *len, int delim, FILE *stream);
 void reduce_square (mpz_t a[3][3]);
+void morgenstern_search_dual_binary_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
+void morgenstern_search_dual_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
 #endif
