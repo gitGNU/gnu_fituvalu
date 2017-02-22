@@ -62,7 +62,7 @@ multiply_square (mpz_t sq[3][3], int mult)
 }
 
 static int
-generate_warbird_square (mpz_t sq[3][3], mpz_t *a, mpz_t *b)
+generate_warbird_square1 (mpz_t sq[3][3], mpz_t *a, mpz_t *b)
 {
   if (!has_same_diff (a, b))
     return 0;
@@ -73,6 +73,50 @@ generate_warbird_square (mpz_t sq[3][3], mpz_t *a, mpz_t *b)
   mpz_set (sq[1][2], b[0]);
   mpz_set (sq[0][0], b[1]);
   mpz_set (sq[2][1], b[2]);
+  // +------+------+------+
+  // |  X2  |      |  N3  |
+  // +------+------+------+
+  // |      |  N2  |  X1  |
+  // +------+------+------+
+  // |  N1  |  X3  |      |
+  // +------+------+------+
+
+  int cm = mpz_cmp (a[1], b[1]);
+  if (cm == 0)
+    return 0;
+
+  mpz_t sum;
+  mpz_init (sum);
+  mpz_add (sum, sq[2][0], sq[1][1]);
+  mpz_add (sum, sum, sq[0][2]);
+
+  mpz_sub (sq[2][2], sum, sq[2][0]);
+  mpz_sub (sq[2][2], sq[2][2], sq[2][1]);
+
+  mpz_sub (sq[0][1], sum, sq[0][0]);
+  mpz_sub (sq[0][1], sq[0][1], sq[0][2]);
+
+  mpz_sub (sq[1][0], sum, sq[1][1]);
+  mpz_sub (sq[1][0], sq[1][0], sq[1][2]);
+
+  mpz_clear (sum);
+  //if (is_magic_square (sq, 1))
+   // check_diff_divisors (a, b, sq);
+  return 1;
+}
+
+static int
+generate_warbird_square2 (mpz_t sq[3][3], mpz_t *a, mpz_t *b)
+{
+  if (!has_same_diff (a, b))
+    return 0;
+
+  mpz_set (sq[2][0], b[0]);
+  mpz_set (sq[1][1], b[1]);
+  mpz_set (sq[0][2], b[2]);
+  mpz_set (sq[1][2], a[0]);
+  mpz_set (sq[0][0], a[1]);
+  mpz_set (sq[2][1], a[2]);
   // +------+------+------+
   // |  X2  |      |  N3  |
   // +------+------+------+
@@ -180,7 +224,9 @@ pair_search (mpz_t *target, FILE *in, FILE *out)
         break;
       if (generate_scissor_square (sq, target, b))
         display_square (sq, out);
-      if (generate_warbird_square (sq, target, b))
+      if (generate_warbird_square1 (sq, target, b))
+        display_square (sq, out);
+      if (generate_warbird_square2 (sq, target, b))
         display_square (sq, out);
     }
 
@@ -217,7 +263,9 @@ _pair_search_file (mpz_t *a, FILE *out)
         break;
       if (generate_scissor_square (sq, a, b))
         display_square (sq, out);
-      if (generate_warbird_square (sq, a, b))
+      if (generate_warbird_square1 (sq, a, b))
+        display_square (sq, out);
+      if (generate_warbird_square2 (sq, a, b))
         display_square (sq, out);
     }
 
