@@ -28,44 +28,6 @@ int (*read_tuple) (FILE *, mpz_t *, char **, size_t *) = read_three_numbers_from
 
 mpz_t match[3];
 
-/*
-static void
-check_diff_divisors (mpz_t *a, mpz_t *b, mpz_t sq[3][3])
-{
-  mpz_t diff1, diff2;
-  mpz_inits (diff1, diff2, NULL);
-  mpz_sub (diff1, a[1], a[0]);
-  mpz_sub (diff2, b[1], b[0]);
-  int ret = mpz_cmp (diff1, diff2) == 0;
-  //it might still be okay if they are divisible
-  if (!ret)
-    {
-      if (mpz_cmp (diff1, diff2) > 0)
-        {
-        ret = mpz_divisible_p (diff1, diff2);
-        if (ret)
-          {
-            printf("divisible\n");
-          display_two_record (&diff1, &diff2, stdout);
-          }
-        }
-      else
-        {
-        ret = mpz_divisible_p (diff2, diff1);
-        if (ret)
-          {
-            printf("divisible\n");
-          display_two_record (&diff2, &diff1, stdout);
-          }
-        }
-    }
-  else
-    printf("same\n");
-  mpz_clears (diff1, diff2, NULL);
-  return;
-}
-*/
-
 static int
 has_same_diff (mpz_t *a, mpz_t *b)
 {
@@ -193,8 +155,6 @@ generate_scissor_square (mpz_t sq[3][3], mpz_t *a, mpz_t *b)
   mpz_sub (sq[2][2], sum, sq[2][0]);
   mpz_sub (sq[2][2], sq[2][2], sq[2][1]);
   mpz_clear (sum);
-  //if (is_magic_square (sq, 1))
-   // check_diff_divisors (a, b, sq);
   return 1;
 }
 
@@ -361,7 +321,6 @@ main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  //is_magic_square_init ();
   if (!infile)
     return pair_search (match, stdin, stdout);
   else
