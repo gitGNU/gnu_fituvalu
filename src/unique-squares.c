@@ -73,6 +73,11 @@ get_squares (FILE *in)
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
+  mpz_t sq[3][3];
+
+  for (int i = 0; i < 3; i++)
+    for (int j = 0; j < 3; j++)
+      mpz_init (sq[i][j]);
 
   while (1)
     {
@@ -82,8 +87,24 @@ get_squares (FILE *in)
       read = read_numbers (in, recs[numrecs].sq, 9, &line, &len);
       if (read == -1)
         break;
+      mpz_set (sq[0][0], recs[numrecs].sq[0]);
+      mpz_set (sq[0][1], recs[numrecs].sq[1]);
+      mpz_set (sq[0][2], recs[numrecs].sq[2]);
+      mpz_set (sq[1][0], recs[numrecs].sq[3]);
+      mpz_set (sq[1][1], recs[numrecs].sq[4]);
+      mpz_set (sq[1][2], recs[numrecs].sq[5]);
+      mpz_set (sq[2][0], recs[numrecs].sq[6]);
+      mpz_set (sq[2][1], recs[numrecs].sq[7]);
+      mpz_set (sq[2][2], recs[numrecs].sq[8]);
+      int is_square = is_magic_square (sq, 1);
+      if (!is_square)
+        continue;
       numrecs++;
     }
+
+  for (int i = 0; i < 3; i++)
+    for (int j = 0; j < 3; j++)
+      mpz_clear (sq[i][j]);
 
   if (line)
     free (line);
