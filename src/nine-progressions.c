@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <argz.h>
 #include "magicsquareutil.h"
 
 void
@@ -439,44 +440,30 @@ get_longest_width_of_nine_progression_type_name ()
 char *
 generate_list_of_nine_progression_timelines ()
 {
-  int w = get_longest_width_of_nine_progression_type_name ();
-  char *spaces = malloc (w + 2 * sizeof (char));
-  memset (spaces, ' ', w + 1);
-  spaces[w + 1] = '\0';
-
-  char *s = malloc (1);
-  s[0] = '\0';
   int i = 0;
-  /*FIXME: there's some horrible off-by-one stuff going on with count */
+  int w = get_longest_width_of_nine_progression_type_name ();
+  char sp[32];
+  snprintf (sp, sizeof (sp), "%%s%%-%ds%%s\n", w);
+  char *s = malloc (1);
+  s[0]='\0';
   while (nine_progressions[i].progfunc)
     {
-      char *t = strdup (nine_progressions[i].timeline);
-      char *n = nine_progressions[i].name;
-      char *l, *sav;
-      int count = 0;
-      for (l = strtok_r (t, "\n", &sav); l; l = strtok_r (NULL, "\n", &sav))
+      char *argz = NULL;
+      size_t len = 0;
+      char *l;
+      argz_create_sep (nine_progressions[i].timeline, '\n', &argz, &len);
+      int first = 1;
+      while ((l = argz_next (argz, len, l)))
         {
-          if (count == 0)
+          if (first)
             {
-              strncpy (spaces, n, strlen (n));
-              spaces[strlen (n)] = ':';
+              asprintf (&s, sp, s, nine_progressions[i].name, l);
+              first = 0;
             }
           else
-            memset (spaces, ' ', w + 1);
-          if (!s)
-            asprintf (&s, "%s %s\n", spaces, l);
-          else
-            {
-              if (count == 0)
-                asprintf (&s, "%s%s %s\n", s, spaces, l);
-              else if (count == 2)
-                asprintf (&s, "%s%s   %s", s, spaces, l);
-              else
-                asprintf (&s, "%s%s %s", s, spaces, l);
-            }
-          count++;
+              asprintf (&s, sp, s, "", l);
         }
-      free (t);
+      free (argz);
       i++;
     }
   return s;

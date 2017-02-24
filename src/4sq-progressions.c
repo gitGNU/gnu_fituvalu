@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <argz.h>
 #include <math.h>
 #include "magicsquareutil.h"
 
@@ -59,41 +60,30 @@ get_longest_width_of_four_square_progression_type_name ()
 char *
 generate_list_of_four_square_progression_timelines ()
 {
-  int w = get_longest_width_of_four_square_progression_type_name ();
-  char *spaces = malloc ((w + 2) * sizeof (char));
-  memset (spaces, ' ', w + 1);
-  spaces[w+1] = '\0';
-
-  char *s = malloc (1);
-  s[0] = '\0';
   int i = 0;
+  int w = get_longest_width_of_four_square_progression_type_name ();
+  char sp[32];
+  snprintf (sp, sizeof (sp), "%%s%%-%ds%%s\n", w);
+  char *s = malloc (1);
+  s[0]='\0';
   while (four_square_progressions[i].func)
     {
-      char *t = strdup (four_square_progressions[i].timeline);
-      char *n = four_square_progressions[i].name;
-      char *l, *sav;
+      char *argz = NULL;
+      size_t len = 0;
+      char *l;
+      argz_create_sep (four_square_progressions[i].timeline, '\n', &argz, &len);
       int first = 1;
-      for (l = strtok_r (t, "\n", &sav); l; l = strtok_r (NULL, "\n", &sav))
+      while ((l = argz_next (argz, len, l)))
         {
           if (first)
             {
-              strncpy (spaces, n, strlen (n));
-              spaces[strlen (n)] = ':';
+              asprintf (&s, sp, s, four_square_progressions[i].name, l);
+              first = 0;
             }
           else
-            memset (spaces, ' ', w + 1);
-          if (!s)
-            asprintf (&s, "%s: %s\n", spaces, l);
-          else
-            {
-              if (first)
-                asprintf (&s, "%s%s  %s\n", s, spaces, l);
-              else
-                asprintf (&s, "%s%s  %s\n", s, spaces, l);
-            }
-          first = 0;
+              asprintf (&s, sp, s, "", l);
         }
-      free (t);
+      free (argz);
       i++;
     }
   return s;
