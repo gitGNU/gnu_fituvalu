@@ -921,6 +921,7 @@ load_mn_binary (FILE *in, struct rec **recs, int *numrecs)
       *recs = realloc (*recs, (*numrecs + 1) * sizeof (struct rec));
       mpz_init_set ((*recs)[*numrecs].mn[0], m);
       mpz_init_set ((*recs)[*numrecs].mn[1], n);
+      (*numrecs)++;
     }
   mpz_clears (m, n, NULL);
 }
@@ -949,6 +950,7 @@ load_mn (FILE *in, struct rec **recs, int *numrecs)
       *recs = realloc (*recs, (*numrecs + 1) * sizeof (struct rec));
       mpz_init_set ((*recs)[*numrecs].mn[0], m);
       mpz_init_set ((*recs)[*numrecs].mn[1], n);
+      (*numrecs)++;
     }
   if (line)
     free (line);
