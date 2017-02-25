@@ -957,48 +957,48 @@ load_mn (FILE *in, struct rec **recs, int *numrecs)
   mpz_clears (m, n, NULL);
 }
 
-static int
-same_mn_files (struct rec *list1, struct rec *list2, int num)
+static void
+load_row_numbers (FILE *in, unsigned long long **recs, int *numrecs, int maxrow)
 {
-  int identical = 1;
-  for (int i = 0; i < num; i++)
+  unsigned long long num;
+  char *line = NULL;
+  size_t len = 0;
+  ssize_t read;
+  char *end = NULL;
+  while (1)
     {
-      if (mpz_cmp (list1[i].mn[0], list2[i].mn[0]) != 0)
-        return 0;
-      if (mpz_cmp (list1[i].mn[1], list2[i].mn[1]) != 0)
-        return 0;
+      read = fv_getline (&line, &len, in);
+      if (read == -1)
+        break;
+      num = strtoull (line, &end, 10);
+      if (num >= maxrow)
+        continue;
+      *recs = realloc (*recs, (*numrecs + 1) * sizeof (unsigned long long));
+      (*recs)[*numrecs] = num;
+      (*numrecs)++;
     }
-  return identical;
+  if (line)
+    free (line);
 }
 
 static void
-_morgenstern_search_dual_mem (struct rec *in1recs, int num_in1recs, struct rec *in2recs, int num_in2recs, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+_morgenstern_search_dual_mem (unsigned long long *in1recs, int num_in1recs, struct rec *in2recs, int num_in2recs, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
 {
-  int infiles_identical = 0;
-  if (num_in1recs == num_in2recs)
-    infiles_identical = same_mn_files (in1recs, in2recs, num_in1recs);
-
-  if (infiles_identical)
+  /*
+   **
+   ***
+   ****
+   *****
+   ******
+   */
+  for (int i = 0; i < num_in1recs; i++)
     {
-      for (int i = 0; i < num_in1recs; i++)
-        for (int j = 0; j < i; j++)
-          search (in1recs[i].mn[0], in1recs[i].mn[1],
-                  in2recs[j].mn[0], in2recs[j].mn[1], out);
-    }
-  else
-    {
-      for (int i = 0; i < num_in1recs; i++)
-        for (int j = 0; j < num_in2recs; j++)
-          search (in1recs[i].mn[0], in1recs[i].mn[1],
-                  in2recs[j].mn[0], in2recs[j].mn[1], out);
+      for (int j = 0; j < in1recs[i]; j++)
+        search (in2recs[in1recs[i]].mn[0], in2recs[in1recs[i]].mn[1],
+                in2recs[j].mn[0], in2recs[j].mn[1], out);
     }
 
   //clean up
-  for (int i = 0; i < num_in1recs; i++)
-    {
-      mpz_clear (in1recs[i].mn[0]);
-      mpz_clear (in1recs[i].mn[1]);
-    }
   free (in1recs);
   for (int i = 0; i < num_in2recs; i++)
     {
@@ -1012,10 +1012,11 @@ _morgenstern_search_dual_mem (struct rec *in1recs, int num_in1recs, struct rec *
 void
 morgenstern_search_dual_binary_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
 {
-  struct rec *in1recs = NULL, *in2recs = NULL;
+  unsigned long long *in1recs = NULL;
+  struct rec *in2recs = NULL;
   int num_in1recs = 0, num_in2recs = 0;
-  load_mn_binary (in1, &in1recs, &num_in1recs);
   load_mn_binary (in2, &in2recs, &num_in2recs);
+  load_row_numbers (in1, &in1recs, &num_in1recs, num_in2recs);
   return _morgenstern_search_dual_mem
     (in1recs, num_in1recs, in2recs, num_in2recs, search, out);
 }
@@ -1023,10 +1024,11 @@ morgenstern_search_dual_binary_mem (FILE *in1, FILE *in2, void (*search) (mpz_t,
 void
 morgenstern_search_dual_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
 {
-  struct rec *in1recs = NULL, *in2recs = NULL;
+  unsigned long long *in1recs = NULL;
+  struct rec *in2recs = NULL;
   int num_in1recs = 0, num_in2recs = 0;
-  load_mn (in1, &in1recs, &num_in1recs);
   load_mn (in2, &in2recs, &num_in2recs);
+  load_row_numbers (in1, &in1recs, &num_in1recs, num_in2recs);
   return _morgenstern_search_dual_mem
     (in1recs, num_in1recs, in2recs, num_in2recs, search, out);
 }
