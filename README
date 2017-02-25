@@ -690,12 +690,12 @@ each of our six jobs.  Like so:
 
 $ seq-morgenstern-mn 3500  > /tmp/indata
 $ split -d -n 6 --suffix-length=3 /tmp/indata indata-
-$ cat indata-000 | convert-binary-gmp-to-text -i > indata-000.bin
-$ cat indata-001 | convert-binary-gmp-to-text -i > indata-001.bin
-$ cat indata-002 | convert-binary-gmp-to-text -i > indata-002.bin
-$ cat indata-003 | convert-binary-gmp-to-text -i > indata-003.bin
-$ cat indata-004 | convert-binary-gmp-to-text -i > indata-004.bin
-$ cat indata-005 | convert-binary-gmp-to-text -i > indata-005.bin
+$ cat indata-000 | convert-binary-gmp-records-to-text -i > indata-000.bin
+$ cat indata-001 | convert-binary-gmp-records-to-text -i > indata-001.bin
+$ cat indata-002 | convert-binary-gmp-records-to-text -i > indata-002.bin
+$ cat indata-003 | convert-binary-gmp-records-to-text -i > indata-003.bin
+$ cat indata-004 | convert-binary-gmp-records-to-text -i > indata-004.bin
+$ cat indata-005 | convert-binary-gmp-records-to-text -i > indata-005.bin
 $ mv indata-*.bin /tmp/
 $ scp /tmp/indata-*.bin 192.168.1.101:/tmp/
 $ seq -f "%03g" 0 5 | parallel -S 3/192.168.1.101 -S 3/:  'cat /tmp/indata-{}.bin | morgenstern-search-type-2 3500 -f 6 -i' > data
@@ -709,29 +709,6 @@ file it will operate on.
 This method avoids the overhead of regularly setting up and tearing down ssh
 connections, as well as starting up and tearing down program executions.
 It has a drawback of the output data not being flushed to 'data' immediately.
-
-To speed things up even more, pass in a FILE and the -m option to
-"morgenstern-search-type-2".  Like so:
-
-$ seq -f "%03g" 0 5 | parallel -S 3/192.168.1.101 -S 3/:  'cat /tmp/indata-{}.bin | morgenstern-search-type-2 /tmp/indata-{}.bin -f 6 -m -i' > data
-
-The idea here is that we're not going to bother trying to calculate the MN
-values up to 3500, instead we'll just pass in a file where those calculations
-have already been made -- and you'll notice that we already have that file,
-because it is the same file we're passing in on the standard input.
-
-The -m option reads in all of the numbers from the standard input and from
-FILE, so that we're not rewinding and re-reading data from disk.  But the -m
-option goes one step farther, and then it checks to see if the files are
-identical; and if they are we get a performance increase because we can
-easily avoid calculating squares that we've already calculated.
-
-Like so, where m, n comes from the standard input and p, r comes from FILE:
-for (i = 0; i < max; i++)
-  for (j = i; j < max; j++)
-    calculate (list1[i].m, list1[i].n, list2[j].p, list2[j].r)
-
-Because the m option is reading files into memory (twice), it can't be used on datasets that exceed the available memory.
 
 Maybe you've done that already and you want to extend your search.  Here's how!
 
