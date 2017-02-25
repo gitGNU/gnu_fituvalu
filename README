@@ -722,7 +722,7 @@ calculations are redundant which is not good at all.
 Can we do better than this?  Yes!  We can use the --mem option.
 
 $ seq-morgenstern-mn 3500  > /tmp/indata
-$ seq 0 `wc -l /tmp/indata | cut -f1 -d' '` > /tmp/records
+$ seq 0 `cat /tmp/indata | wc -l` > /tmp/records
 $ split -d -n r/6 --suffix-length=3 /tmp/records /tmp/records-
 $ scp /tmp/indata /tmp/records-* 192.168.1.101:/tmp/
 $ seq -f "%03g" 0 5 | parallel -S 3/192.168.1.101 -S 3/:  'cat /tmp/records-{} | morgenstern-search-type-2 /tmp/indata -f 6 --mem' > data
@@ -772,6 +772,15 @@ Now /tmp/5000.diff contains the new values we need to search with.  Split and
 convert, and you're searching for new magic squares.
 
 Extending a search with the --mem option is a little different.
+We generate the data file
+$ seq-morgenstern-mn 5000 > /tmp/5000
+We want our row numbers to start after a certain number of rows:
+$ seq-morgenstern-mn 3500 | wc -l
+2481760
+$ cat /tmp/5000 | wc -l
+5065076
+$ seq 2481760 5065076 > /tmp/records
+and then we split them like before.
 
 Here's another example of parallelization.
 
