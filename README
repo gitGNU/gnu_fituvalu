@@ -712,9 +712,57 @@ This method avoids the overhead of regularly setting up and tearing down ssh
 connections, as well as starting up and tearing down program executions.
 It has a drawback of the output data not being flushed to 'data' immediately.
 
+It also has the unfortunate drawback of checking the same combination of M,N
+and P,R twice.
+
+For example, it will check M=2584, N=1597 with P=3448, R=2173, and then later
+on it will check M=3448, M=2173 with P=2584, R=1597.  This means half of our
+calculations are redundant which is not good at all.
+
+Can we do better than this?  Yes!  We can use the --mem option.
+
+$ seq-morgenstern-mn 3500  > /tmp/indata
+$ seq 0 `wc -l /tmp/indata | cut -f1 -d' '` > /tmp/records
+$ split -d -n r/6 --suffix-length=3 /tmp/records /tmp/records-
+$ scp /tmp/indata /tmp/records-* 192.168.1.101:/tmp/
+$ seq -f "%03g" 0 5 | parallel -S 3/192.168.1.101 -S 3/:  'cat /tmp/records-{} | morgenstern-search-type-2 /tmp/indata -f 6 --mem' > data
+
+
+In the first step, we make our data file.  And in the second step we generate
+a sequence of row numbers -- it's a bit fancy there with the ` backticks, but
+it is just finding the number of lines in the file.  In the third step we split
+the records into 6 files just like before, but now it says r/6 instead of l/6.
+This causes the row numbers to be round-robined, so that high and low record
+numbers (indices) are evenly distributed in our files.  In the fourth step we
+copy our files into place.  Now, in the fifth step there's a lot going on.
+We're running seq like in the previous example, where it's one for each job,
+which is one for each of our record datafiles (e.g. /tmp/records-000,
+/tmp/records-001 and so on).  Parallel is running 3 jobs on this machine
+(-S 3/:), and 3 on a remote machine.  You can see our data file /tmp/indata
+s an argument to morgenstern-search-type-2.  We have passed in the whole data
+file here because we want to process portions of it, but we're not quite sure
+yet which portions.
+
+The --mem option reads the whole data file into memory and this is what signals
+the program to read in row numbers (instead of M,N values) from the standard
+input, which controls the processing of rows of the data file /tmp/indata.
+
+Recall that in the previous example we were checking combinations twice (e.g.
+where M,N,P,R was the same as P,R,M,N.)
+
+The program gets its first M,N pair as the row number as an index into
+/tmp/indata, and then we get our P,R pair as every other M,N pair up to the
+row number.  This has the side effect of low record numbers taking much less
+time than higher record numbers, but that's okay because we round-robined our
+record numbers in the split command.
+
+The disadvantage of this method is that our whole data file has to be in
+memory.
+
 Maybe you've done that already and you want to extend your search.  Here's how!
 
-In this case we'll be extending our search from 3500 to 5000.
+In this case we'll be extending our search from 3500 to 5000 and not using
+the --mem option.
 
 $ seq-morgenstern-mn 3500 > /tmp/3500
 $ seq-morgenstern-mn 5000 > /tmp/5000
@@ -722,6 +770,8 @@ $ diff --new-line-format="" --unchanged-line-format="" /tmp/5000 /tmp/3500 > /tm
 
 Now /tmp/5000.diff contains the new values we need to search with.  Split and
 convert, and you're searching for new magic squares.
+
+Extending a search with the --mem option is a little different.
 
 Here's another example of parallelization.
 
