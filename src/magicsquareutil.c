@@ -416,7 +416,7 @@ void
 display_binary_three_record_with_root (mpz_t *progression, mpz_t *root, FILE *out)
 {
   for (int i = 0; i < 3; i++)
-      mpz_out_raw (out, progression[i]);
+    mpz_out_raw (out, progression[i]);
   if (mpz_cmp_ui (*root, 0) != 0)
     mpz_out_raw (out, *root);
   fflush (out);
