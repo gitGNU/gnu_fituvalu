@@ -998,13 +998,47 @@ _morgenstern_search_dual_mem (FILE *in, struct rec *in2recs, int num_in2recs, vo
   return;
 }
 
+static void
+_morgenstern_search_dual_binary_mem (FILE *in, struct rec *in2recs, int num_in2recs, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+{
+  /*
+   **
+   ***
+   ****
+   *****
+   ******
+   */
+  unsigned long long i;
+  ssize_t read;
+  while (1)
+    {
+      read = fread (&i, sizeof (i), 1, in);
+      if (!read)
+        break;
+      if (i >= num_in2recs)
+        continue;
+      for (unsigned long long j = 0; j < i; j++)
+        search (in2recs[i].mn[0], in2recs[i].mn[1],
+                in2recs[j].mn[0], in2recs[j].mn[1], out);
+    }
+
+  //clean up
+  for (int i = 0; i < num_in2recs; i++)
+    {
+      mpz_clear (in2recs[i].mn[0]);
+      mpz_clear (in2recs[i].mn[1]);
+    }
+  free (in2recs);
+  return;
+}
+
 void
 morgenstern_search_dual_binary_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
 {
   struct rec *in2recs = NULL;
   int num_in2recs = 0;
   load_mn_binary (in2, &in2recs, &num_in2recs);
-  return _morgenstern_search_dual_mem (in1, in2recs, num_in2recs, search, out);
+  return _morgenstern_search_dual_binary_mem (in1, in2recs, num_in2recs, search, out);
 }
 
 void

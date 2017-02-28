@@ -21,6 +21,7 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 int to_binary;
+int ull;
 int num_columns = 9;
 
 static error_t
@@ -28,6 +29,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
+    case 'l':
+      ull = 1;
+      break;
     case 'i':
       to_binary = 1;
       break;
@@ -43,6 +47,7 @@ options[] =
 {
   { "num-columns", 'n', "NUM", 0, "A record has NUM columns (default 9)"},
   { "inverse", 'i', 0, 0, "Convert to binary instead"},
+  { "ull", 'l', 0, 0, "Instead of GMP numbers use unsigned long longs"},
   { 0 }
 };
 
@@ -57,7 +62,7 @@ dump_num (mpz_t *i, FILE *out)
 }
 
 static void
-convert_binary_records (FILE *in, FILE *out)
+convert_binary_gmp_records (FILE *in, FILE *out)
 {
   mpz_t i;
   mpz_init (i);
@@ -81,7 +86,28 @@ convert_binary_records (FILE *in, FILE *out)
 }
 
 static void
-convert_text_records (FILE *in, FILE *out)
+convert_binary_ull_records (FILE *in, FILE *out)
+{
+  unsigned long long i;
+  ssize_t read;
+  int count = 0;
+  while (1)
+    {
+      count++;
+      read = fread (&i, sizeof (i), 1, in);
+      if (!read)
+        break;
+      fprintf (out, "%llu, ", i);
+      if (count == num_columns)
+        {
+          fprintf (out, "\n");
+          count = 0;
+        }
+    }
+}
+
+static void
+convert_text_records_to_gmp (FILE *in, FILE *out)
 {
   ssize_t read = 0;
   char *line = NULL;
@@ -113,15 +139,58 @@ convert_text_records (FILE *in, FILE *out)
   return;
 }
 
+static void
+convert_text_records_to_ull (FILE *in, FILE *out)
+{
+  ssize_t read = 0;
+  char *line = NULL;
+  size_t len = 0;
+  char *end = NULL;
+  unsigned long long n;
+  while (1)
+    {
+      for (int i = 0; i < num_columns; i++)
+        {
+          if (i < num_columns - 1)
+            read = fv_getdelim (&line, &len, ',', in);
+          else
+            read = fv_getline (&line, &len, in);
+          if (read == -1)
+            break;
+
+          char *comma = strchr (line, ',');
+          if (comma)
+            *comma = '\0';
+          n = strtoull (line, &end, 10);
+          fwrite (&n, sizeof (n), 1, out);
+        }
+      if (read == -1)
+        break;
+    }
+  if (line)
+    free (line);
+  return;
+}
+
 int
 main (int argc, char **argv)
 {
   setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
   argp_parse (&argp, argc, argv, 0, 0, 0);
-  if (to_binary)
-    convert_text_records (stdin, stdout);
+  if (ull)
+    {
+      if (to_binary)
+        convert_text_records_to_ull (stdin, stdout);
+      else
+        convert_binary_ull_records (stdin, stdout);
+    }
   else
-    convert_binary_records (stdin, stdout);
+    {
+      if (to_binary)
+        convert_text_records_to_gmp (stdin, stdout);
+      else
+        convert_binary_gmp_records (stdin, stdout);
+    }
   return 0;
 }
 

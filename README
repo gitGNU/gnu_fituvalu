@@ -168,6 +168,9 @@ The --filter=NUM option displays magic squares that have NUM or more perfect squ
 
 The --mem option reads FILE into memory and treats the standard input differently.  The idea here is that the stdin contains the row numbers that we're going to check. Simply put, the row number an index into FILE which is M,N, and then we get P,R as every record from 0 to the record number.  This option avoids the generation of duplicate magic squares, and saves a lot of time.
 
+When -i used with --mem, the file that is passed on the standard input needs to
+be encoded with "convert-binary-gmp-records-to-text -i --ull".
+
 Morgenstern type 1 squares have 5 perfect squares in this configuration:
 +-------+-------+-------+
 |  A^2  |       |  C^2  |
@@ -588,7 +591,7 @@ The fourth square iterated forward NUM times.  This program generates useful
 input for "complete-4sq-progression".
 
 program: convert-binary-gmp-records-to-text
-Usage: convert-binary-gmp-records-to-text [--num-columns=NUM] [--inverse]
+Usage: convert-binary-gmp-records-to-text [--num-columns=NUM] [--inverse] [--ull]
 
 The progression programs have an option to dump records in raw format 
 (--out-binary), so we don't spend time converting the numbers to their
@@ -596,6 +599,7 @@ textual representation.  This program converts them from the GMP raw format
 to that textual representation.  It reads from the standard-input and
 outputs the records on the standard output.
 The --inverse option converts from text to binary.
+The --ull option converts unsigned long longs instead of GMP numbers.
 
 How do you use all this?
 ------------------------
