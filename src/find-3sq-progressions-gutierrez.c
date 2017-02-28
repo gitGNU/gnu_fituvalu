@@ -141,9 +141,14 @@ gutierrez (FILE *out)
           if (show_diff)
             {
               mpz_abs (delta1, delta1);
-              char buf[mpz_sizeinbase (delta1, 10) + 2];
-              mpz_get_str (buf, 10, delta1);
-              fprintf (out, "%s, ", buf);
+              if (display_record == display_binary_three_record_with_root)
+                mpz_out_raw (out, delta1);
+              else
+                {
+                  char buf[mpz_sizeinbase (delta1, 10) + 2];
+                  mpz_get_str (buf, 10, delta1);
+                  fprintf (out, "%s, ", buf);
+                }
             }
           display_record (progression, &root, out);
         }
