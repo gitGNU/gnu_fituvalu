@@ -344,6 +344,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
+int
+fituvalu_mine_3sq_progressions (struct fv_app_mine_3sq_progressions_t *app, FILE *in)
+{
+  if (app->squares)
+    return mine_3sq_progressions_sq (app, in);
+  else
+    return mine_3sq_progressions (app, in);
+}
+
 static struct argp_option
 options[] =
 {
@@ -355,16 +364,13 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares and output any arithmetic progressions that are formed by three perfect squares.\vThe 3x3 magic squares must be separated by a comma and terminated by a newline." , 0};
-
-int
-fituvalu_mine_3sq_progressions (struct fv_app_mine_3sq_progressions_t *app, FILE *in)
+static struct argp
+argp =
 {
-  if (app->squares)
-    return mine_3sq_progressions_sq (app, in);
-  else
-    return mine_3sq_progressions (app, in);
-}
+  options, parse_opt, 0,
+  "Accept 3x3 magic squares and output any arithmetic progressions that are formed by three perfect squares.\vThe 3x3 magic squares must be separated by a comma and terminated by a newline.",
+  0
+};
 
 int
 main (int argc, char **argv)

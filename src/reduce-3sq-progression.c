@@ -78,7 +78,13 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, 0, "Accept three-square arithmetic progressions from the standard input, and reduce them to their smallest values.\vThe three values must be separated by a comma and terminated by a newline, and must be in ascending order." , 0};
+static struct argp
+argp =
+{
+  options, parse_opt, 0,
+  "Accept three-square arithmetic progressions from the standard input, and reduce them to their smallest values.\vThe three values must be separated by a comma and terminated by a newline, and must be in ascending order.",
+  0
+};
 
 int
 main (int argc, char **argv)

@@ -394,6 +394,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
+int
+fituvalu_3sq_pair_search (struct fv_app_3sq_pair_search_t *app, FILE *in, FILE *out)
+{
+  if (!app->infile)
+    return pair_search (app, in, out);
+  else
+    return pair_search_file (app, in, out);
+}
+
 static struct argp_option
 options[] =
 {
@@ -405,16 +414,13 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, "N1, N2, N3,\nFILE", "Try to create a 3x3 of magic square from two progressions of three squares.  The first progression is given as the arguments N1, N2, N3.  The second progression is passed in on the standard input.\vThe three values must be perfect squares, separated by a comma and terminated by a newline, and must be in ascending order.  The programs \"find-3sq-progressions\", \"find-3sq-progressions-mn\", and \"mine-3sq-progressions\" produce suitable input for this program.\n", 0};
-
-int
-fituvalu_3sq_pair_search (struct fv_app_3sq_pair_search_t *app, FILE *in, FILE *out)
+static struct argp
+argp =
 {
-  if (!app->infile)
-    return pair_search (app, in, out);
-  else
-    return pair_search_file (app, in, out);
-}
+  options, parse_opt, "N1, N2, N3,\nFILE",
+  "Try to create a 3x3 of magic square from two progressions of three squares.  The first progression is given as the arguments N1, N2, N3.  The second progression is passed in on the standard input.\vThe three values must be perfect squares, separated by a comma and terminated by a newline, and must be in ascending order.  The programs \"find-3sq-progressions\", \"find-3sq-progressions-mn\", and \"mine-3sq-progressions\" produce suitable input for this program.\n",
+  0
+};
 
 int
 main (int argc, char **argv)

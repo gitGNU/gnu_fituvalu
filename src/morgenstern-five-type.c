@@ -460,7 +460,13 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and get the type of five-square morgenstern type of magic square.  These magic squares have five perfect squares in a configuration identified by Lee Morgenstern as being candidates for seven perfect squares.\vThe nine values must be separated by a comma and terminated by a newline.", 0};
+static struct argp
+argp =
+{
+  options, parse_opt, 0,
+  "Accept 3x3 magic squares from the standard input, and get the type of five-square morgenstern type of magic square.  These magic squares have five perfect squares in a configuration identified by Lee Morgenstern as being candidates for seven perfect squares.\vThe nine values must be separated by a comma and terminated by a newline.",
+  0
+};
 
 int
 main (int argc, char **argv)

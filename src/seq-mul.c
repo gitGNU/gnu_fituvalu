@@ -72,15 +72,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp_option
-options[] =
-{
-  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { 0 }
-};
-
-static struct argp argp ={options, parse_opt, "FIRST MULTIPLE\nFIRST MULTIPLE LAST", "Compute a sequence of numbers in steps of MULTIPLE." , 0};
-
 int
 fituvalu_seq_mul (struct fv_app_seq_mul_t *app, FILE *out)
 {
@@ -106,6 +97,21 @@ fituvalu_seq_mul (struct fv_app_seq_mul_t *app, FILE *out)
   mpz_clear (zero);
   return ret;
 }
+
+static struct argp_option
+options[] =
+{
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, "FIRST MULTIPLE\nFIRST MULTIPLE LAST",
+  "Compute a sequence of numbers in steps of MULTIPLE.",
+  0
+};
 
 int
 main (int argc, char **argv)

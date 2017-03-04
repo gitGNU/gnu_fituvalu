@@ -176,16 +176,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp_option
-options[] =
-{
-  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
-  { "num-columns", 'n', "NUM", 0, "How many columns there are in a record (with -i)"},
-  { 0 }
-};
-
-static struct argp argp ={options, parse_opt, "[FILE]", "Display the records from the standard input that have a number that is divisible by a set of a divisors.\vThe default divisors are: 29, 37, 41, 48, 53, 61, 72, 120, 168, 264, 312, 408, 456, 552, 744, 1032, 1128, and 1608.  Alternative divisors can be specified in FILE.", 0 };
-
 int
 fituvalu_check_divisors (struct fv_app_check_divisors_t *app, FILE *in, FILE *out)
 {
@@ -195,6 +185,23 @@ fituvalu_check_divisors (struct fv_app_check_divisors_t *app, FILE *in, FILE *ou
     check_divisors (app, in, out);
   return 0;
 }
+
+
+static struct argp_option
+options[] =
+{
+  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
+  { "num-columns", 'n', "NUM", 0, "How many columns there are in a record (with -i)"},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, "[FILE]",
+  "Display the records from the standard input that have a number that is divisible by a set of a divisors.\vThe default divisors are: 29, 37, 41, 48, 53, 61, 72, 120, 168, 264, 312, 408, 456, 552, 744, 1032, 1128, and 1608.  Alternative divisors can be specified in FILE.",
+  0
+};
 
 int
 main (int argc, char **argv)

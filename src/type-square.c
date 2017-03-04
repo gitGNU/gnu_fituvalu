@@ -645,18 +645,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp_option
-options[] =
-{
-  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
-  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { "-no-show-squares", 'n', 0, 0, "Just show the type, and not the number of squares."},
-  { "filter", 'f', "NUM_SQUARES:TYPE", 0, "Show the magic squares that have this number of perfect squares, and type."},
-  { 0 }
-};
-
-static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and determine which configuration it is.\vThe nine values must be separated by commas and terminated by a newline. --out-binary is only used with --filter.", 0};
-
 int
 fituvalu_type_square (struct fv_app_type_square_t *app,  FILE *in, FILE *out)
 {
@@ -716,6 +704,24 @@ fituvalu_type_square (struct fv_app_type_square_t *app,  FILE *in, FILE *out)
     free (line);
   return 0;
 }
+
+static struct argp_option
+options[] =
+{
+  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "-no-show-squares", 'n', 0, 0, "Just show the type, and not the number of squares."},
+  { "filter", 'f', "NUM_SQUARES:TYPE", 0, "Show the magic squares that have this number of perfect squares, and type."},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, 0,
+  "Accept 3x3 magic squares from the standard input, and determine which configuration it is.\vThe nine values must be separated by commas and terminated by a newline. --out-binary is only used with --filter.",
+  0
+};
 
 int
 main (int argc, char **argv)

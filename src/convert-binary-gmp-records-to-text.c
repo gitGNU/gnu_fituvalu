@@ -169,17 +169,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp_option
-options[] =
-{
-  { "num-columns", 'n', "NUM", 0, "A record has NUM columns (default 9)"},
-  { "inverse", 'i', 0, 0, "Convert to binary instead"},
-  { "ull", 'l', 0, 0, "Instead of GMP numbers use unsigned long longs"},
-  { 0 }
-};
-
-static struct argp argp ={options, parse_opt, NULL, "Convert raw GMP numbers on the standard input to their textual representation on the standard output.", 0 };
-
 int
 fituvalu_convert_records (struct fv_app_convert_records_t *app, FILE *in, FILE *out)
 {
@@ -199,6 +188,23 @@ fituvalu_convert_records (struct fv_app_convert_records_t *app, FILE *in, FILE *
     }
   return 0;
 }
+
+static struct argp_option
+options[] =
+{
+  { "num-columns", 'n', "NUM", 0, "A record has NUM columns (default 9)"},
+  { "inverse", 'i', 0, 0, "Convert to binary instead"},
+  { "ull", 'l', 0, 0, "Instead of GMP numbers use unsigned long longs"},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, NULL,
+  "Convert raw GMP numbers on the standard input to their textual representation on the standard output.",
+  0
+};
 
 int
 main (int argc, char **argv)

@@ -199,19 +199,6 @@ help_filter (int key, const char *text, void *input)
   return (char *) text;
 }
 
-static struct argp_option
-options[] =
-{
-  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
-  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { "type", 't', "NAME", 0, "Use NAME as the progression strategy"},
-  { NULL, '1', "NUM", 0, "Do one iteration with NUM as first square"},
-  { "increment", 'I', "NUM", 0, "Advance by NUM squares instead of 1"},
-  { 0 }
-};
-
-static struct argp argp ={options, parse_opt, "START FINISH\nFINISH", "Generate progressions of 4 perfect squares.  If only FINISH is specified, read the starting perfect square from the standard input.  Continue iterating until the progression reaches FINISH.\vAn arithmetic progression of 4 squares in a row is impossible (e.g. the distance between the squares is the same), so we iterate over 4 squares with a different gap between one or more of the squares.  --type must be one of:%s", 0, help_filter};
-
 int
 fituvalu_4sq (struct fv_app_4sq_t *app, FILE *in)
 {
@@ -231,6 +218,27 @@ fituvalu_4sq (struct fv_app_4sq_t *app, FILE *in)
     }
   return 0;
 }
+
+
+static struct argp_option
+options[] =
+{
+  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "type", 't', "NAME", 0, "Use NAME as the progression strategy"},
+  { NULL, '1', "NUM", 0, "Do one iteration with NUM as first square"},
+  { "increment", 'I', "NUM", 0, "Advance by NUM squares instead of 1"},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, "START FINISH\nFINISH",
+  "Generate progressions of 4 perfect squares.  If only FINISH is specified, read the starting perfect square from the standard input.  Continue iterating until the progression reaches FINISH.\vAn arithmetic progression of 4 squares in a row is impossible (e.g. the distance between the squares is the same), so we iterate over 4 squares with a different gap between one or more of the squares.  --type must be one of:%s",
+  0,
+  help_filter
+};
 
 int
 main (int argc, char **argv)

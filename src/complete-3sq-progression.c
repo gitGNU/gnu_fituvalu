@@ -120,6 +120,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
 }
 
 
+int
+fituvalu_complete_3sq_progressions (struct fv_app_complete_3sq_progressions_t *app, FILE *in, FILE *out)
+{
+  if (app->in_binary)
+    return complete_binary_3sq (app, in, out);
+  else
+    return complete_3sq (app, in, out);
+}
+
 static struct argp_option
 options[] =
 {
@@ -129,16 +138,13 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, "NUM", "Generate progressions of four squares given an arithmetic progression of three squares.\vThe input of this program comes from \"3sq\" -- three squares that are equidistant, seperated by commas, and followed by the square root of the third square.  NUM is the number of squares to iterate after the third square.", 0 };
-
-int
-fituvalu_complete_3sq_progressions (struct fv_app_complete_3sq_progressions_t *app, FILE *in, FILE *out)
+static struct argp
+argp =
 {
-  if (app->in_binary)
-    return complete_binary_3sq (app, in, out);
-  else
-    return complete_3sq (app, in, out);
-}
+  options, parse_opt, "NUM",
+  "Generate progressions of four squares given an arithmetic progression of three squares.\vThe input of this program comes from \"3sq\" -- three squares that are equidistant, seperated by commas, and followed by the square root of the third square.  NUM is the number of squares to iterate after the third square.",
+  0
+};
 
 int
 main (int argc, char **argv)

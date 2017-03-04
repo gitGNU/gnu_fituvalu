@@ -196,7 +196,13 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, 0, "Accept 9 numbers from the standard input, and permute them to find a magic sqaure.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
+static struct argp
+argp =
+{
+  options, parse_opt, 0,
+  "Accept 9 numbers from the standard input, and permute them to find a magic sqaure.\vThe nine values must be separated by a comma and terminated by a newline.",
+  0
+};
 
 int
 main (int argc, char **argv)

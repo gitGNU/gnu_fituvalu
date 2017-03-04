@@ -220,6 +220,16 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
+int
+fituvalu_lucas_square (struct fv_app_lucas_square_t *app, FILE *in, FILE *out)
+{
+  if (app->from_abc)
+    generate_lucas_squares (app, in, out);
+  else
+    return lucas_square (app, in, out);
+  return 0;
+}
+
 static struct argp_option
 options[] =
 {
@@ -231,25 +241,20 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and only show the ones that are in the Lucas family.\vThe nine values must be separated by a comma and terminated by a newline.  Lucas family squares have the following structure:\n"
+static struct argp
+argp =
+{
+  options, parse_opt, 0,
+  "Accept 3x3 magic squares from the standard input, and only show the ones that are in the Lucas family.\vThe nine values must be separated by a comma and terminated by a newline.  Lucas family squares have the following structure:\n"
 "+-------------+-------------+-------------+\n"
 "|    c - b    | c + (a + b) |    c - a    |\n"
 "+-------------+-------------+-------------+\n"
 "| c - (a - b) |      c      | c + (a - b) |\n"
 "+-------------+-------------+-------------+\n"
 "|    c + a    | c - (a + b) |    c + b    |\n"
-"+-------------+-------------+-------------+\n"
-  , 0};
-
-int
-fituvalu_lucas_square (struct fv_app_lucas_square_t *app, FILE *in, FILE *out)
-{
-  if (app->from_abc)
-    generate_lucas_squares (app, in, out);
-  else
-    return lucas_square (app, in, out);
-  return 0;
-}
+"+-------------+-------------+-------------+\n",
+0
+};
 
 int
 main (int argc, char **argv)

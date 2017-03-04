@@ -145,7 +145,13 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, "MAX", "Find an arithmetic progression consisting of three squares.\vMAX is the number of iterations. \"conrad\" refers to Keith Conrad, and his paper 'Arithmetic Progressions of Three Squares'." , 0};
+static struct argp
+argp =
+{
+  options, parse_opt, "MAX",
+  "Find an arithmetic progression consisting of three squares.\vMAX is the number of iterations. \"conrad\" refers to Keith Conrad, and his paper 'Arithmetic Progressions of Three Squares'.",
+  0
+};
 
 int
 main (int argc, char **argv)

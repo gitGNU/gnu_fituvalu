@@ -81,7 +81,13 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and reduce it to have its smallest values.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
+static struct argp
+argp =
+{
+  options, parse_opt, 0,
+  "Accept 3x3 magic squares from the standard input, and reduce it to have its smallest values.\vThe nine values must be separated by a comma and terminated by a newline.",
+  0
+};
 
 int
 main (int argc, char **argv)

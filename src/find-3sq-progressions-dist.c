@@ -203,6 +203,20 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
+int
+fituvalu_find_3sq_progressions_dist (struct fv_app_find_3sq_progressions_dist_t *app, FILE *in, FILE *out)
+{
+  if (mpz_cmp_ui (app->distance, 0) == 0)
+    {
+      if (app->in_binary)
+        return gen_3sq_binary_in (app, in, out);
+      else
+        return gen_3sq_in (app, in, out);
+    }
+  else
+    return gen_3sq (app, out);
+}
+
 static struct argp_option
 options[] =
 {
@@ -220,21 +234,13 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, "[DISTANCE]", "Generate arithmetic progressions of three squares, that are DISTANCE apart.  If DISTANCE is not provided as an argument, it is read from the standard input.\vBy default this program checks 5 million squares for a progression with the given distance.", 0 };
-
-int
-fituvalu_find_3sq_progressions_dist (struct fv_app_find_3sq_progressions_dist_t *app, FILE *in, FILE *out)
+static struct argp
+argp =
 {
-  if (mpz_cmp_ui (app->distance, 0) == 0)
-    {
-      if (app->in_binary)
-        return gen_3sq_binary_in (app, in, out);
-      else
-        return gen_3sq_in (app, in, out);
-    }
-  else
-    return gen_3sq (app, out);
-}
+  options, parse_opt, "[DISTANCE]",
+  "Generate arithmetic progressions of three squares, that are DISTANCE apart.  If DISTANCE is not provided as an argument, it is read from the standard input.\vBy default this program checks 5 million squares for a progression with the given distance.",
+  0
+};
 
 int
 main (int argc, char **argv)

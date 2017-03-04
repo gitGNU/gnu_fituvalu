@@ -119,31 +119,6 @@ check_progression (unsigned long long *progression, unsigned long long one, unsi
     }
 }
 
-static struct argp_option
-options[] =
-{
-    { "squares", 'i', "FILE", 0, "Use perfect squares in FILE for the main loop"},
-    { 0 }
-};
-
-static char *
-help_filter (int key, const char *text, void *input)
-{
-  if (key == ARGP_KEY_HELP_POST_DOC)
-    {
-      char *s =
-        "|-+--------+--+-----+--+--+-----+--+--------+--|\n"
-        "              ^     ^  ^  ^                     \n"
-        "              4     3  2  1                     \n";
-      char *new_text = NULL;
-      if (asprintf (&new_text, text, s) != -1)
-        return new_text;
-    }
-  return (char *) text;
-}
-
-static error_t parse_opt (int key, char *arg, struct argp_state *state);
-static struct argp argp ={options, parse_opt, "MIN MAX", "Find arithmetic progressions of 9 numbers that have perfect squares.\vThis program searches for perfect squares in this progression:\n%s" , 0, help_filter};
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -199,6 +174,38 @@ fituvalu_small_reverse_fulcrum_progression1 (struct fv_app_small_reverse_fulcrum
                         app->start, app->finish, app);
   return 0;
 }
+
+static char *
+help_filter (int key, const char *text, void *input)
+{
+  if (key == ARGP_KEY_HELP_POST_DOC)
+    {
+      char *s =
+        "|-+--------+--+-----+--+--+-----+--+--------+--|\n"
+        "              ^     ^  ^  ^                     \n"
+        "              4     3  2  1                     \n";
+      char *new_text = NULL;
+      if (asprintf (&new_text, text, s) != -1)
+        return new_text;
+    }
+  return (char *) text;
+}
+
+static struct argp_option
+options[] =
+{
+    { "squares", 'i', "FILE", 0, "Use perfect squares in FILE for the main loop"},
+    { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, "MIN MAX",
+  "Find arithmetic progressions of 9 numbers that have perfect squares.\vThis program searches for perfect squares in this progression:\n%s",
+  0,
+  help_filter
+};
 
 int
 main (int argc, char **argv)

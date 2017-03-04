@@ -164,6 +164,16 @@ help_filter (int key, const char *text, void *input)
   return (char *) text;
 }
 
+int
+fituvalu_complete_4sq_progressions (struct fv_app_complete_4sq_progressions_t *app, FILE *in, FILE *out)
+{
+  if (app->in_binary)
+    complete_four_square_progression_binary (app, in, out);
+  else
+    complete_four_square_progression (app, in, out);
+  return 0;
+}
+
 static struct argp_option
 options[] =
 {
@@ -174,17 +184,14 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, NULL, "Read 4 perfect squares from the standard input and complete the progression to 9 numbers.\vThe four values must be separated by a comma and termined by a newline.  --type must be one of:%s", 0, help_filter};
-
-int
-fituvalu_complete_4sq_progressions (struct fv_app_complete_4sq_progressions_t *app, FILE *in, FILE *out)
+static struct argp
+argp =
 {
-  if (app->in_binary)
-    complete_four_square_progression_binary (app, in, out);
-  else
-    complete_four_square_progression (app, in, out);
-  return 0;
-}
+  options, parse_opt, NULL,
+  "Read 4 perfect squares from the standard input and complete the progression to 9 numbers.\vThe four values must be separated by a comma and termined by a newline.  --type must be one of:%s",
+  0,
+  help_filter
+};
 
 int
 main (int argc, char **argv)

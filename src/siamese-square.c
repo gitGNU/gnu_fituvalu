@@ -181,14 +181,19 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, 0, "Generate magic squares using a modified Siamese step method.\vThe input to this program is a starting number, followed by two or three distances separated by commas.  The default is to pass in a start, D1, and E1, which generates a square with the the step progression:\n"
+static struct argp
+argp =
+{
+  options, parse_opt, 0,
+  "Generate magic squares using a modified Siamese step method.\vThe input to this program is a starting number, followed by two or three distances separated by commas.  The default is to pass in a start, D1, and E1, which generates a square with the the step progression:\n"
 "  |-----+--+--+-------+--+--+-------+--+--+------|\n"
 "         D1       E1\n"
 "When --fulcrum is passed, the standard input must have start, D1, E1, F1 which generates a square with the fulcrum progression:\n"
 "  |-+--------+--+-----+--+--+-----+--+--------+--|\n"
 "        D1    E1   F1\n"
-"D1 must be equal to the sum of E1 and F1."
-               ,0};
+"D1 must be equal to the sum of E1 and F1.",
+0
+};
 
 int
 main (int argc, char **argv)

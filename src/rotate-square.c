@@ -136,16 +136,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp_option
-options[] =
-{
-  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
-  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-    { 0 }
-};
-
-static struct argp argp ={options, parse_opt, 0, "Rotate a 3x3 magic square given on the standard input, and show all the ways the square can be turned and flipped, and still be the same square.\vThe nine values must be separated by a comma and terminated by a newline.", 0};
-
 int
 fituvalu_rotate_square (struct fv_app_rotate_square_t *app, FILE *in, FILE *out)
 {
@@ -191,6 +181,22 @@ fituvalu_rotate_square (struct fv_app_rotate_square_t *app, FILE *in, FILE *out)
       mpz_clears (a[i][j], result[i][j], NULL);
   return 0;
 }
+
+static struct argp_option
+options[] =
+{
+  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+    { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, 0,
+  "Rotate a 3x3 magic square given on the standard input, and show all the ways the square can be turned and flipped, and still be the same square.\vThe nine values must be separated by a comma and terminated by a newline.",
+  0
+};
 
 int
 main (int argc, char **argv)

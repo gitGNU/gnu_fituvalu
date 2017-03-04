@@ -205,6 +205,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
+int
+fituvalu_find_3sq_progressions_mn (struct fv_app_find_3sq_progressions_mn_t *app, FILE *in, FILE *out)
+{
+  if (app->in_binary)
+    return gen_binary_3sq (app, in, out);
+  else
+    return gen_3sq (app, in, out);
+}
+
 static struct argp_option
 options[] =
 {
@@ -216,16 +225,13 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, "", "Generate arithmetic progressions of three squares, with a fourth number being the square root of the 3rd square.\vThe input of this program comes from \"seq-morgenstern-mn\".", 0 };
-
-int
-fituvalu_find_3sq_progressions_mn (struct fv_app_find_3sq_progressions_mn_t *app, FILE *in, FILE *out)
+static struct argp
+argp =
 {
-  if (app->in_binary)
-    return gen_binary_3sq (app, in, out);
-  else
-    return gen_3sq (app, in, out);
-}
+  options, parse_opt, NULL,
+  "Generate arithmetic progressions of three squares, with a fourth number being the square root of the 3rd square.\vThe input of this program comes from \"seq-morgenstern-mn\".",
+  0
+};
 
 int
 main (int argc, char **argv)

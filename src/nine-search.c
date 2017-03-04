@@ -47,15 +47,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp_option
-options[] =
-{
-  { "continue", 'c', "NUM", OPTION_HIDDEN, "Continue at this square"},
-  { 0 }
-};
-
-static struct argp argp ={options, parse_opt, 0, "Search for a 3x3 magic square of 9 perfect squares.", 0};
-
 static void
 calculate_middle_square (mpz_t c)
 {
@@ -391,6 +382,21 @@ void intHandler(int dummy)
   exit (1);
 }
 
+
+static struct argp_option
+options[] =
+{
+  { "continue", 'c', "NUM", OPTION_HIDDEN, "Continue at this square"},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, 0,
+  "Search for a 3x3 magic square of 9 perfect squares.",
+  0
+};
 int
 main (int argc, char **argv)
 {

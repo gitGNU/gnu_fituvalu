@@ -354,23 +354,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp_option
-options[] =
-{
-  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
-  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { 0 }
-};
-
-static struct argp argp ={options, parse_opt, "N1, N2, N3,\nFILE", "Try to create a 3x3 of magic square from two progressions of three squares that have the same difference between the squares, or the differences must be divisible.  This program tries create a magic squares of type 6:12, and 6:13.  The first progression is given as the arguments N1, N2, N3.  The second progression is passed in on the standard input.\vThe three values must be perfect squares, separated by a comma and terminated by a newline, and must be in ascending order.  This program also generates 3x3 nearly-magic squares.  The progressions are laid out as follows:\n\
-+------+------+------+     +------+------+------+\n\
-|      |  X3  |  N2  |     |  X2  |      |  N3  |\n\
-+------+------+------+     +------+------+------+\n\
-|  N3  |      |  X1  | and |      |  N2  |  X1  |\n\
-+------+------+------+     +------+------+------+\n\
-|  X2  |  N1  |      |     |  N1  |  X3  |      |\n\
-+------+------+------+     +------+------+------+", 0};
-
 int
 fituvalu_scissor_square (struct fv_app_scissor_square_t *app, FILE *in, FILE *out)
 {
@@ -379,6 +362,29 @@ fituvalu_scissor_square (struct fv_app_scissor_square_t *app, FILE *in, FILE *ou
   else
     return pair_search_file (app, in, out);
 }
+
+static struct argp_option
+options[] =
+{
+  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, "N1, N2, N3,\nFILE",
+  "Try to create a 3x3 of magic square from two progressions of three squares that have the same difference between the squares, or the differences must be divisible.  This program tries create a magic squares of type 6:12, and 6:13.  The first progression is given as the arguments N1, N2, N3.  The second progression is passed in on the standard input.\vThe three values must be perfect squares, separated by a comma and terminated by a newline, and must be in ascending order.  This program also generates 3x3 nearly-magic squares.  The progressions are laid out as follows:\n\
++------+------+------+     +------+------+------+\n\
+|      |  X3  |  N2  |     |  X2  |      |  N3  |\n\
++------+------+------+     +------+------+------+\n\
+|  N3  |      |  X1  | and |      |  N2  |  X1  |\n\
++------+------+------+     +------+------+------+\n\
+|  X2  |  N1  |      |     |  N1  |  X3  |      |\n\
++------+------+------+     +------+------+------+",
+  0
+};
 
 int
 main (int argc, char **argv)

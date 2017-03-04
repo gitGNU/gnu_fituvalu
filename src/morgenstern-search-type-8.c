@@ -258,15 +258,20 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp argp ={options, parse_opt, "MAX\nFILE", "Generate 3x3 magic squares with 5 perfect squares or more by creating two arithmetic progressions of three perfect squares with the center square in common.\vThe standard input provides the parametric \"MN\" values -- two values per record to assist in the transformation.  Use the \"seq-morgenstern-mn\" program to provide this data on the standard input.  Morgenstern type 8 squares have 5 perfect squares in this configuration:\n\
+static struct argp
+argp =
+{
+  options, parse_opt, "MAX\nFILE",
+  "Generate 3x3 magic squares with 5 perfect squares or more by creating two arithmetic progressions of three perfect squares with the center square in common.\vThe standard input provides the parametric \"MN\" values -- two values per record to assist in the transformation.  Use the \"seq-morgenstern-mn\" program to provide this data on the standard input.  Morgenstern type 8 squares have 5 perfect squares in this configuration:\n\
 +-------+-------+-------+\n\
 |       |  B^2  |  C^2  |\n\
 +-------+-------+-------+\n\
 |       |  E^2  |       |\n\
 +-------+-------+-------+\n\
 |  G^2  |  H^2  |       |\n\
-+-------+-------+-------+", 0};
-
++-------+-------+-------+",
+  0
+};
 
 int
 main (int argc, char **argv)

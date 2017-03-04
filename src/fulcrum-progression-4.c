@@ -41,35 +41,6 @@ check_progression (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t 
     app->display_record (progression, app->out);
 }
 
-static struct argp_option
-options[] =
-{
-  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
-  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { "squares", 's', "FILE", 0, "Use perfect squares in FILE for the main loop"},
-  { NULL, '1', "NUM", 0, "Do one iteration with NUM as first square"},
-  { "increment", 'I', "NUM", 0, "Advance by NUM squares instead of 1"},
-  { 0 }
-};
-
-static char *
-help_filter (int key, const char *text, void *input)
-{
-  if (key == ARGP_KEY_HELP_POST_DOC)
-    {
-      char *s =
-        "|--+--------+--+-----+--+--+-----+--+--------+-|\n"
-        "    ^        ^        ^     ^\n"
-        "    1        2        3     4\n";
-      char *new_text = NULL;
-      if (asprintf (&new_text, text, s) != -1)
-        return new_text;
-    }
-  return (char *) text;
-}
-
-static error_t parse_opt (int key, char *arg, struct argp_state *state);
-static struct argp argp ={options, parse_opt, "MIN MAX", "Find arithmetic progressions of 9 numbers that have perfect squares.\vThis program searches for perfect squares in this progression:\n%s" , 0, help_filter};
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -146,6 +117,42 @@ fituvalu_fulcrum_progression4 (struct fv_app_fulcrum_progression4_t *app)
 
   return 0;
 }
+
+static char *
+help_filter (int key, const char *text, void *input)
+{
+  if (key == ARGP_KEY_HELP_POST_DOC)
+    {
+      char *s =
+        "|--+--------+--+-----+--+--+-----+--+--------+-|\n"
+        "    ^        ^        ^     ^\n"
+        "    1        2        3     4\n";
+      char *new_text = NULL;
+      if (asprintf (&new_text, text, s) != -1)
+        return new_text;
+    }
+  return (char *) text;
+}
+
+static struct argp_option
+options[] =
+{
+  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "squares", 's', "FILE", 0, "Use perfect squares in FILE for the main loop"},
+  { NULL, '1', "NUM", 0, "Do one iteration with NUM as first square"},
+  { "increment", 'I', "NUM", 0, "Advance by NUM squares instead of 1"},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, "MIN MAX",
+  "Find arithmetic progressions of 9 numbers that have perfect squares.\vThis program searches for perfect squares in this progression:\n%s",
+  0,
+  help_filter
+};
 
 int
 main (int argc, char **argv)

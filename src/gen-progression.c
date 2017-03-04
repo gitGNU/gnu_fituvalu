@@ -241,6 +241,26 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
+int
+fituvalu_gen_progression (struct fv_gen_progression_t *app, FILE *in)
+{
+  if (app->num_args == 1)
+    {
+      if (app->in_binary)
+        generate_progression_from_binary_input (app, in);
+      else
+        generate_progression_from_input (app, in);
+    }
+  else
+    {
+      if (mpz_cmp_ui (app->oneshot, 0) != 0)
+        generate_progression_starting_at (app->oneshot, app);
+      else
+        generate_progression (app);
+    }
+  return 0;
+}
+
 static char *
 help_filter (int key, const char *text, void *input)
 {
@@ -270,27 +290,14 @@ options[] =
   { 0 }
 };
 
-static struct argp argp ={options, parse_opt, "START FINISH\nFINISH", "Generate progressions of 9 numbers that contain 4 squares or more.  If only FINISH is specified, read perfect squares from the standard input.  Continue iterating until the progression reaches FINISH.\v--type must be one of:%s", 0, help_filter};
-
-int
-fituvalu_gen_progression (struct fv_gen_progression_t *app, FILE *in)
+static struct argp
+argp =
 {
-  if (app->num_args == 1)
-    {
-      if (app->in_binary)
-        generate_progression_from_binary_input (app, in);
-      else
-        generate_progression_from_input (app, in);
-    }
-  else
-    {
-      if (mpz_cmp_ui (app->oneshot, 0) != 0)
-        generate_progression_starting_at (app->oneshot, app);
-      else
-        generate_progression (app);
-    }
-  return 0;
-}
+  options, parse_opt, "START FINISH\nFINISH",
+  "Generate progressions of 9 numbers that contain 4 squares or more.  If only FINISH is specified, read perfect squares from the standard input.  Continue iterating until the progression reaches FINISH.\v--type must be one of:%s",
+  0,
+  help_filter
+};
 
 int
 main (int argc, char **argv)

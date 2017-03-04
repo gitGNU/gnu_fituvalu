@@ -334,16 +334,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp_option
-options[] =
-{
-  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { "slow-method", 's', 0, OPTION_HIDDEN, "Use the slow method for calculations"},
-  { 0 }
-};
-
-static struct argp argp ={options, parse_opt, "MAX [B [C [E]]]", "Generate a 3x3 magic square according to Eddie N. Gutierrez' algorithm outlined on www.oddwheel.com.\vMAX is how many times we're going to try to make a progression in the sequence.  Either B or C must be 1, the other must be prime.  E is another step value." , 0};
-
 int
 fituvalu_gutierrez_square (struct fv_app_gutierrez_square_t *app, FILE *out)
 {
@@ -354,6 +344,22 @@ fituvalu_gutierrez_square (struct fv_app_gutierrez_square_t *app, FILE *out)
     ret = gutierrez (app, out);
   return ret;
 }
+
+static struct argp_option
+options[] =
+{
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "slow-method", 's', 0, OPTION_HIDDEN, "Use the slow method for calculations"},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, "MAX [B [C [E]]]",
+  "Generate a 3x3 magic square according to Eddie N. Gutierrez' algorithm outlined on www.oddwheel.com.\vMAX is how many times we're going to try to make a progression in the sequence.  Either B or C must be 1, the other must be prime.  E is another step value.",
+  0
+};
 
 int
 main (int argc, char **argv)

@@ -99,15 +99,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp_option
-options[] =
-{
-  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { 0 }
-};
-
-static struct argp argp ={options, parse_opt, "FIRST\nFIRST LAST\nFIRST INCREMENT LAST", "Compute a sequence of perfect squares.\vIf FIRST or INCREMENT is omitted, it defaults to 1.", 0};
-
 int
 fituvalu_sq_seq (struct fv_app_sq_seq_t *app, FILE *out)
 {
@@ -136,6 +127,21 @@ fituvalu_sq_seq (struct fv_app_sq_seq_t *app, FILE *out)
   mpz_clear (one);
   return ret;
 }
+
+static struct argp_option
+options[] =
+{
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, "FIRST\nFIRST LAST\nFIRST INCREMENT LAST",
+  "Compute a sequence of perfect squares.\vIf FIRST or INCREMENT is omitted, it defaults to 1.",
+  0
+};
 
 int
 main (int argc, char **argv)

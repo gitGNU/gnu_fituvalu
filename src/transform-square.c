@@ -203,7 +203,13 @@ options[] =
     { 0 }
 };
 
-static struct argp argp ={options, parse_opt, "TRANSFORM-FILE", "Accept 9 numbers on the standard input, and transform them into 3x3 magic squares according to the records in TRANSFORM-FILE.\vThe nine values must be separated by a comma and terminated by a newline.  TRANSFORM-FILE has comma separated values of -8 to 8, and nine of them per line.  Records that cannot be transformed into valid squares are outputted to the standard error.  Use `permute-square -d' to generate suitable records for TRANSFORM-FILE." , 0};
+static struct argp
+argp =
+{
+  options, parse_opt, "TRANSFORM-FILE",
+  "Accept 9 numbers on the standard input, and transform them into 3x3 magic squares according to the records in TRANSFORM-FILE.\vThe nine values must be separated by a comma and terminated by a newline.  TRANSFORM-FILE has comma separated values of -8 to 8, and nine of them per line.  Records that cannot be transformed into valid squares are outputted to the standard error.  Use `permute-square -d' to generate suitable records for TRANSFORM-FILE.",
+  0
+};
 
 int
 main (int argc, char **argv)

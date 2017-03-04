@@ -138,15 +138,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp_option
-options[] =
-{
-  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { "brute", 'b', 0, OPTION_HIDDEN, ""},
-  { 0 }
-};
-static struct argp argp ={options, parse_opt, "MAX\nMIN MAX", "Compute an MN list.\vThe output of this program is suitable for input into the \"morgenstern-search-type-*\" programs, as well as \"3sq\".  This sequence of numbers has the form:\nM > N > 0, where M and N are coprime, and with one number being even, and the other number being odd." , 0};
-
 static int
 morgenstern_brute (FILE *out, char *start)
 {
@@ -172,6 +163,22 @@ fituvalu_seq_morgenstern (struct fv_app_seq_morgenstern_t *app, FILE *out)
     ret = morgenstern_seq (app, out);
   return ret;
 }
+
+static struct argp_option
+options[] =
+{
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "brute", 'b', 0, OPTION_HIDDEN, ""},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, "MAX\nMIN MAX",
+  "Compute an MN list.\vThe output of this program is suitable for input into the \"morgenstern-search-type-*\" programs, as well as \"3sq\".  This sequence of numbers has the form:\nM > N > 0, where M and N are coprime, and with one number being even, and the other number being odd.",
+  0
+};
 
 int
 main (int argc, char **argv)

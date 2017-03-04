@@ -224,17 +224,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp_option
-options[] =
-{
-  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
-  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { "show-ratio", 's', 0, 0, "Instead of showing squares, show how close they are to magic"},
-  { 0 }
-};
-
-static struct argp argp ={options, parse_opt, 0, "Generate a nearly-magic 3x3 square according to Lee Morgenstern's algorithm that employes hillyer's formula on multimagie.com.  These squares are generated from two input values on the standard input, K and L, separated by a comma." , 0};
-
 int
 fituvalu_hillyer_square (struct fv_app_hillyer_square_t *app, FILE *in, FILE *out)
 {
@@ -245,6 +234,23 @@ fituvalu_hillyer_square (struct fv_app_hillyer_square_t *app, FILE *in, FILE *ou
     ret = hillyer (app, in, out);
   return ret;
 }
+
+static struct argp_option
+options[] =
+{
+  { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
+  { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "show-ratio", 's', 0, 0, "Instead of showing squares, show how close they are to magic"},
+  { 0 }
+};
+
+static struct argp
+argp =
+{
+  options, parse_opt, 0,
+  "Generate a nearly-magic 3x3 square according to Lee Morgenstern's algorithm that employes hillyer's formula on multimagie.com.  These squares are generated from two input values on the standard input, K and L, separated by a comma.",
+  0
+};
 
 int
 main (int argc, char **argv)
