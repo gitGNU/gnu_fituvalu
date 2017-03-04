@@ -17,10 +17,14 @@
 #include <stdlib.h>
 #include <argp.h>
 #include <gmp.h>
+#include <string.h>
 #include "magicsquareutil.h"
 
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
-int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
+struct fv_app_rotate_square_t
+{
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+  int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+};
 
 static void
 rotate (mpz_t (*result)[3][3])
@@ -119,13 +123,14 @@ flip_vertically (mpz_t (*result)[3][3])
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_rotate_square_t *app = (struct fv_app_rotate_square_t *) state->input;
   switch (key)
     {
     case 'i':
-      read_square = binary_read_square_from_stream;
+      app->read_square = binary_read_square_from_stream;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     }
   return 0;
@@ -139,12 +144,11 @@ options[] =
     { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Rotate a 3x3 magic square given on the standard input, and show all the ways the square can be turned and flipped, and still be the same square.\vThe nine values must be separated by a comma and terminated by a newline.", 0};
+static struct argp argp ={options, parse_opt, 0, "Rotate a 3x3 magic square given on the standard input, and show all the ways the square can be turned and flipped, and still be the same square.\vThe nine values must be separated by a comma and terminated by a newline.", 0};
 
 int
-main (int argc, char **argv)
+fituvalu_rotate_square (struct fv_app_rotate_square_t *app, FILE *in, FILE *out)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
   int i, j, k;
   mpz_t a[3][3];
   mpz_t result[3][3];
@@ -157,7 +161,7 @@ main (int argc, char **argv)
 
   char *line = NULL;
   size_t len = 0;
-  ssize_t read = read_square (stdin, &a, &line, &len);
+  ssize_t read = app->read_square (in, &a, &line, &len);
   free (line);
   if (read == -1)
     return 0;
@@ -168,22 +172,33 @@ main (int argc, char **argv)
   for (j = 0; j < 4; j++)
     {
       rotate (&result);
-      display_square (result, stdout);
+      app->display_square (result, out);
     }
   flip_horizontally (&result);
   for (j = 0; j < 4; j++)
     {
       rotate (&result);
-      display_square (result, stdout);
+      app->display_square (result, out);
     }
   flip_vertically (&result);
   for (j = 0; j < 4; j++)
     {
       rotate (&result);
-      display_square (result, stdout);
+      app->display_square (result, out);
     }
   for (i = 0; i < 3; i++)
     for (j = 0; j < 3; j++)
       mpz_clears (a[i][j], result[i][j], NULL);
   return 0;
+}
+
+int
+main (int argc, char **argv)
+{
+  struct fv_app_rotate_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_square = display_square_record;
+  app.read_square = read_square_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_rotate_square (&app, stdin, stdout);
 }

@@ -35,29 +35,29 @@ int read_square_from_stream (FILE *stream, mpz_t (*a)[3][3], char **line, size_t
 int binary_read_square_from_stream (FILE *stream, mpz_t (*a)[3][3], char **s, size_t *len);
 int read_numbers_from_stream (FILE *stream, mpz_t *a, int size, char **line, size_t *len);
 int binary_read_numbers_from_stream (FILE *stream, mpz_t *a, int size, char **line, size_t *len);
-void small_read_square_and_run (FILE *, void (*)(unsigned long long, unsigned long long, unsigned long long, void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *), void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long, unsigned long long, FILE *);
-void read_square_and_run (FILE *, void (*)(mpz_t,mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *), void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), mpz_t, mpz_t, unsigned long long, FILE *);
-void binary_read_square_and_run (FILE *, void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *), void (*check)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t, mpz_t, unsigned long long, FILE *);
-void loop_and_run (void (*)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *), void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), mpz_t, mpz_t, unsigned long long, FILE *);
-void small_loop_and_run (void (*func)(unsigned long long, unsigned long long, unsigned long long, void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *), void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long start, unsigned long long finish, FILE *out);
+void small_read_square_and_run (FILE *, void (*)(unsigned long long, unsigned long long, unsigned long long, void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void*), void *), void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), unsigned long long, unsigned long long, void*);
+void read_square_and_run (FILE *, void (*)(mpz_t,mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void*), void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), mpz_t, mpz_t, unsigned long long, void*);
+void binary_read_square_and_run (FILE *, void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void*), void*), void (*check)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void*), mpz_t, mpz_t, unsigned long long, void*);
+void loop_and_run (void (*)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *), void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), mpz_t, mpz_t, unsigned long long, void *);
+void small_loop_and_run (void (*func)(unsigned long long, unsigned long long, unsigned long long, void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *), void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), unsigned long long start, unsigned long long finish, void *data);
 int small_is_square (long long num);
 
-void fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
-void fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
-void fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
-void fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
-void fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
-void fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
-void rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
-void optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out);
+void fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *);
+void fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *);
+void fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *);
+void fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *);
+void fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *out);
+void fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *out);
+void rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *);
+void optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *out);
 
-void small_fwd_4sq_progression1 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *);
-void small_fwd_4sq_progression2 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *);
-void small_fwd_4sq_progression3 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *);
-void small_fwd_4sq_progression4 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *);
-void small_fwd_4sq_progression5 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *);
-void small_fwd_4sq_progression6 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *);
-void small_rev_4sq_progression1 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *);
+void small_fwd_4sq_progression1 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *);
+void small_fwd_4sq_progression2 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *);
+void small_fwd_4sq_progression3 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *);
+void small_fwd_4sq_progression4 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *);
+void small_fwd_4sq_progression5 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *);
+void small_fwd_4sq_progression6 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *);
+void small_rev_4sq_progression1 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void*), void *);
 
 void four_square_to_nine_number_step_progression1 (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t four);
 void four_square_to_nine_number_step_progression2 (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t four);
@@ -96,7 +96,7 @@ typedef enum four_square_progression_enum_t {
 typedef struct four_square_progression_t {
   four_square_progression_enum_t kind;
   char *name;
-  void (*func) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *);
+  void (*func) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *);
   char *timeline;
 } four_square_progression_t;
 
@@ -119,17 +119,17 @@ char * generate_list_of_nine_progression_timelines ();
 extern four_square_progression_t four_square_progressions[];
 extern nine_progression_t nine_progressions[];
 
-int small_morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out);
-int morgenstern_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
-int morgenstern_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
+int small_morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, void*), void *data);
+int morgenstern_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data);
+int morgenstern_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data);
 void reduce_three_square_progression (mpz_t *progression);
 int binary_read_three_numbers_from_stream (FILE *stream, mpz_t *a, char **line, size_t *len);
 int read_three_numbers_from_stream (FILE *stream, mpz_t *a, char **line, size_t *len);
 int read_four_numbers_from_stream (FILE *stream, mpz_t *a, char **line, size_t *len);
 int binary_read_four_numbers_from_stream (FILE *stream, mpz_t *a, char **line, size_t *len);
 void display_binary_three_record (mpz_t *progression, FILE *out);
-void morgenstern_search_dual (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
-void morgenstern_search_dual_binary (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
+void morgenstern_search_dual (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *),void *data);
+void morgenstern_search_dual_binary (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void*), void *data);
 void display_textual_number (mpz_t *i, FILE *out);
 void display_binary_number (mpz_t *i, FILE *out);
 void disp_binary_record (mpz_t *vec, int size, FILE *out);
@@ -137,6 +137,6 @@ void disp_record (mpz_t *vec, int size, FILE *out);
 int fv_getline (char **line, size_t *len, FILE *stream);
 int fv_getdelim (char **line, size_t *len, int delim, FILE *stream);
 void reduce_square (mpz_t a[3][3]);
-void morgenstern_search_dual_binary_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
-void morgenstern_search_dual_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out);
+void morgenstern_search_dual_binary_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data);
+void morgenstern_search_dual_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data);
 #endif

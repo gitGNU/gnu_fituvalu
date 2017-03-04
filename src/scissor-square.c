@@ -21,12 +21,15 @@
 #include <unistd.h>
 #include "magicsquareutil.h"
 
-FILE *infile;
-int num_args;
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
-int (*read_tuple) (FILE *, mpz_t *, char **, size_t *) = read_three_numbers_from_stream;
+struct fv_app_scissor_square_t
+{
+  FILE *infile;
+  int num_args;
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+  int (*read_tuple) (FILE *, mpz_t *, char **, size_t *);
+  mpz_t match[3];
+};
 
-mpz_t match[3];
 
 static int
 has_same_diff (mpz_t *a, mpz_t *b)
@@ -203,7 +206,7 @@ generate_scissor_square (mpz_t sq[3][3], mpz_t *a, mpz_t *b)
 }
 
 static int
-pair_search (mpz_t *target, FILE *in, FILE *out)
+pair_search (struct fv_app_scissor_square_t *app, mpz_t *target, FILE *in, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -219,15 +222,15 @@ pair_search (mpz_t *target, FILE *in, FILE *out)
 
   while (1)
     {
-      read = read_tuple (in, b, &line, &len);
+      read = app->read_tuple (in, b, &line, &len);
       if (read == -1)
         break;
       if (generate_scissor_square (sq, target, b))
-        display_square (sq, out);
+        app->display_square (sq, out);
       if (generate_warbird_square1 (sq, target, b))
-        display_square (sq, out);
+        app->display_square (sq, out);
       if (generate_warbird_square2 (sq, target, b))
-        display_square (sq, out);
+        app->display_square (sq, out);
     }
 
   for (int i = 0; i < 3; i++)
@@ -242,12 +245,12 @@ pair_search (mpz_t *target, FILE *in, FILE *out)
 }
 
 static void
-_pair_search_file (mpz_t *a, FILE *out)
+_pair_search_file (struct fv_app_scissor_square_t *app, mpz_t *a, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
-  rewind (infile);
+  rewind (app->infile);
   mpz_t b[3];
   mpz_t sq[3][3];
   for (int i = 0; i < 3; i++)
@@ -258,15 +261,15 @@ _pair_search_file (mpz_t *a, FILE *out)
 
   while (1)
     {
-      read = read_tuple (infile, b, &line, &len);
+      read = app->read_tuple (app->infile, b, &line, &len);
       if (read == -1)
         break;
       if (generate_scissor_square (sq, a, b))
-        display_square (sq, out);
+        app->display_square (sq, out);
       if (generate_warbird_square1 (sq, a, b))
-        display_square (sq, out);
+        app->display_square (sq, out);
       if (generate_warbird_square2 (sq, a, b))
-        display_square (sq, out);
+        app->display_square (sq, out);
     }
 
   for (int i = 0; i < 3; i++)
@@ -280,7 +283,7 @@ _pair_search_file (mpz_t *a, FILE *out)
 }
 
 static int
-pair_search_file (FILE *in, FILE *out)
+pair_search_file (struct fv_app_scissor_square_t *app, FILE *in, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -291,10 +294,10 @@ pair_search_file (FILE *in, FILE *out)
 
   while (1)
     {
-      read = read_tuple (in, a, &line, &len);
+      read = app->read_tuple (in, a, &line, &len);
       if (read == -1)
         break;
-      _pair_search_file (a, out);
+      _pair_search_file (app, a, out);
     }
 
   for (int i = 0; i < 3; i++)
@@ -307,40 +310,44 @@ pair_search_file (FILE *in, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_scissor_square_t *app = (struct fv_app_scissor_square_t *) state->input;
   switch (key)
     {
     case 'i':
-      read_tuple = binary_read_three_numbers_from_stream;
+      app->read_tuple = binary_read_three_numbers_from_stream;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     case ARGP_KEY_ARG:
-      if (num_args == 3 || infile)
+      if (app->num_args == 3 || app->infile)
         argp_error (state, "too many arguments");
       else
         {
-          if (num_args == 0 && access (arg, R_OK) == 0)
-            infile = fopen (arg, "r");
+          if (app->num_args == 0 && access (arg, R_OK) == 0)
+            app->infile = fopen (arg, "r");
           else
             {
               char *comma = strchr (arg, ',');
               if (comma)
                 *comma = '\0';
-              mpz_init_set_str (match[num_args], arg, 10);
+              mpz_init_set_str (app->match[app->num_args], arg, 10);
             }
-          num_args++;
+          app->num_args++;
         }
       break;
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing argument");
       break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
+      break;
     case ARGP_KEY_FINI:
-      if (num_args > 3 && !infile)
+      if (app->num_args > 3 && !app->infile)
         argp_error (state, "too many arguments");
-      else if (num_args < 3 && !infile)
+      else if (app->num_args < 3 && !app->infile)
         argp_error (state, "too few arguments");
-      else if (!infile && num_args != 3)
+      else if (!app->infile && app->num_args != 3)
         argp_error (state, "missing argument");
       break;
     }
@@ -355,7 +362,7 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "N1, N2, N3,\nFILE", "Try to create a 3x3 of magic square from two progressions of three squares that have the same difference between the squares, or the differences must be divisible.  This program tries create a magic squares of type 6:12, and 6:13.  The first progression is given as the arguments N1, N2, N3.  The second progression is passed in on the standard input.\vThe three values must be perfect squares, separated by a comma and terminated by a newline, and must be in ascending order.  This program also generates 3x3 nearly-magic squares.  The progressions are laid out as follows:\n\
+static struct argp argp ={options, parse_opt, "N1, N2, N3,\nFILE", "Try to create a 3x3 of magic square from two progressions of three squares that have the same difference between the squares, or the differences must be divisible.  This program tries create a magic squares of type 6:12, and 6:13.  The first progression is given as the arguments N1, N2, N3.  The second progression is passed in on the standard input.\vThe three values must be perfect squares, separated by a comma and terminated by a newline, and must be in ascending order.  This program also generates 3x3 nearly-magic squares.  The progressions are laid out as follows:\n\
 +------+------+------+     +------+------+------+\n\
 |      |  X3  |  N2  |     |  X2  |      |  N3  |\n\
 +------+------+------+     +------+------+------+\n\
@@ -365,12 +372,21 @@ struct argp argp ={options, parse_opt, "N1, N2, N3,\nFILE", "Try to create a 3x3
 +------+------+------+     +------+------+------+", 0};
 
 int
+fituvalu_scissor_square (struct fv_app_scissor_square_t *app, FILE *in, FILE *out)
+{
+  if (!app->infile)
+    return pair_search (app, app->match, in, out);
+  else
+    return pair_search_file (app, in, out);
+}
+
+int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  if (!infile)
-    return pair_search (match, stdin, stdout);
-  else
-    return pair_search_file (stdin, stdout);
+  struct fv_app_scissor_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_square = display_square_record;
+  app.read_tuple = read_three_numbers_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_scissor_square (&app, stdin, stdout);
 }

@@ -19,11 +19,15 @@
 #include <stdlib.h>
 #include "magicsquareutil.h"
 
-int num_args;
-int showroot = 1;
-int show_diff;
-void (*display_record) (mpz_t *, mpz_t*, FILE *out) = display_three_record_with_root;
-mpz_t max, start;
+struct fv_app_find_3sq_progressions_conrad_t
+{
+  int num_args;
+  int showroot;
+  int show_diff;
+  void (*display_record) (mpz_t *, mpz_t*, FILE *out);
+  mpz_t max, start;
+  mpz_t m2, twom;
+};
 
 //from http://www.math.uconn.edu/~kconrad/blurbs/ugradnumthy/3squarearithprog.pdf
 //
@@ -37,39 +41,38 @@ mpz_t max, start;
 //
 //  and the progression is:  a^2, b^2, c^2
 //
-mpz_t m2, twom;
 
 static void
-generate_progression (mpz_t m, mpz_t *progression)
+generate_progression (struct fv_app_find_3sq_progressions_conrad_t *app, mpz_t m, mpz_t *progression)
 {
-  mpz_mul (m2, m, m);
-  mpz_add (twom, m, m);
-  mpz_add_ui (progression[1], m2, 1);
-  mpz_sub (progression[0], m2, twom);
+  mpz_mul (app->m2, m, m);
+  mpz_add (app->twom, m, m);
+  mpz_add_ui (progression[1], app->m2, 1);
+  mpz_sub (progression[0], app->m2, app->twom);
   mpz_sub_ui (progression[0], progression[0], 1);
-  mpz_mul_si (progression[2], m2, -1);
-  mpz_sub (progression[2], progression[2], twom);
+  mpz_mul_si (progression[2], app->m2, -1);
+  mpz_sub (progression[2], progression[2], app->twom);
   mpz_add_ui (progression[2], progression[2], 1);
 
   for (int i = 0; i < 3; i++)
     mpz_mul (progression[i], progression[i], progression[i]);
 }
 
-static int
-conrad (FILE *out)
+int
+fituvalu_find_3sq_progression_conrad (struct fv_app_find_3sq_progressions_conrad_t *app, FILE *out)
 {
   mpz_t i, n;
   mpz_t progression[3], root, diff;
-  mpz_inits (m2, twom, NULL);
+  mpz_inits (app->m2, app->twom, n, NULL);
   mpz_inits (i, progression[0], progression[1], progression[2], root, diff, NULL);
-  mpz_set (n, start);
-  for (mpz_set_ui (i, 1); mpz_cmp (i, max) < 0; mpz_add_ui (i, i, 1))
+  mpz_set (n, app->start);
+  for (mpz_set_ui (i, 1); mpz_cmp (i, app->max) < 0; mpz_add_ui (i, i, 1))
     {
-      generate_progression (n, progression);
-      if (show_diff)
+      generate_progression (app, n, progression);
+      if (app->show_diff)
         {
           mpz_sub (diff, progression[1], progression[0]);
-          if (display_record == display_binary_three_record_with_root)
+          if (app->display_record == display_binary_three_record_with_root)
             mpz_out_raw (out, diff);
           else
             {
@@ -78,50 +81,52 @@ conrad (FILE *out)
               fprintf (out, "%s, ", buf);
             }
         }
-      if (showroot)
+      if (app->showroot)
         mpz_sqrt (root, progression[2]);
-      display_record (progression, &root, out);
+      app->display_record (progression, &root, out);
       mpz_add_ui (n, n, 1);
     }
   mpz_clears (i, progression[0], progression[1], progression[2], root, diff, NULL);
-  mpz_clears (m2, twom, NULL);
+  mpz_clears (app->m2, app->twom, NULL);
   return 0;
 }
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_find_3sq_progressions_conrad_t *app = (struct fv_app_find_3sq_progressions_conrad_t *) state->input;
   switch (key)
     {
     case 's':
-      mpz_set_str (start, arg, 10);
+      mpz_set_str (app->start, arg, 10);
       break;
     case 'd':
-      show_diff = 1;
+      app->show_diff = 1;
       break;
     case 'n':
-      showroot = 0;
+      app->showroot = 0;
       break;
     case 'o':
-      display_record = display_binary_three_record_with_root;
+      app->display_record = display_binary_three_record_with_root;
       break;
     case ARGP_KEY_ARG:
-      if (num_args == 1)
+      if (app->num_args == 1)
         argp_error (state, "too many arguments");
       else
         {
-          switch (num_args)
+          switch (app->num_args)
             {
             case 0:
-              mpz_set_str (max, arg, 10);
+              mpz_set_str (app->max, arg, 10);
               break;
             }
-          num_args++;
+          app->num_args++;
         }
       break;
     case ARGP_KEY_INIT:
-      mpz_init (max);
-      mpz_init_set_ui (start, 1);
+      mpz_init (app->max);
+      mpz_init_set_ui (app->start, 1);
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing argument.");
@@ -140,13 +145,15 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "MAX", "Find an arithmetic progression consisting of three squares.\vMAX is the number of iterations. \"conrad\" refers to Keith Conrad, and his paper 'Arithmetic Progressions of Three Squares'." , 0};
+static struct argp argp ={options, parse_opt, "MAX", "Find an arithmetic progression consisting of three squares.\vMAX is the number of iterations. \"conrad\" refers to Keith Conrad, and his paper 'Arithmetic Progressions of Three Squares'." , 0};
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  int ret = conrad (stdout);
-  return ret;
+  struct fv_app_find_3sq_progressions_conrad_t app;
+  memset (&app, 0, sizeof (app));
+  app.showroot = 1;
+  app.display_record = display_three_record_with_root;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_find_3sq_progression_conrad (&app, stdout);
 }

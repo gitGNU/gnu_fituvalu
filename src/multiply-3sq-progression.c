@@ -20,20 +20,23 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-int num_args;
-mpz_t multiplier, max_tries;
-void (*display_tuple) (mpz_t s[3], FILE *out) = display_three_record;
-int (*read_tuple) (FILE *, mpz_t *, char **, size_t *) = read_three_numbers_from_stream;
+struct fv_app_multiply_progression_t
+{
+  int num_args;
+  mpz_t multiplier, max_tries;
+  void (*display_tuple) (mpz_t s[3], FILE *out);
+  int (*read_tuple) (FILE *, mpz_t *, char **, size_t *);
+};
 
 static void
-multiply_three_square_progression (mpz_t *a)
+multiply_three_square_progression (struct fv_app_multiply_progression_t *app, mpz_t *a)
 {
   for (int i = 0; i < 3; i++)
-    mpz_mul (a[i], a[i], multiplier);
+    mpz_mul (a[i], a[i], app->multiplier);
 }
 
-static int
-multiply (FILE *stream, FILE *out)
+int
+fituvalu_multiply_progression (struct fv_app_multiply_progression_t *app, FILE *stream, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -46,13 +49,14 @@ multiply (FILE *stream, FILE *out)
 
   while (1)
     {
-      read = read_tuple (stream, a, &line, &len);
+      read = app->read_tuple (stream, a, &line, &len);
       if (read == -1)
         break;
-      for (mpz_set_ui (j, 0); mpz_cmp (j, max_tries) < 0; mpz_add_ui (j, j, 1))
+      for (mpz_set_ui (j, 0); mpz_cmp (j, app->max_tries) < 0;
+           mpz_add_ui (j, j, 1))
         {
-          multiply_three_square_progression (a);
-          display_tuple (a, out);
+          multiply_three_square_progression (app, a);
+          app->display_tuple (a, out);
         }
     }
 
@@ -68,26 +72,27 @@ multiply (FILE *stream, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_multiply_progression_t *app = (struct fv_app_multiply_progression_t *) state->input;
   switch (key)
     {
     case 'i':
-      read_tuple = binary_read_three_numbers_from_stream;
+      app->read_tuple = binary_read_three_numbers_from_stream;
       break;
     case 'o':
-      display_tuple = display_binary_three_record;
+      app->display_tuple = display_binary_three_record;
       break;
     case ARGP_KEY_ARG:
-      if (num_args == 2)
+      if (app->num_args == 2)
         argp_error (state, "too many arguments");
-      else if (num_args == 1)
-        mpz_set_str (max_tries, arg, 10);
-      else if (num_args == 0)
-        mpz_set_str (multiplier, arg, 10);
-      num_args++;
+      else if (app->num_args == 1)
+        mpz_set_str (app->max_tries, arg, 10);
+      else if (app->num_args == 0)
+        mpz_set_str (app->multiplier, arg, 10);
+      app->num_args++;
       break;
     case ARGP_KEY_INIT:
-      mpz_inits (multiplier, max_tries, NULL);
-      mpz_set_ui (max_tries, 1);
+      mpz_inits (app->multiplier, app->max_tries, NULL);
+      mpz_set_ui (app->max_tries, 1);
       break;
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing argument");
@@ -104,11 +109,15 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "MUL [TRIES]", "Accept three-square arithmetic progressions from the standard input, and multiply them by MUL.\vThe three values must be separated by a comma and terminated by a newline, and must be in ascending order." , 0};
+static struct argp argp ={options, parse_opt, "MUL [TRIES]", "Accept three-square arithmetic progressions from the standard input, and multiply them by MUL.\vThe three values must be separated by a comma and terminated by a newline, and must be in ascending order." , 0};
 
 int
 main (int argc, char **argv)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  return multiply (stdin, stdout);
+  struct fv_app_multiply_progression_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_tuple = display_three_record;
+  app.read_tuple = read_three_numbers_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_multiply_progression (&app, stdin, stdout);
 }

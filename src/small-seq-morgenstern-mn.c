@@ -17,8 +17,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+struct fv_app_small_seq_morgenstern_t
+{
 int num_args;
 unsigned long long max, min;
+};
 
 static void
 seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out)
@@ -57,54 +60,58 @@ seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out)
     }
 }
 
-static int
-morgenstern_seq (FILE *out)
+int
+fituvalu_small_seq_morgenstern (struct fv_app_small_seq_morgenstern_t *app, FILE *out)
 {
-  if (min)
-    seq (min-1, min-2, max, out);
+  if (app->min)
+    seq (app->min-1, app->min-2, app->max, out);
   else
-    seq (2, 1, max, out);
+    seq (2, 1, app->max, out);
   return 0;
 }
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_small_seq_morgenstern_t *app = (struct fv_app_small_seq_morgenstern_t *) state->input;
   switch (key)
     {
     case ARGP_KEY_ARG:
-      if (num_args == 2)
+      if (app->num_args == 2)
         argp_error (state, "too many arguments");
       else
         {
           char *end = NULL;
-          switch (num_args)
+          switch (app->num_args)
             {
             case 0:
-              max = strtoull (arg, &end, 10);
+              app->max = strtoull (arg, &end, 10);
               break;
             case 1:
-              min = max;
-              max = strtoull (arg, &end, 10);
+              app->min = app->max;
+              app->max = strtoull (arg, &end, 10);
               break;
             }
-          num_args++;
+          app->num_args++;
         }
       break;
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing argument.");
       break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
+      break;
     }
   return 0;
 }
 
-struct argp argp ={NULL, parse_opt, "MAX\nMIN MAX", "Compute an MN list.\vThe output of this program is suitable for input into the \"morgenstern-search-type-1\" program.  This sequence of numbers has the form:\nM > N > 0, where M and N are coprime, and with one being even and the other one odd." , 0};
+static struct argp argp ={NULL, parse_opt, "MAX\nMIN MAX", "Compute an MN list.\vThe output of this program is suitable for input into the \"morgenstern-search-type-1\" program.  This sequence of numbers has the form:\nM > N > 0, where M and N are coprime, and with one being even and the other one odd." , 0};
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  int ret = morgenstern_seq (stdout);
-  return ret;
+  struct fv_app_small_seq_morgenstern_t app;
+  memset (&app, 0, sizeof (app));
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_small_seq_morgenstern (&app, stdout);
 }

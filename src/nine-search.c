@@ -19,20 +19,29 @@
 #include <signal.h>
 #include <gmp.h>
 #include <stdbool.h>
+#include <string.h>
 #include "magicsquareutil.h"
-mpz_t sq, lastsq;
+
+struct fv_app_nine_search_t
+{
+  mpz_t sq;
+  mpz_t lastsq;
+};
+
+struct fv_app_nine_search_t *g;
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_nine_search_t *app = (struct fv_app_nine_search_t *) state->input;
   switch (key)
     {
     case 'c':
-      mpz_set_str (sq, arg, 10);
+      mpz_set_str (app->sq, arg, 10);
       break;
     case ARGP_KEY_INIT:
-      mpz_init (sq);
-      mpz_init (lastsq);
+      mpz_init (app->sq);
+      mpz_init (app->lastsq);
       break;
     }
   return 0;
@@ -45,7 +54,7 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Search for a 3x3 magic square of 9 perfect squares.", 0};
+static struct argp argp ={options, parse_opt, 0, "Search for a 3x3 magic square of 9 perfect squares.", 0};
 
 static void
 calculate_middle_square (mpz_t c)
@@ -222,14 +231,14 @@ generate_square (mpz_t c, mpz_t a, mpz_t s[3][3], FILE *out)
   mpz_clears (b, NULL);
 }
 
-static void generate_progression (mpz_t num, FILE *out)
+static void generate_progression (struct fv_app_nine_search_t *app, mpz_t num, FILE *out)
 {
   mpz_t root, j, r, s, prevr, diff;
   mpz_inits (root, j, r, s, prevr, diff, NULL);
-  if (mpz_cmp_ui (sq, 0) == 0)
-    mpz_set (sq, num);
-  mpz_sqrt (root, sq);
-  mpz_mul (sq, root, root);
+  if (mpz_cmp_ui (app->sq, 0) == 0)
+    mpz_set (app->sq, num);
+  mpz_sqrt (root, app->sq);
+  mpz_mul (app->sq, root, root);
   int incr = 1;
   /*
    * go forward by 1 square at a time until we find one that is 1 mod 24
@@ -242,22 +251,22 @@ static void generate_progression (mpz_t num, FILE *out)
     {
       for (int k = 0; k < i; k++)
         {
-          mpz_add (sq, sq, root);
-          mpz_add (sq, sq, root);
-          mpz_add_ui (sq, sq, incr);
+          mpz_add (app->sq, app->sq, root);
+          mpz_add (app->sq, app->sq, root);
+          mpz_add_ui (app->sq, app->sq, incr);
           mpz_add_ui (root, root, incr);
         }
 
       if (incr == 1 && i == 1)
         {
           mpz_set (prevr, r);
-          mpz_mod_ui (r, sq, 24);
+          mpz_mod_ui (r, app->sq, 24);
           if (mpz_cmp_ui (r, 1) != 0)
             continue;
           else
             {
-              char buf[mpz_sizeinbase (sq, 10) + 2];
-              mpz_get_str (buf, 10, sq);
+              char buf[mpz_sizeinbase (app->sq, 10) + 2];
+              mpz_get_str (buf, 10, app->sq);
               if (mpz_cmp_si (prevr, -1) == 0)
                 {
                   printf("crappers. we have some work to do here\n");
@@ -281,9 +290,9 @@ static void generate_progression (mpz_t num, FILE *out)
       else if (i == 4)
         i = 2;
 
-      mpz_sub (diff, sq, num);
+      mpz_sub (diff, app->sq, num);
       mpz_sub (j, num, diff);
-      mpz_set (lastsq, sq);
+      mpz_set (app->lastsq, app->sq);
       mpz_mod_ui (s, j, 24);
       if (mpz_cmp_ui (s, 1) != 0)
         continue;
@@ -300,8 +309,8 @@ static void generate_progression (mpz_t num, FILE *out)
               fprintf (out, "%s, ", buf);
             }
             {
-              char buf[mpz_sizeinbase (sq, 10) + 2];
-              mpz_get_str (buf, 10, sq);
+              char buf[mpz_sizeinbase (app->sq, 10) + 2];
+              mpz_get_str (buf, 10, app->sq);
               fprintf (out, "%s\n", buf);
             }
         }
@@ -310,8 +319,8 @@ static void generate_progression (mpz_t num, FILE *out)
 }
 
 #define MAX 10
-static void
-nine_search (FILE *out)
+void
+fituvalu_nine_search (struct fv_app_nine_search_t *app, FILE *out)
 {
   mpz_t sqs[MAX], a, c;
   mpz_t s[3][3];
@@ -344,7 +353,7 @@ nine_search (FILE *out)
   mpz_set_str (a, "54342291404080490827096080", 10);
 
   //for (int i = 0; i < MAX; i++)
-  generate_progression (sqs[MAX-1], out);
+  generate_progression (app, sqs[MAX-1], out);
 
   //for (int i = 0; i < MAX; i++)
     //generate_square (sqs[i], a, s, out);
@@ -376,8 +385,8 @@ nine_search (FILE *out)
 
 void intHandler(int dummy)
 {
-  char buf[mpz_sizeinbase (lastsq, 10) + 2];
-  mpz_get_str (buf, 10, lastsq);
+  char buf[mpz_sizeinbase (g->lastsq, 10) + 2];
+  mpz_get_str (buf, 10, g->lastsq);
   fprintf (stderr, "\nStopped searching at square: %s\n", buf);
   exit (1);
 }
@@ -385,9 +394,12 @@ void intHandler(int dummy)
 int
 main (int argc, char **argv)
 {
+  struct fv_app_nine_search_t app;
+  memset (&app, 0, sizeof (app));
+  g = &app;
   signal(SIGINT, intHandler);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  nine_search (stdout);
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  fituvalu_nine_search (&app, stdout);
 
   return 0;
 }

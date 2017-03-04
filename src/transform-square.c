@@ -20,10 +20,15 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+struct fv_app_transform_magic_square_t
+{
+  int display_errors;
+  int (*read_numbers)(FILE *, mpz_t *, int, char **, size_t *);
+  void (*display_square) (mpz_t s[3][3], FILE *out);
 
-int display_errors = 1;
-int (*read_numbers)(FILE *, mpz_t *, int, char **, size_t *) = read_numbers_from_stream;
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
+  int **transformations;
+  int num_transformations;
+};
 /*
 So you've generated some progressions and now you want to turn them into
 magic squares.  You've tried permute-square but it's just too darned slow
@@ -57,14 +62,11 @@ e.g. order your transformation file by popularity.
 $ head -n100 data | permute-square -d | sort | uniq -c
 */
 
-int **transformations;
-int num_transformations;
-
 static int
-try_transformation (mpz_t a[], int size, int t, mpz_t s[3][3])
+try_transformation (struct fv_app_transform_magic_square_t *app, mpz_t a[], int size, int t, mpz_t s[3][3])
 {
 
-  int *transform = transformations[t];
+  int *transform = app->transformations[t];
   //we were doing this but it was wrong, and working some of the time?
   //for (int i = 0; i < size; i++)
     //mpz_set (s[i/3][i%3], a[transform[i] + i]);
@@ -79,23 +81,23 @@ try_transformation (mpz_t a[], int size, int t, mpz_t s[3][3])
 }
 
 static void
-transform_square (mpz_t a[], int size, FILE *out)
+transform_square (struct fv_app_transform_magic_square_t *app, mpz_t a[], int size, FILE *out)
 {
   int found = 0;
   mpz_t s[3][3];
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       mpz_init (s[i][j]);
-  for (int i = 0; i < num_transformations; i++)
+  for (int i = 0; i < app->num_transformations; i++)
     {
-      if (try_transformation (a, size, i, s))
+      if (try_transformation (app, a, size, i, s))
         {
-          display_square (s, out);
+          app->display_square (s, out);
           found = 1;
           break;
         }
     }
-  if (!found && display_errors)
+  if (!found && app->display_errors)
     {
       int count = 0;
       for (int i = 0; i < 3; i++)
@@ -104,15 +106,15 @@ transform_square (mpz_t a[], int size, FILE *out)
             mpz_set (s[i][j], a[count]);
             count++;
           }
-      display_square (s, stderr);
+      app->display_square (s, stderr);
     }
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       mpz_clear (s[i][j]);
 }
 
-static int
-transform_magic_square (FILE *stream)
+int
+fituvalu_transform_magic_square (struct fv_app_transform_magic_square_t *app, FILE *in, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -125,10 +127,10 @@ transform_magic_square (FILE *stream)
 
   while (1)
     {
-      read = read_numbers (stream, a, SIZE, &line, &len);
+      read = app->read_numbers (in, a, SIZE, &line, &len);
       if (read == -1)
         break;
-      transform_square (a, SIZE, stdout);
+      transform_square (app, a, SIZE, out);
     }
 
   for (i = 0; i < SIZE; i++)
@@ -142,16 +144,17 @@ transform_magic_square (FILE *stream)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_transform_magic_square_t *app = (struct fv_app_transform_magic_square_t *) state->input;
   switch (key)
     {
     case 'i':
-      read_numbers = binary_read_numbers_from_stream;
+      app->read_numbers = binary_read_numbers_from_stream;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     case 'g':
-      display_errors = 0;
+      app->display_errors = 0;
       break;
     case ARGP_KEY_ARG:
         {
@@ -166,23 +169,26 @@ parse_opt (int key, char *arg, struct argp_state *state)
               ssize_t read = read_numbers_from_stream (fp, a, SIZE, &line, &len);
               if (read == -1)
                 break;
-              transformations = realloc (transformations, 
-                                         (num_transformations+1) *
-                                         sizeof (int*));
-              transformations[num_transformations] =
+              app->transformations =
+                realloc (app->transformations, 
+                         (app->num_transformations+1) * sizeof (int*));
+              app->transformations[app->num_transformations] =
                 malloc (sizeof (int) * SIZE);
               for (int i = 0; i < SIZE; i++)
-                transformations[num_transformations][i] = 
+                app->transformations[app->num_transformations][i] = 
                   mpz_get_si (a[i]);
-              num_transformations++;
+              app->num_transformations++;
             }
           fclose (fp);
           free (line);
           for (int i = 0; i < SIZE; i++)
             mpz_clear (a[i]);
-          if (num_transformations == 0)
+          if (app->num_transformations == 0)
             argp_error (state, "no transformations found in %s", arg);
         }
+      break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     }
   return 0;
@@ -197,13 +203,17 @@ options[] =
     { 0 }
 };
 
-struct argp argp ={options, parse_opt, "TRANSFORM-FILE", "Accept 9 numbers on the standard input, and transform them into 3x3 magic squares according to the records in TRANSFORM-FILE.\vThe nine values must be separated by a comma and terminated by a newline.  TRANSFORM-FILE has comma separated values of -8 to 8, and nine of them per line.  Records that cannot be transformed into valid squares are outputted to the standard error.  Use `permute-square -d' to generate suitable records for TRANSFORM-FILE." , 0};
+static struct argp argp ={options, parse_opt, "TRANSFORM-FILE", "Accept 9 numbers on the standard input, and transform them into 3x3 magic squares according to the records in TRANSFORM-FILE.\vThe nine values must be separated by a comma and terminated by a newline.  TRANSFORM-FILE has comma separated values of -8 to 8, and nine of them per line.  Records that cannot be transformed into valid squares are outputted to the standard error.  Use `permute-square -d' to generate suitable records for TRANSFORM-FILE." , 0};
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
+  struct fv_app_transform_magic_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_errors = 1;
+  app.read_numbers = read_numbers_from_stream;
+  app.display_square = display_square_record;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
   is_magic_square_init ();
-  return transform_magic_square (stdin);
+  return fituvalu_transform_magic_square (&app, stdin, stdout);
 }

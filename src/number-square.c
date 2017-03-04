@@ -20,10 +20,13 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-int showmax;
-int showmin;
-int showdiff;
-int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
+struct fv_app_display_magic_square_t
+{
+  int showmax;
+  int showmin;
+  int showdiff;
+  int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+};
 
 static void
 get_lowest_number (mpz_t a[3][3], mpz_t *low)
@@ -49,8 +52,8 @@ get_largest_number (mpz_t sq[3][3], mpz_t m)
       mpz_set (m, sq[i][j]);
 }
 
-static int
-display_magic_number (FILE *stream)
+int
+fituvalu_display_magic_number (struct fv_app_display_magic_square_t *app, FILE *stream)
 {
   char *line = NULL;
   size_t len = 0;
@@ -64,10 +67,10 @@ display_magic_number (FILE *stream)
 
   while (1)
     {
-      read = read_square (stream, &a, &line, &len);
+      read = app->read_square (stream, &a, &line, &len);
       if (read == -1)
         break;
-      if (showmax)
+      if (app->showmax)
         {
           mpz_t m;
           mpz_init (m);
@@ -75,7 +78,7 @@ display_magic_number (FILE *stream)
           display_textual_number (&m, stdout);
           mpz_clear (m);
         }
-      else if (showmin)
+      else if (app->showmin)
         {
           mpz_t m;
           mpz_init (m);
@@ -83,7 +86,7 @@ display_magic_number (FILE *stream)
           display_textual_number (&m, stdout);
           mpz_clear (m);
         }
-      else if (showdiff)
+      else if (app->showdiff)
         {
           mpz_t mi, ma, diff;
           mpz_inits (mi, ma, diff, NULL);
@@ -123,19 +126,20 @@ display_magic_number (FILE *stream)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_display_magic_square_t *app = (struct fv_app_display_magic_square_t *) state->input;
   switch (key)
     {
     case 'd':
-      showdiff = 1;
+      app->showdiff = 1;
       break;
     case 'm':
-      showmax = 1;
+      app->showmax = 1;
       break;
     case 'M':
-      showmin = 1;
+      app->showmin = 1;
       break;
     case 'i':
-      read_square = binary_read_square_from_stream;
+      app->read_square = binary_read_square_from_stream;
       break;
     }
   return 0;
@@ -151,11 +155,14 @@ options[] =
   { 0 },
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and display the magic number.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
+static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and display the magic number.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
 
 int
 main (int argc, char **argv)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  return display_magic_number (stdin);
+  struct fv_app_display_magic_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.read_square = read_square_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_display_magic_number (&app, stdin);
 }

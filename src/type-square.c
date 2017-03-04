@@ -17,12 +17,17 @@
 #include <stdlib.h>
 #include <argp.h>
 #include <gmp.h>
+#include <string.h>
 #include "magicsquareutil.h"
-int num_filters;
-int *filter_types;
-int *filter_squares;
-int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
+struct fv_app_type_square_t
+{
+  int num_filters;
+  int *filter_types;
+  int *filter_squares;
+  int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+  int show_num_squares;
+};
 /*
  how to generate the lookup tables:
  the doit.sh script:
@@ -57,7 +62,6 @@ and so on.
 
 */
 
-int show_num_squares = 1;
 static int
 get_type_from_signature (int signature, int num_squares)
 {
@@ -601,14 +605,15 @@ get_type_from_signature (int signature, int num_squares)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_type_square_t *app = (struct fv_app_type_square_t *) state->input;
   int type, square;
   switch (key)
     {
     case 'i':
-      read_square = binary_read_square_from_stream;
+      app->read_square = binary_read_square_from_stream;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     case 'f':
       if (sscanf (arg, "%d:%d", &square, &type) != 2)
@@ -621,17 +626,20 @@ parse_opt (int key, char *arg, struct argp_state *state)
           argp_error (state, "type must be between 1 and 23.");
         else
           {
-            filter_types =
-              realloc (filter_types, sizeof (int) * (num_filters + 1));
-            filter_squares =
-              realloc (filter_squares, sizeof (int) * (num_filters + 1));
-            filter_squares[num_filters] = square;
-            filter_types[num_filters] = type;
-            num_filters++;
+            app->filter_types =
+              realloc (app->filter_types, sizeof (int) * (app->num_filters + 1));
+            app->filter_squares =
+              realloc (app->filter_squares, sizeof (int) * (app->num_filters + 1));
+            app->filter_squares[app->num_filters] = square;
+            app->filter_types[app->num_filters] = type;
+            app->num_filters++;
           }
       break;
     case 'n':
-      show_num_squares = 0;
+      app->show_num_squares = 0;
+      break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     }
   return 0;
@@ -647,12 +655,11 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and determine which configuration it is.\vThe nine values must be separated by commas and terminated by a newline. --out-binary is only used with --filter.", 0};
+static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and determine which configuration it is.\vThe nine values must be separated by commas and terminated by a newline. --out-binary is only used with --filter.", 0};
+
 int
-main (int argc, char **argv)
+fituvalu_type_square (struct fv_app_type_square_t *app,  FILE *in, FILE *out)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
   int i, j;
   mpz_t a[3][3];
   ssize_t read;
@@ -662,9 +669,9 @@ main (int argc, char **argv)
 
   char* line = NULL;
   size_t len = 0;
-  while (!feof (stdin))
+  while (!feof (in))
     {
-      read = read_square (stdin, &a, &line, &len);
+      read = app->read_square (in, &a, &line, &len);
       if (read == -1)
         break;
 
@@ -681,21 +688,21 @@ main (int argc, char **argv)
               }
           }
       int type = get_type_from_signature (signature, num_squares);
-      if (!num_filters)
+      if (!app->num_filters)
         {
-          if (show_num_squares)
-            fprintf (stdout, "%d:%d\n", num_squares, type);
+          if (app->show_num_squares)
+            fprintf (out, "%d:%d\n", num_squares, type);
           else
-            fprintf (stdout, "%d\n", type);
+            fprintf (out, "%d\n", type);
         }
       else
         {
-          for (int i = 0; i < num_filters; i++)
+          for (int i = 0; i < app->num_filters; i++)
             {
-              if (filter_squares[i] == num_squares &&
-                  filter_types[i] == type)
+              if (app->filter_squares[i] == num_squares &&
+                  app->filter_types[i] == type)
                 {
-                  display_square (a, stdout);
+                  app->display_square (a, out);
                   break;
                 }
             }
@@ -708,4 +715,16 @@ main (int argc, char **argv)
   if (line)
     free (line);
   return 0;
+}
+
+int
+main (int argc, char **argv)
+{
+  struct fv_app_type_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.read_square = read_square_from_stream;
+  app.display_square = display_square_record;
+  app.show_num_squares = 1;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_type_square (&app, stdin, stdout);
 }

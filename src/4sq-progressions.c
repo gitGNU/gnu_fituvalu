@@ -141,7 +141,7 @@ dec (mpz_t *j, mpz_t *jroot, unsigned long long incr)
 }
 
 void
-fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
 /* |-----+--+--+-------+-----|
          ^  ^  ^       ^
@@ -185,7 +185,7 @@ fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
               mpz_sub (amt, k, j);
               mpz_add (amt, amt, diff);
               if (mpz_cmp_ui (amt, 0) > 0 && mpz_cmp (next, k) != 0)
-                func (progression, i, j, next, k, out);
+                func (progression, i, j, next, k, data);
               mpz_clear (amt);
             }
           mpz_clear (next);
@@ -200,7 +200,7 @@ fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
 }
 
 void
-fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
 /* |---+--+-------+--+---|
        ^  ^       ^  ^                        
@@ -245,7 +245,7 @@ fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
                 }
               mpz_sub (amt, k, j);
               if (mpz_cmp_ui (amt, 0) > 0)
-                func (progression, i, j, k, fourth, out);
+                func (progression, i, j, k, fourth, data);
               mpz_clears (amt, fourth, NULL);
             }
           mpz_clear (next);
@@ -260,7 +260,7 @@ fwd_4sq_progression2 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
 }
 
 void
-fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
 /* |---+--------+--+-----+---|
        ^        ^  ^     ^
@@ -300,7 +300,7 @@ fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
             {
               inc (&k, &kroot, incr);
               if (mpz_cmp (k, j) != 0)
-                func (progression, i, j, k, next, out);
+                func (progression, i, j, k, next, data);
             }
           mpz_clear (next);
           mpz_clears (kroot, lastkroot, NULL);
@@ -314,7 +314,7 @@ fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
 }
 
 void
-fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
 /* |-----+--+--+-------+--+--+--|
          ^     ^       ^     ^
@@ -362,7 +362,7 @@ fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
                   mpz_clear (next);
                   continue;
                 }
-              func (progression, i, j, k, next, out);
+              func (progression, i, j, k, next, data);
               mpz_clear (next);
             }
           mpz_clear (kroot);
@@ -377,7 +377,7 @@ fwd_4sq_progression4 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
 }
 
 void
-fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
 /* |---+--------+--+-----+--+--+------|
        ^        ^        ^     ^
@@ -428,7 +428,7 @@ fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
                 }
               mpz_clear (nextkdiff);
               if (mpz_cmp (j, k) != 0)
-                func (progression, i, j, next, k, out);
+                func (progression, i, j, next, k, data);
             }
           mpz_clear (next);
           mpz_clears (kroot, lastkroot, NULL);
@@ -442,7 +442,7 @@ fwd_4sq_progression5 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
 }
 
 void
-fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
   //|----+--*--*--------*--+--*--------*--*--+----|
   //        ^  ^        ^     ^
@@ -490,7 +490,7 @@ fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
                   continue;
                 }
               if (mpz_cmp (next, j) < 0)
-                func (progression, i, next, j, k, out);
+                func (progression, i, next, j, k, data);
               mpz_clear (next);
             }
           mpz_clear (kroot);
@@ -505,7 +505,7 @@ fwd_4sq_progression6 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
 
 
 void
-rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
 /* |------+-------+--+--+------|
           ^       ^  ^  ^       
@@ -549,7 +549,7 @@ rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
               mpz_sub (amt, k, j);
               mpz_add (amt, amt, diff);
               if (mpz_cmp (k, next) < 0)
-                func (progression, i, j, next, k, out);
+                func (progression, i, j, next, k, data);
               mpz_clear (amt);
             }
           mpz_clear (next);
@@ -565,7 +565,7 @@ rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long inc
 }
 
 void
-small_fwd_4sq_progression1 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *out)
+small_fwd_4sq_progression1 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *data)
 {
 /* |-----+--+--+-------+-----|
          ^  ^  ^       ^
@@ -592,7 +592,7 @@ small_fwd_4sq_progression1 (unsigned long long i, unsigned long long start, unsi
             {
               k += kroot + kroot + 1;
               if (k - j+diff > 0 && k - j > 0)
-                func (progression, i, j, j + diff, k, out);
+                func (progression, i, j, j + diff, k, data);
               kroot++;
             }
         }
@@ -601,7 +601,7 @@ small_fwd_4sq_progression1 (unsigned long long i, unsigned long long start, unsi
 }
 
 void
-small_fwd_4sq_progression2 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *out)
+small_fwd_4sq_progression2 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *data)
 {
 /* |--------+--+-------+--+--------|
             ^  ^       ^  ^                        
@@ -631,7 +631,7 @@ small_fwd_4sq_progression2 (unsigned long long i, unsigned long long start, unsi
                 }
               unsigned long long amt = k - j;
               if (amt > 0)
-                func (progression, i, j, k, fourth, out);
+                func (progression, i, j, k, fourth, data);
               kroot++;
             }
         }
@@ -640,7 +640,7 @@ small_fwd_4sq_progression2 (unsigned long long i, unsigned long long start, unsi
 }
 
 void
-small_fwd_4sq_progression3 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *out)
+small_fwd_4sq_progression3 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *data)
 {
 /* |---+--------+--+-----+---|
        ^        ^  ^     ^
@@ -667,7 +667,7 @@ small_fwd_4sq_progression3 (unsigned long long i, unsigned long long start, unsi
             {
               k += kroot + kroot + 1;
               if (j != k)
-                func (progression, i, j, k, next, out);
+                func (progression, i, j, k, next, data);
               kroot++;
             }
         }
@@ -676,7 +676,7 @@ small_fwd_4sq_progression3 (unsigned long long i, unsigned long long start, unsi
 }
 
 void
-small_fwd_4sq_progression4 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *out)
+small_fwd_4sq_progression4 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *data)
 {
 /* |-----+-----+-------+-----+--|
          ^     ^       ^     ^
@@ -706,7 +706,7 @@ small_fwd_4sq_progression4 (unsigned long long i, unsigned long long start, unsi
                   kroot++;
                 continue;
                 }
-              func (progression, i, j, k, k+diff, out);
+              func (progression, i, j, k, k+diff, data);
               kroot++;
             }
         }
@@ -715,7 +715,7 @@ small_fwd_4sq_progression4 (unsigned long long i, unsigned long long start, unsi
 }
 
 void
-small_fwd_4sq_progression5 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *out)
+small_fwd_4sq_progression5 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void*), void *data)
 {
 /* |---+--------+--+-----+--+--+------|
        ^        ^        ^     ^
@@ -748,7 +748,7 @@ small_fwd_4sq_progression5 (unsigned long long i, unsigned long long start, unsi
                   continue;
                 }
               if (j != k)
-                func (progression, i, j, next, k, out);
+                func (progression, i, j, next, k, data);
               kroot++;
             }
         }
@@ -757,7 +757,7 @@ small_fwd_4sq_progression5 (unsigned long long i, unsigned long long start, unsi
 }
 
 void
-small_fwd_4sq_progression6 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *out)
+small_fwd_4sq_progression6 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *data)
 {
   //|----+--*--*--------*--+--*--------*--*--+----|
   //        ^  ^        ^     ^
@@ -791,7 +791,7 @@ small_fwd_4sq_progression6 (unsigned long long i, unsigned long long start, unsi
                   continue;
                 }
               if (next < j)
-                func (progression, i, next, j, k, out);
+                func (progression, i, next, j, k, data);
               kroot++;
             }
         }
@@ -800,7 +800,7 @@ small_fwd_4sq_progression6 (unsigned long long i, unsigned long long start, unsi
 }
 
 void
-small_rev_4sq_progression1 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *out)
+small_rev_4sq_progression1 (unsigned long long i, unsigned long long start, unsigned long long finish, void (*func)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *data)
 {
 /* |------+-------+--+--+------|
           ^       ^  ^  ^       
@@ -825,14 +825,14 @@ small_rev_4sq_progression1 (unsigned long long i, unsigned long long start, unsi
               kroot--;
               k -= (kroot + kroot + 1);
               if (k < next)
-                func (progression, i, j, next, k, out);
+                func (progression, i, j, next, k, data);
             }
         }
     }
 }
 
 void
-optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
 /* |-----+--+--+-------+-----|
          ^  ^  ^       ^
@@ -865,7 +865,7 @@ optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
               mpz_sub (amt, k, j);
               mpz_add (amt, amt, diff);
               if (mpz_cmp_ui (amt, 0) > 0 && mpz_cmp (next, k) != 0)
-                func (progression, i, j, next, k, out);
+                func (progression, i, j, next, k, data);
             }
         }
     }
@@ -876,7 +876,7 @@ optimized_fwd_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
 }
 
 void
-optimized_rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+optimized_rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
 /* |------+-------+--+--+------|
           ^       ^  ^  ^       
@@ -922,7 +922,7 @@ optimized_rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
               mpz_sub (amt, k, j);
               mpz_add (amt, amt, diff);
               if (mpz_cmp (k, next) < 0)
-                func (progression, i, j, next, k, out);
+                func (progression, i, j, next, k, data);
               mpz_clear (amt);
             }
           mpz_clear (next);
@@ -938,7 +938,7 @@ optimized_rev_4sq_progression1 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
 }
 
 void
-optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned long long incr, void (*func)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
 /* |---+--------+--+-----+---|
        ^        ^  ^     ^
@@ -980,7 +980,7 @@ optimized_fwd_4sq_progression3 (mpz_t i, mpz_t start, mpz_t finish, unsigned lon
             {
               inc (&k, &kroot, incr);
               if (mpz_cmp (k, j) != 0)
-                func (progression, i, j, k, next, out);
+                func (progression, i, j, k, next, data);
             }
           mpz_clear (next);
           mpz_clears (kroot, lastkroot, NULL);

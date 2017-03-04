@@ -20,12 +20,18 @@
 #include <string.h>
 #include <gmp.h>
 #include "magicsquareutil.h"
-unsigned long long incr = 1;
-int in_binary;
-FILE *instream;
-mpz_t start, finish, oneshot;
-int num_args;
-void (*display_record) (mpz_t *progression, FILE *out) = display_nine_record;
+
+struct fv_app_step_progression2_t
+{
+  unsigned long long incr;
+  int in_binary;
+  FILE *instream;
+  mpz_t start, finish, oneshot;
+  int num_args;
+  void (*display_record) (mpz_t *progression, FILE *out);
+  FILE *out;
+};
+
 /*
 some magic squares can be found fairly directly by exploiting the following:
 
@@ -73,12 +79,13 @@ around in every possible permutation.
  */
 
 static inline void
-check_progression (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t four, FILE *out)
+check_progression (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t four, void *data)
 {
+  struct fv_app_step_progression2_t *app = (struct fv_app_step_progression2_t *) data;
   four_square_to_nine_number_step_progression2 (progression, one, two, three, four);
   int count = count_squares_in_step_progression2 (progression);
   if (count > 4)
-    display_record (progression, out);
+    app->display_record (progression, app->out);
 }
 
 static struct argp_option
@@ -110,79 +117,92 @@ help_filter (int key, const char *text, void *input)
 }
 
 static error_t parse_opt (int key, char *arg, struct argp_state *state);
-struct argp argp ={options, parse_opt, "MIN MAX", "Find arithmetic progressions of 9 numbers that have perfect squares.\vThis program searches for perfect squares in this progression:\n%s" , 0, help_filter};
+static struct argp argp ={options, parse_opt, "MIN MAX", "Find arithmetic progressions of 9 numbers that have perfect squares.\vThis program searches for perfect squares in this progression:\n%s" , 0, help_filter};
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_step_progression2_t *app = (struct fv_app_step_progression2_t *) state->input;
   char *end = NULL;
   switch (key)
     {
     case 'I':
-      incr = strtoull (arg, &end, 10);
+      app->incr = strtoull (arg, &end, 10);
       break;
     case '1':
-      mpz_set_str (oneshot, arg, 10);
+      mpz_init_set_str (app->oneshot, arg, 10);
       break;
     case 'o':
-      display_record = display_binary_nine_record;
+      app->display_record = display_binary_nine_record;
       break;
     case 'i':
-      in_binary = 1;
+      app->in_binary = 1;
       break;
     case 's':
       if (strcmp (arg, "-") == 0)
-        instream = stdin;
+        app->instream = stdin;
       else
-        instream = fopen (arg, "r");
+        app->instream = fopen (arg, "r");
       break;
     case ARGP_KEY_ARG:
-      if (num_args == 2)
+      if (app->num_args == 2)
         argp_error (state, "too many arguments");
       else
         {
-          switch (num_args)
+          switch (app->num_args)
             {
             case 0:
-              mpz_init_set_str (start, arg, 10);
+              mpz_init_set_str (app->start, arg, 10);
               break;
             case 1:
-              mpz_init_set_str (finish, arg, 10);
+              mpz_init_set_str (app->finish, arg, 10);
               break;
             }
-          num_args++;
+          app->num_args++;
         }
       break;
     case ARGP_KEY_FINI:
-      if (num_args != 2)
+      if (app->num_args != 2)
         argp_error (state, "not enough arguments");
+      break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     }
   return 0;
 }
 
 int
-main (int argc, char **argv)
+fituvalu_step_progression2 (struct fv_app_step_progression2_t *app)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-
-  if (instream && !in_binary)
-    read_square_and_run (instream,
+  if (app->instream && !app->in_binary)
+    read_square_and_run (app->instream,
                          fwd_4sq_progression2,
                          check_progression,
-                         start, finish, incr, stdout);
-  else if (instream && in_binary)
-    binary_read_square_and_run (instream,
+                         app->start, app->finish, app->incr, app);
+  else if (app->instream && app->in_binary)
+    binary_read_square_and_run (app->instream,
                                 fwd_4sq_progression2,
                                 check_progression,
-                                start, finish, incr, stdout);
-  else if (mpz_cmp_ui (oneshot, 0) != 0)
-    fwd_4sq_progression2 (oneshot, start, finish, incr, check_progression,
-                          stdout);
+                                app->start, app->finish, app->incr, app);
+  else if (mpz_cmp_ui (app->oneshot, 0) != 0)
+    fwd_4sq_progression2 (app->oneshot, app->start, app->finish, app->incr,
+                          check_progression, app);
   else
     loop_and_run (fwd_4sq_progression2,
                   check_progression,
-                  start, finish, incr, stdout);
+                  app->start, app->finish, app->incr, app);
 
   return 0;
+}
+
+int
+main (int argc, char **argv)
+{
+  struct fv_app_step_progression2_t app;
+  memset (&app, 0, sizeof (app));
+  app.incr = 1;
+  app.display_record = display_nine_record;
+  app.out = stdout;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_step_progression2 (&app);
 }

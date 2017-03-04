@@ -20,9 +20,13 @@
 #include <string.h>
 #include <gmp.h>
 #include "magicsquareutil.h"
-FILE *instream;
-unsigned long long start, finish;
-int num_args;
+struct fv_app_small_fulcrum_progression4_t
+{
+  FILE *instream;
+  unsigned long long start, finish;
+  int num_args;
+  FILE *out;
+};
 /*
 some magic squares can be found fairly directly by exploiting the following:
 
@@ -73,8 +77,9 @@ around in every possible permutation.
  */
 
 static inline void
-check_progression (unsigned long long *progression, unsigned long long one, unsigned long long two, unsigned long long three, unsigned long long four, FILE *out)
+check_progression (unsigned long long *progression, unsigned long long one, unsigned long long two, unsigned long long three, unsigned long long four, void *data)
 {
+  struct fv_app_small_fulcrum_progression4_t *app = (struct fv_app_small_fulcrum_progression4_t *) data;
   progression[0] = one;
   progression[1] = two;
   progression[3] = three;
@@ -100,7 +105,7 @@ check_progression (unsigned long long *progression, unsigned long long one, unsi
     }
   if (count > 4)
     {
-      fprintf (out, 
+      fprintf (app->out, 
                "%llu, %llu, %llu, %llu, %llu, %llu, %llu, %llu, %llu, \n",
                progression[0], progression[1], progression[2],
                progression[3], progression[4], progression[5],
@@ -132,59 +137,70 @@ help_filter (int key, const char *text, void *input)
 }
 
 static error_t parse_opt (int key, char *arg, struct argp_state *state);
-struct argp argp ={options, parse_opt, "MIN MAX", "Find arithmetic progressions of 9 numbers that have perfect squares.\vThis program searches for perfect squares in this progression:\n%s" , 0, help_filter};
+static struct argp argp ={options, parse_opt, "MIN MAX", "Find arithmetic progressions of 9 numbers that have perfect squares.\vThis program searches for perfect squares in this progression:\n%s" , 0, help_filter};
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_small_fulcrum_progression4_t *app = (struct fv_app_small_fulcrum_progression4_t *) state->input;
   switch (key)
     {
     case 'i':
       if (strcmp (arg, "-") == 0)
-        instream = stdin;
+        app->instream = stdin;
       else
-        instream = fopen (arg, "r");
+        app->instream = fopen (arg, "r");
       break;
     case ARGP_KEY_ARG:
-      if (num_args == 2)
+      if (app->num_args == 2)
         argp_error (state, "too many arguments");
       else
         {
           char *end = NULL;
-          switch (num_args)
+          switch (app->num_args)
             {
             case 0:
-              start = strtoull (arg, &end, 10);
+              app->start = strtoull (arg, &end, 10);
               break;
             case 1:
-              finish = strtoull (arg, &end, 10);
+              app->finish = strtoull (arg, &end, 10);
               break;
             }
-          num_args++;
+          app->num_args++;
         }
       break;
     case ARGP_KEY_FINI:
-      if (num_args != 2)
+      if (app->num_args != 2)
         argp_error (state, "not enough arguments");
+      break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     }
   return 0;
 }
 
 int
-main (int argc, char **argv)
+fituvalu_small_fulcrum_progression4 (struct fv_app_small_fulcrum_progression4_t *app)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-
-  if (instream)
-    small_read_square_and_run (instream,
+  if (app->instream)
+    small_read_square_and_run (app->instream,
                                small_fwd_4sq_progression5,
                                check_progression,
-                               start, finish, stdout);
+                               app->start, app->finish, app);
   else
     small_loop_and_run (small_fwd_4sq_progression5,
                         check_progression,
-                        start, finish, stdout);
+                        app->start, app->finish, app);
 
   return 0;
+}
+
+int
+main (int argc, char **argv)
+{
+  struct fv_app_small_fulcrum_progression4_t app;
+  memset (&app, 0, sizeof (app));
+  app.out = stdout;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_small_fulcrum_progression4 (&app);
 }

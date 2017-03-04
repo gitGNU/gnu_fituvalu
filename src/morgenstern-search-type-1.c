@@ -23,28 +23,30 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-int inmem = 0;
-FILE *infile;
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
-
-int in_binary;
-int filter_num_squares;
-int num_args;
-mpz_t max;
-mpz_t a[3][3];
-mpz_t x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
-      yx1dif, yx1sum, yx2dif, yx2sum;
-
+struct fv_app_morgenstern_search_type_1_t;
 static int
-no_filter (int num)
+no_filter (mpz_t a[3][3], int num)
 {
   return 1;
 }
 
-int (*filter_square) (int) = no_filter;
+struct fv_app_morgenstern_search_type_1_t
+{
+  FILE *out;
+  int inmem;
+  FILE *infile;
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+
+  int in_binary;
+  int filter_num_squares;
+  int num_args;
+  mpz_t max;
+  int (*filter_square) (mpz_t s[3][3], int);
+};
+
 
 static int
-filter (int num_squares)
+filter (mpz_t a[3][3], int num_squares)
 {
   int count = 5;
   if (mpz_perfect_square_p (a[0][1]))
@@ -76,8 +78,22 @@ filter (int num_squares)
 }
 
 static void
-search_type_1 (mpz_t m1, mpz_t n1, mpz_t m2, mpz_t n2, FILE *out)
+search_type_1 (mpz_t m1, mpz_t n1, mpz_t m2, mpz_t n2, void *data)
 {
+  static int inited = 0;
+  static mpz_t a[3][3];
+  static mpz_t x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
+        yx1dif, yx1sum, yx2dif, yx2sum;
+  if (!inited)
+    {
+      inited = 1;
+      for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+          mpz_init (a[i][j]);
+      mpz_inits (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22, yx1dif, yx1sum,
+                 yx2dif, yx2sum, NULL);
+    }
+  struct fv_app_morgenstern_search_type_1_t *app = (struct fv_app_morgenstern_search_type_1_t *) data;
   //where X1 = 2*m1*n1,  Y1 = m1^2-n1^2,  Z1 = m1^2+n1^2,
   mpz_set (x1, m1);
   mpz_mul (x1, x1, n1);
@@ -158,47 +174,37 @@ search_type_1 (mpz_t m1, mpz_t n1, mpz_t m2, mpz_t n2, FILE *out)
   mpz_add (a[2][1], a[0][2], a[0][0]);
   mpz_sub (a[2][1], a[2][1], a[1][1]);
 
-  if (filter_square (filter_num_squares))
-    display_square (a, out);
+  if (app->filter_square (a, app->filter_num_squares))
+    app->display_square (a, app->out);
 }
 
-static int
-morgenstern_search_type_1 (FILE *in, FILE *out)
+int
+fituvalu_morgenstern_search_type_1 (struct fv_app_morgenstern_search_type_1_t *app, FILE *in)
 {
-  for (int i = 0; i < 3; i++)
-    for (int j = 0; j < 3; j++)
-      mpz_init (a[i][j]);
-  mpz_inits (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
-             yx1dif, yx1sum, yx2dif, yx2sum, NULL);
-  if (!infile)
+  if (!app->infile)
     {
-      if (in_binary)
-        morgenstern_search_from_binary (max, in, search_type_1, out);
+      if (app->in_binary)
+        morgenstern_search_from_binary (app->max, in, search_type_1, app);
       else
-        morgenstern_search (max, in, search_type_1, out);
+        morgenstern_search (app->max, in, search_type_1, app);
     }
   else
     {
-      if (in_binary)
+      if (app->in_binary)
         {
-          if (inmem)
-            morgenstern_search_dual_binary_mem (in, infile, search_type_1, out);
+          if (app->inmem)
+            morgenstern_search_dual_binary_mem (in, app->infile, search_type_1, app);
           else
-            morgenstern_search_dual_binary (in, infile, search_type_1, out);
+            morgenstern_search_dual_binary (in, app->infile, search_type_1, app);
         }
       else
         {
-          if (inmem)
-            morgenstern_search_dual_mem (in, infile, search_type_1, out);
+          if (app->inmem)
+            morgenstern_search_dual_mem (in, app->infile, search_type_1, app);
           else
-            morgenstern_search_dual (in, infile, search_type_1, out);
+            morgenstern_search_dual (in, app->infile, search_type_1, app);
         }
     }
-  mpz_clears (x1, _y1, z1, m12, n12, x2, y2, z2, m22, n22,
-              yx1dif, yx1sum, yx2dif, yx2sum, NULL);
-  for (int i = 0; i < 3; i++)
-    for (int j = 0; j < 3; j++)
-      mpz_clear (a[i][j]);
   return 0;
 }
 
@@ -215,45 +221,49 @@ options[] =
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_morgenstern_search_type_1_t *app = (struct fv_app_morgenstern_search_type_1_t *) state->input;
   switch (key)
     {
     case 'm':
-      inmem = 1;
+      app->inmem = 1;
       break;
     case 'i':
-      in_binary = 1;
+      app->in_binary = 1;
       break;
     case 'f':
-      filter_num_squares = atoi (arg);
-      filter_square = filter;
+      app->filter_num_squares = atoi (arg);
+      app->filter_square = filter;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     case ARGP_KEY_ARG:
-      if (num_args == 1)
+      if (app->num_args == 1)
         argp_error (state, "too many arguments");
       else
         {
           if (access (arg, R_OK) == 0)
-            infile = fopen (arg, "r");
+            app->infile = fopen (arg, "r");
           else
-            mpz_init_set_str (max, arg, 10);
-          num_args++;
+            mpz_init_set_str (app->max, arg, 10);
+          app->num_args++;
         }
       break;
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing argument");
       break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
+      break;
     case ARGP_KEY_FINI:
-      if (inmem && !infile)
+      if (app->inmem && !app->infile)
         argp_error (state, "-m must be used with FILE specified as argument");
       break;
     }
   return 0;
 }
 
-struct argp argp ={options, parse_opt, "MAX\nFILE", "Generate 3x3 magic squares with 5 perfect squares or more by creating two arithmetic progressions of three perfect squares with the center square in common.\vThe standard input provides the parametric \"MN\" values -- two values per record to assist in the transformation.  Use the \"seq-morgenstern-mn\" program to provide this data on the standard input.  Morgenstern type 1 squares have 5 perfect squares in this configuration:\n\
+static struct argp argp ={options, parse_opt, "MAX\nFILE", "Generate 3x3 magic squares with 5 perfect squares or more by creating two arithmetic progressions of three perfect squares with the center square in common.\vThe standard input provides the parametric \"MN\" values -- two values per record to assist in the transformation.  Use the \"seq-morgenstern-mn\" program to provide this data on the standard input.  Morgenstern type 1 squares have 5 perfect squares in this configuration:\n\
 +-------+-------+-------+\n\
 |  A^2  |       |  C^2  |\n\
 +-------+-------+-------+\n\
@@ -266,7 +276,11 @@ struct argp argp ={options, parse_opt, "MAX\nFILE", "Generate 3x3 magic squares 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  return morgenstern_search_type_1 (stdin, stdout);
+  struct fv_app_morgenstern_search_type_1_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_square = display_square_record;
+  app.filter_square = no_filter;
+  app.out = stdout;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_morgenstern_search_type_1 (&app, stdin);
 }

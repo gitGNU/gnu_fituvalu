@@ -19,12 +19,15 @@
 #include <stdlib.h>
 #include "magicsquareutil.h"
 
-int show_def;
-int dump_progression;
-int num_filters;
-int *filter_types;
-int (*read_numbers)(FILE *, mpz_t *, int, char **, size_t *) = read_numbers_from_stream;
-void (*display_record) (mpz_t *, FILE *) = display_nine_record;
+struct fv_app_find_progression_type_t
+{
+  int show_def;
+  int dump_progression;
+  int num_filters;
+  int *filter_types;
+  int (*read_numbers)(FILE *, mpz_t *, int, char **, size_t *);
+  void (*display_record) (mpz_t *, FILE *);
+};
 
 int
 compar (const void *left, const void *right)
@@ -64,7 +67,7 @@ is_fulcrum_progression (mpz_t diffs[], int size)
 }
 
 static int
-get_progression_type (mpz_t vec[], int size)
+get_progression_type (struct fv_app_find_progression_type_t *app, mpz_t vec[], int size, FILE *out)
 {
   int ret = 0;
   mpz_t progression[size];
@@ -78,9 +81,9 @@ get_progression_type (mpz_t vec[], int size)
 
   qsort (progression, size, sizeof (mpz_t), compar);
 
-  if (dump_progression)
+  if (app->dump_progression)
     {
-      display_record (progression, stdout);
+      app->display_record (progression, out);
       for (int i = 0; i < size; i++)
         mpz_clears (progression[i], diffs[i], NULL);
       return -1;
@@ -89,7 +92,7 @@ get_progression_type (mpz_t vec[], int size)
   for (int i = 1; i < size; i++)
     mpz_sub (diffs[i-1], progression[i], progression[i-1]);
 
-  if (show_def)
+  if (app->show_def)
     {
       mpz_t v[3];
       for (int i = 0; i < 3; i++)
@@ -98,14 +101,14 @@ get_progression_type (mpz_t vec[], int size)
         {
           mpz_sub (v[0], progression[1], progression[0]);
           mpz_sub (v[1], progression[3], progression[2]);
-          display_two_record (&v[0], &v[1], stdout);
+          display_two_record (&v[0], &v[1], out);
         }
       else if (is_fulcrum_progression (diffs, size - 1))
         {
           mpz_sub (v[0], progression[1], progression[0]);
           mpz_sub (v[1], progression[2], progression[1]);
           mpz_sub (v[2], progression[3], progression[2]);
-          display_three_record (v, stdout);
+          display_three_record (v, out);
         }
       for (int i = 0; i < 3; i++)
         mpz_clear (v[i]);
@@ -124,8 +127,8 @@ get_progression_type (mpz_t vec[], int size)
   return ret;
 }
 
-static int
-find_progression_type (FILE *in, FILE *out)
+int
+fituvalu_find_progression_type (struct fv_app_find_progression_type_t *app, FILE *in, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -137,18 +140,18 @@ find_progression_type (FILE *in, FILE *out)
     mpz_inits (vec[i], orig[i], NULL);
   while (1)
     {
-      read = read_numbers (in, vec, SIZE, &line, &len);
+      read = app->read_numbers (in, vec, SIZE, &line, &len);
       if (read == -1)
         break;
-      int progression_type = get_progression_type (vec, SIZE);
-      if (dump_progression || show_def)
+      int progression_type = get_progression_type (app, vec, SIZE, out);
+      if (app->dump_progression || app->show_def)
         continue;
-      if (num_filters)
+      if (app->num_filters)
         {
-          for (int i = 0; i < num_filters; i++)
-            if (filter_types[i] == progression_type)
+          for (int i = 0; i < app->num_filters; i++)
+            if (app->filter_types[i] == progression_type)
               {
-                display_record (vec, out);
+                app->display_record (vec, out);
                 break;
               }
         }
@@ -167,24 +170,26 @@ find_progression_type (FILE *in, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_find_progression_type_t *app = (struct fv_app_find_progression_type_t *) state->input;
   switch (key)
     {
     case 's':
-      show_def = 1;
+      app->show_def = 1;
       break;
     case 'd':
-      dump_progression = 1;
+      app->dump_progression = 1;
       break;
     case 'o':
-      display_record = display_binary_nine_record;
+      app->display_record = display_binary_nine_record;
       break;
     case 'i':
-      read_numbers = binary_read_numbers_from_stream;
+      app->read_numbers = binary_read_numbers_from_stream;
       break;
     case 'f':
-      filter_types = realloc (filter_types, sizeof (int) * (num_filters + 1));
-      filter_types[num_filters] = atoi (arg);
-      num_filters++;
+      app->filter_types =
+        realloc (app->filter_types, sizeof (int) * (app->num_filters + 1));
+      app->filter_types[app->num_filters] = atoi (arg);
+      app->num_filters++;
       break;
     }
   return 0;
@@ -201,11 +206,15 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and determine which progression type it is.\vThe nine values must be separated by a comma and terminated by a newline.  1 is the \"step\" progression, and 2 is the \"fulcrum\" progression, and 0 is unknown. --out-binary is only used with --filter." , 0};
+static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and determine which progression type it is.\vThe nine values must be separated by a comma and terminated by a newline.  1 is the \"step\" progression, and 2 is the \"fulcrum\" progression, and 0 is unknown. --out-binary is only used with --filter." , 0};
 
 int
 main (int argc, char **argv)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  return find_progression_type (stdin, stdout);
+  struct fv_app_find_progression_type_t app;
+  memset (&app, 0, sizeof (app));
+  app.read_numbers = read_numbers_from_stream;
+  app.display_record = display_nine_record;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_find_progression_type (&app, stdin, stdout);
 }

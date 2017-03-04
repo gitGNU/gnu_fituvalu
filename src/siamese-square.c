@@ -20,10 +20,13 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-int in_binary;
-int fulcrum;
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
-int (*read_record) (FILE *, mpz_t*, char **, size_t *) = read_three_numbers_from_stream;
+struct fv_app_siamese_t
+{
+  int in_binary;
+  int fulcrum;
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+  int (*read_record) (FILE *, mpz_t*, char **, size_t *);
+};
 
 static void
 siamese_step_square (mpz_t a[3][3], mpz_t s, mpz_t d1, mpz_t e1)
@@ -77,8 +80,8 @@ siamese_fulcrum_square (mpz_t a[3][3], mpz_t s, mpz_t d1, mpz_t e1, mpz_t f1)
   mpz_clear (next);
 }
 
-static int
-siamese (FILE *in, FILE *out)
+int
+fituvalu_siamese (struct fv_app_siamese_t *app, FILE *in, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -96,72 +99,73 @@ siamese (FILE *in, FILE *out)
     }
   mpz_init (v[3]);
 
-  if (fulcrum)
+  if (app->fulcrum)
     {
       while (1)
         {
-          read = read_record (in, v, &line, &len);
+          read = app->read_record (in, v, &line, &len);
           if (read == -1)
             break;
           siamese_fulcrum_square (a, v[0], v[1], v[2], v[3]);
           if (is_magic_square (a, 1))
-            display_square (a, out);
+            app->display_square (a, out);
         }
     }
   else
     {
       while (1)
         {
-          read = read_record (in, v, &line, &len);
+          read = app->read_record (in, v, &line, &len);
           if (read == -1)
             break;
           siamese_step_square (a, v[0], v[1], v[2]);
           if (is_magic_square (a, 1))
-            display_square (a, out);
+            app->display_square (a, out);
         }
     }
 
-      for (i = 0; i < 3; i++)
-        {
-          for (j = 0; j < 3; j++)
-            mpz_clear (a[i][j]);
-          mpz_clear (v[i]);
-        }
-      mpz_clear (v[3]);
-
-      if (line)
-        free (line);
-      return 0;
+  for (i = 0; i < 3; i++)
+    {
+      for (j = 0; j < 3; j++)
+        mpz_clear (a[i][j]);
+      mpz_clear (v[i]);
     }
+  mpz_clear (v[3]);
+
+  if (line)
+    free (line);
+  return 0;
+}
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_siamese_t *app = (struct fv_app_siamese_t *) state->input;
   switch (key)
     {
     case 'i':
-      in_binary = 1;
+      app->in_binary = 1;
       break;
     case 'f':
-      fulcrum = 1;
+      app->fulcrum = 1;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     case ARGP_KEY_FINI:
-      if (in_binary)
+      if (app->in_binary)
         {
-          if (fulcrum)
-            read_record = binary_read_four_numbers_from_stream;
+          if (app->fulcrum)
+            app->read_record = binary_read_four_numbers_from_stream;
           else
-            read_record = binary_read_three_numbers_from_stream;
+            app->read_record = binary_read_three_numbers_from_stream;
         }
       else
         {
-          if (fulcrum)
-            read_record = read_four_numbers_from_stream;
+          if (app->fulcrum)
+            app->read_record = read_four_numbers_from_stream;
           else
-            read_record = read_three_numbers_from_stream;
+            app->read_record = read_three_numbers_from_stream;
         }
       break;
     }
@@ -177,7 +181,7 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Generate magic squares using a modified Siamese step method.\vThe input to this program is a starting number, followed by two or three distances separated by commas.  The default is to pass in a start, D1, and E1, which generates a square with the the step progression:\n"
+static struct argp argp ={options, parse_opt, 0, "Generate magic squares using a modified Siamese step method.\vThe input to this program is a starting number, followed by two or three distances separated by commas.  The default is to pass in a start, D1, and E1, which generates a square with the the step progression:\n"
 "  |-----+--+--+-------+--+--+-------+--+--+------|\n"
 "         D1       E1\n"
 "When --fulcrum is passed, the standard input must have start, D1, E1, F1 which generates a square with the fulcrum progression:\n"
@@ -189,7 +193,11 @@ struct argp argp ={options, parse_opt, 0, "Generate magic squares using a modifi
 int
 main (int argc, char **argv)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
+  struct fv_app_siamese_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_square = display_square_record;
+  app.read_record = read_three_numbers_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
   is_magic_square_init ();
-  return siamese (stdin, stdout);
+  return fituvalu_siamese (&app, stdin, stdout);
 }

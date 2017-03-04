@@ -19,12 +19,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include "magicsquareutil.h"
-char *prefix;
+struct fv_app_sort_square_t
+{
+  char *prefix;
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+  int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+};
 
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
-int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
 static FILE *
-open_file (int num_squares)
+open_file (struct fv_app_sort_square_t *app, int num_squares)
 {
   char *filename = NULL;
   if (num_squares > 9 || num_squares < 0)
@@ -42,8 +45,8 @@ open_file (int num_squares)
       "eights",
       "nines",
     };
-  if (prefix)
-    asprintf (&filename, "%s-%s", prefix, names[num_squares]);
+  if (app->prefix)
+    asprintf (&filename, "%s-%s", app->prefix, names[num_squares]);
   else
     asprintf (&filename, "%s", names[num_squares]);
 
@@ -52,8 +55,8 @@ open_file (int num_squares)
   return fp;
 }
 
-static int
-process (FILE *stream)
+int
+fituvalu_sort_square (struct fv_app_sort_square_t *app, FILE *stream)
 {
   char *line = NULL;
   size_t len = 0;
@@ -67,14 +70,14 @@ process (FILE *stream)
   memset (fp, 0, sizeof (fp));
   while (1)
     {
-      read = read_square (stream, &a, &line, &len);
+      read = app->read_square (stream, &a, &line, &len);
       if (read == -1)
         break;
       int squares = count_squares (a);
 
       if (!fp[squares])
-        fp[squares] = open_file (squares);
-      display_square (a, fp[squares]);
+        fp[squares] = open_file (app, squares);
+      app->display_square (a, fp[squares]);
     }
   for (int i = 0; i < 10; i++)
     if (fp[i])
@@ -91,16 +94,20 @@ process (FILE *stream)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_sort_square_t *app = (struct fv_app_sort_square_t *) state->input;
   switch (key)
     {
     case 'i':
-      read_square = binary_read_square_from_stream;
+      app->read_square = binary_read_square_from_stream;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     case 'p':
-      prefix = arg;
+      app->prefix = arg;
+      break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     }
   return 0;
@@ -114,12 +121,15 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, determine the number of squares and put it in a file named ones, twos, threes and so on.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
+static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, determine the number of squares and put it in a file named ones, twos, threes and so on.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  return process (stdin);
+  struct fv_app_sort_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_square = display_square_record;
+  app.read_square = read_square_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_sort_square (&app, stdin);
 }

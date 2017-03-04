@@ -20,11 +20,14 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
-int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
+struct fv_app_reduce_square_t
+{
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+  int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+};
 
-static int
-reduce (FILE *in, FILE *out)
+int
+fituvalu_reduce_square (struct fv_app_reduce_square_t *app, FILE *in, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -38,11 +41,11 @@ reduce (FILE *in, FILE *out)
 
   while (1)
     {
-      read = read_square (in, &a, &line, &len);
+      read = app->read_square (in, &a, &line, &len);
       if (read == -1)
         break;
       reduce_square (a);
-      display_square (a, out);
+      app->display_square (a, out);
     }
 
   for (i = 0; i < 3; i++)
@@ -57,13 +60,14 @@ reduce (FILE *in, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_reduce_square_t *app = (struct fv_app_reduce_square_t *) state->input;
   switch (key)
     {
     case 'i':
-      read_square = binary_read_square_from_stream;
+      app->read_square = binary_read_square_from_stream;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     }
   return 0;
@@ -77,12 +81,16 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and reduce it to have its smallest values.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
+static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and reduce it to have its smallest values.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
 
 int
 main (int argc, char **argv)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
+  struct fv_app_reduce_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_square = display_square_record;
+  app.read_square = read_square_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
   is_magic_square_init ();
-  return reduce (stdin, stdout);
+  return fituvalu_reduce_square (&app, stdin, stdout);
 }

@@ -20,10 +20,14 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-int *filter_types;
-int num_filters;
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
-int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
+struct fv_app_morgenstern_five_type_t
+{
+  int *filter_types;
+  int num_filters;
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+  int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+  FILE *out;
+};
 
 static int
 is_morgenstern_five_square_type_one (mpz_t a[3][3], int s[3][3])
@@ -363,8 +367,8 @@ get_morgenstern_type (mpz_t a[3][3], int s[3][3])
   return 0;
 }
 
-static int
-morgenstern_five_type (FILE *stream)
+int
+fituvalu_morgenstern_five_type (struct fv_app_morgenstern_five_type_t *app, FILE *stream)
 {
   char *line = NULL;
   size_t len = 0;
@@ -379,7 +383,7 @@ morgenstern_five_type (FILE *stream)
 
   while (1)
     {
-      read = read_square (stream, &a, &line, &len);
+      read = app->read_square (stream, &a, &line, &len);
       if (read == -1)
         break;
       int count = 0;
@@ -393,19 +397,19 @@ morgenstern_five_type (FILE *stream)
       if (is_magic_square (a, 1) && count >= 5)
         {
           int type = get_morgenstern_type (a, s);
-          if (num_filters)
+          if (app->num_filters)
             {
-              for (int i = 0; i < num_filters; i++)
+              for (int i = 0; i < app->num_filters; i++)
                 {
-                  if (filter_types[i] == type)
+                  if (app->filter_types[i] == type)
                     {
-                      display_square (a, stdout);
+                      app->display_square (a, app->out);
                       break;
                     }
                 }
             }
           else
-            fprintf (stdout, "%d\n", type);
+            fprintf (app->out, "%d\n", type);
         }
     }
 
@@ -421,14 +425,15 @@ morgenstern_five_type (FILE *stream)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_morgenstern_five_type_t *app = (struct fv_app_morgenstern_five_type_t *) state->input;
   int type;
   switch (key)
     {
     case 'i':
-      read_square = binary_read_square_from_stream;
+      app->read_square = binary_read_square_from_stream;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     case 'f':
       type = atoi (arg);
@@ -436,10 +441,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
         argp_error (state, "type must be between 1 and 4.");
       else
         {
-          filter_types =
-            realloc (filter_types, sizeof (int) * (num_filters + 1));
-          filter_types[num_filters] = type;
-          num_filters++;
+          app->filter_types =
+            realloc (app->filter_types, sizeof (int) * (app->num_filters + 1));
+          app->filter_types[app->num_filters] = type;
+          app->num_filters++;
         }
       break;
     }
@@ -455,12 +460,17 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and get the type of five-square morgenstern type of magic square.  These magic squares have five perfect squares in a configuration identified by Lee Morgenstern as being candidates for seven perfect squares.\vThe nine values must be separated by a comma and terminated by a newline.", 0};
+static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and get the type of five-square morgenstern type of magic square.  These magic squares have five perfect squares in a configuration identified by Lee Morgenstern as being candidates for seven perfect squares.\vThe nine values must be separated by a comma and terminated by a newline.", 0};
 
 int
 main (int argc, char **argv)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
+  struct fv_app_morgenstern_five_type_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_square = display_square_record;
+  app.read_square = read_square_from_stream;
+  app.out = stdout;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
   is_magic_square_init ();
-  return morgenstern_five_type (stdin);
+  return fituvalu_morgenstern_five_type (&app, stdin);
 }

@@ -1,0 +1,44 @@
+#!/bin/bash
+# Copyright (C) 2017 Ben Asselstine
+# 
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
+
+#here is what we expect
+expected=`mktemp $builddir/fituvalu.XXXXXX`
+bindir=$builddir/../src
+cat << EOF >$expected
+49, 1225, 2401, 49, 
+14161, 48841, 83521, 289, 
+23804641, 112169281, 200533921, 14161, 
+519841, 56535361, 112550881, 10609, 
+1681, 1413721, 2825761, 1681, 
+1540081, 14969161, 28398241, 5329, 
+21464689, 92256025, 163047361, 12769, 
+277729, 600625, 923521, 961, 
+4190209, 33466225, 62742241, 7921, 
+25921, 152881, 279841, 529, 
+2307361, 4036081, 5764801, 2401, 
+919681, 176597521, 352275361, 18769, 
+12103441, 18757561, 25411681, 5041, 
+1168561, 3024121, 4879681, 2209, 
+47430769, 67980025, 88529281, 9409, 
+151757761, 205951201, 260144641, 16129, 
+13786369, 26368225, 38950081, 6241, 
+418079809, 544989025, 671898241, 25921, 
+EOF
+
+
+#generating our results
+
+$bindir/seq-morgenstern-mn 10 | $bindir/find-3sq-progressions-mn
+
+#0087.log is simultaneously created as this script runs.
+diff -uNrd $expected $builddir/0087.log
+retval=$?
+
+#cleanup
+rm $expected
+exit $retval

@@ -20,38 +20,13 @@
 #include <argp.h>
 #include <gmp.h>
 #include "magicsquareutil.h"
-int to_binary;
-int ull;
-int num_columns = 9;
 
-static error_t
-parse_opt (int key, char *arg, struct argp_state *state)
+struct fv_app_convert_records_t
 {
-  switch (key)
-    {
-    case 'l':
-      ull = 1;
-      break;
-    case 'i':
-      to_binary = 1;
-      break;
-    case 'n':
-      num_columns = atoi (arg);
-      break;
-    }
-  return 0;
-}
-
-static struct argp_option
-options[] =
-{
-  { "num-columns", 'n', "NUM", 0, "A record has NUM columns (default 9)"},
-  { "inverse", 'i', 0, 0, "Convert to binary instead"},
-  { "ull", 'l', 0, 0, "Instead of GMP numbers use unsigned long longs"},
-  { 0 }
+  int to_binary;
+  int ull;
+  int num_columns;
 };
-
-struct argp argp ={options, parse_opt, NULL, "Convert raw GMP numbers on the standard input to their textual representation on the standard output.", 0 };
 
 static void
 dump_num (mpz_t *i, FILE *out)
@@ -62,7 +37,7 @@ dump_num (mpz_t *i, FILE *out)
 }
 
 static void
-convert_binary_gmp_records (FILE *in, FILE *out)
+convert_binary_gmp_records (struct fv_app_convert_records_t *app, FILE *in, FILE *out)
 {
   mpz_t i;
   mpz_init (i);
@@ -76,7 +51,7 @@ convert_binary_gmp_records (FILE *in, FILE *out)
         break;
       dump_num (&i, out);
       fprintf (out, ", ");
-      if (count == num_columns)
+      if (count == app->num_columns)
         {
           fprintf (out, "\n");
           count = 0;
@@ -86,7 +61,7 @@ convert_binary_gmp_records (FILE *in, FILE *out)
 }
 
 static void
-convert_binary_ull_records (FILE *in, FILE *out)
+convert_binary_ull_records (struct fv_app_convert_records_t *app, FILE *in, FILE *out)
 {
   unsigned long long i;
   ssize_t read;
@@ -98,7 +73,7 @@ convert_binary_ull_records (FILE *in, FILE *out)
       if (!read)
         break;
       fprintf (out, "%llu, ", i);
-      if (count == num_columns)
+      if (count == app->num_columns)
         {
           fprintf (out, "\n");
           count = 0;
@@ -107,7 +82,7 @@ convert_binary_ull_records (FILE *in, FILE *out)
 }
 
 static void
-convert_text_records_to_gmp (FILE *in, FILE *out)
+convert_text_records_to_gmp (struct fv_app_convert_records_t *app, FILE *in, FILE *out)
 {
   ssize_t read = 0;
   char *line = NULL;
@@ -116,9 +91,9 @@ convert_text_records_to_gmp (FILE *in, FILE *out)
   mpz_init (n);
   while (1)
     {
-      for (int i = 0; i < num_columns; i++)
+      for (int i = 0; i < app->num_columns; i++)
         {
-          if (i < num_columns - 1)
+          if (i < app->num_columns - 1)
             read = fv_getdelim (&line, &len, ',', in);
           else
             read = fv_getline (&line, &len, in);
@@ -140,7 +115,7 @@ convert_text_records_to_gmp (FILE *in, FILE *out)
 }
 
 static void
-convert_text_records_to_ull (FILE *in, FILE *out)
+convert_text_records_to_ull (struct fv_app_convert_records_t *app, FILE *in, FILE *out)
 {
   ssize_t read = 0;
   char *line = NULL;
@@ -149,9 +124,9 @@ convert_text_records_to_ull (FILE *in, FILE *out)
   unsigned long long n;
   while (1)
     {
-      for (int i = 0; i < num_columns; i++)
+      for (int i = 0; i < app->num_columns; i++)
         {
-          if (i < num_columns - 1)
+          if (i < app->num_columns - 1)
             read = fv_getdelim (&line, &len, ',', in);
           else
             read = fv_getline (&line, &len, in);
@@ -172,25 +147,66 @@ convert_text_records_to_ull (FILE *in, FILE *out)
   return;
 }
 
-int
-main (int argc, char **argv)
+static error_t
+parse_opt (int key, char *arg, struct argp_state *state)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  if (ull)
+  struct fv_app_convert_records_t *app = (struct fv_app_convert_records_t *) state->input;
+  switch (key)
     {
-      if (to_binary)
-        convert_text_records_to_ull (stdin, stdout);
+    case 'l':
+      app->ull = 1;
+      break;
+    case 'i':
+      app->to_binary = 1;
+      break;
+    case 'n':
+      app->num_columns = atoi (arg);
+      break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
+      break;
+    }
+  return 0;
+}
+
+static struct argp_option
+options[] =
+{
+  { "num-columns", 'n', "NUM", 0, "A record has NUM columns (default 9)"},
+  { "inverse", 'i', 0, 0, "Convert to binary instead"},
+  { "ull", 'l', 0, 0, "Instead of GMP numbers use unsigned long longs"},
+  { 0 }
+};
+
+static struct argp argp ={options, parse_opt, NULL, "Convert raw GMP numbers on the standard input to their textual representation on the standard output.", 0 };
+
+int
+fituvalu_convert_records (struct fv_app_convert_records_t *app, FILE *in, FILE *out)
+{
+  if (app->ull)
+    {
+      if (app->to_binary)
+        convert_text_records_to_ull (app, in, out);
       else
-        convert_binary_ull_records (stdin, stdout);
+        convert_binary_ull_records (app, in, out);
     }
   else
     {
-      if (to_binary)
-        convert_text_records_to_gmp (stdin, stdout);
+      if (app->to_binary)
+        convert_text_records_to_gmp (app, in, out);
       else
-        convert_binary_gmp_records (stdin, stdout);
+        convert_binary_gmp_records (app, in, out);
     }
   return 0;
+}
+
+int
+main (int argc, char **argv)
+{
+  struct fv_app_convert_records_t app;
+  memset (&app, 0, sizeof (app));
+  app.num_columns = 9;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_convert_records (&app, stdin, stdout);
 }
 

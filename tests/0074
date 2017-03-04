@@ -1,0 +1,27 @@
+#!/bin/bash
+# Copyright (C) 2017 Ben Asselstine
+# 
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
+
+#here is what we expect
+expected=`mktemp $builddir/fituvalu.XXXXXX`
+bindir=$builddir/../src
+cat << EOF >$expected
+121, 49, 265, 289, 145, 1, 25, 241, 169, 
+EOF
+
+
+#generating our results
+
+echo "484, 196, 1060, 1156, 580, 4, 100, 964, 676," | $bindir/reduce-square
+
+#0074.log is simultaneously created as this script runs.
+diff -uNrd $expected $builddir/0074.log
+retval=$?
+
+#cleanup
+rm $expected
+exit $retval

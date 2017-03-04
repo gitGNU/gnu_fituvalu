@@ -21,63 +21,67 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-unsigned long long incr = 1;
-int in_binary;
-four_square_progression_t *force_four_square_prog;
-nine_progression_t *nine_prog = &nine_progressions[0];
-four_square_progression_t *four_square_prog;
-void (*display_record) (mpz_t *progression, FILE *out) = display_nine_record;
-
-void (*four_to_nine_prog)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t);
-int (*count_prog) (mpz_t *);
-
-int filter;
-mpz_t start, finish, oneshot;
-int num_args;
+struct fv_gen_progression_t
+{
+  unsigned long long incr;
+  int in_binary;
+  four_square_progression_t *force_four_square_prog;
+  nine_progression_t *nine_prog;
+  four_square_progression_t *four_square_prog;
+  void (*display_record) (mpz_t *progression, FILE *out);
+  void (*four_to_nine_prog)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t);
+  int (*count_prog) (mpz_t *);
+  int filter;
+  mpz_t start, finish, oneshot;
+  int num_args;
+  FILE *out;
+};
 
 static void
-extend_and_display_progression (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t four, FILE *out)
+extend_and_display_progression (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t four, void *data)
 {
-  four_to_nine_prog (progression, one, two, three, four);
-  display_record (progression, out);
+  struct fv_gen_progression_t *app = (struct fv_gen_progression_t *) data;
+  app->four_to_nine_prog (progression, one, two, three, four);
+  app->display_record (progression, app->out);
 }
 
 static void
-extend_and_count_squares_and_display_progression (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t four, FILE *out)
+extend_and_count_squares_and_display_progression (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t four, void *data)
 {
-  four_to_nine_prog (progression, one, two, three, four);
-  int count = count_prog (progression);
-  if (count >= filter)
-    display_record (progression, out);
+  struct fv_gen_progression_t *app = (struct fv_gen_progression_t *) data;
+  app->four_to_nine_prog (progression, one, two, three, four);
+  int count = app->count_prog (progression);
+  if (count >= app->filter)
+    app->display_record (progression, app->out);
 }
 
 static void
-generate_progression_starting_at (mpz_t i, FILE *out)
+generate_progression_starting_at (mpz_t i, struct fv_gen_progression_t *app)
 {
-  static void (*func) (mpz_t *, mpz_t one, mpz_t two, mpz_t three, mpz_t four, FILE *);
-  if (filter)
+  static void (*func) (mpz_t *, mpz_t one, mpz_t two, mpz_t three, mpz_t four, void *);
+  if (app->filter)
     func = extend_and_count_squares_and_display_progression;
   else
     func = extend_and_display_progression;
-  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
-  progression (i, i, finish, incr, func, out);
+  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *) = app->four_square_prog->func;
+  progression (i, i, app->finish, app->incr, func, app);
 }
 
 static void
-generate_progression_from_input (FILE *in, FILE *out)
+generate_progression_from_input (struct fv_gen_progression_t *app, FILE *in)
 {
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
   mpz_t i;
   mpz_init (i);
-  static void (*func) (mpz_t *, mpz_t one, mpz_t two, mpz_t three, mpz_t four, FILE *);
-  if (filter)
+  static void (*func) (mpz_t *, mpz_t one, mpz_t two, mpz_t three, mpz_t four, void *);
+  if (app->filter)
     func = extend_and_count_squares_and_display_progression;
   else
     func = extend_and_display_progression;
   
-  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
+  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *) = app->four_square_prog->func;
   while (1)
     {
       read = fv_getline (&line, &len, in);
@@ -88,62 +92,62 @@ generate_progression_from_input (FILE *in, FILE *out)
         *end = '\0';
       mpz_set_str (i, line, 10);
 
-      progression (i, i, finish, incr, func, out);
+      progression (i, i, app->finish, app->incr, func, app);
     }
   mpz_clear (i);
   free (line);
 }
 
 static void
-generate_progression_from_binary_input (FILE *in, FILE *out)
+generate_progression_from_binary_input (struct fv_gen_progression_t *app, FILE *in)
 {
   ssize_t read;
   mpz_t i;
   mpz_init (i);
-  static void (*func) (mpz_t *, mpz_t one, mpz_t two, mpz_t three, mpz_t four, FILE *);
-  if (filter)
+  static void (*func) (mpz_t *, mpz_t one, mpz_t two, mpz_t three, mpz_t four, void *);
+  if (app->filter)
     func = extend_and_count_squares_and_display_progression;
   else
     func = extend_and_display_progression;
   
-  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
+  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *) = app->four_square_prog->func;
   while (1)
     {
       read = mpz_inp_raw (i, in);
       if (!read)
         break;
-      progression (i, i, finish, incr, func, out);
+      progression (i, i, app->finish, app->incr, func, app);
     }
   mpz_clear (i);
 }
 
 static void
-generate_progression (FILE *out)
+generate_progression (struct fv_gen_progression_t *app)
 {
-  static void (*func) (mpz_t *, mpz_t one, mpz_t two, mpz_t three, mpz_t four, FILE *);
-  if (filter)
+  static void (*func) (mpz_t *, mpz_t one, mpz_t two, mpz_t three, mpz_t four, void *);
+  if (app->filter)
     func = extend_and_count_squares_and_display_progression;
   else
     func = extend_and_display_progression;
-  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *) = four_square_prog->func;
+  void (*progression) (mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *) = app->four_square_prog->func;
   mpz_t root, i;
   mpz_inits (root, i, NULL);
-  mpz_set (i, start);
+  mpz_set (i, app->start);
   mpz_sqrt (root, i);
   mpz_mul (i, root, root);
-  progression (i, start, finish, incr, func, out);
+  progression (i, app->start, app->finish, app->incr, func, app);
   while (1)
     {
-      for (int j = 0; j < incr; j++)
+      for (int j = 0; j < app->incr; j++)
         {
           mpz_add (i, i, root);
           mpz_add (i, i, root);
           mpz_add_ui (i, i, 1);
           mpz_add_ui (root, root, 1);
         }
-      if (mpz_cmp (i, finish) >= 0)
+      if (mpz_cmp (i, app->finish) >= 0)
         break;
-      progression (i, start, finish, incr, func, out);
+      progression (i, app->start, app->finish, app->incr, func, app);
     }
   mpz_clears (root, i, NULL);
 }
@@ -151,27 +155,28 @@ generate_progression (FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_gen_progression_t *app = (struct fv_gen_progression_t *) state->input;
   char *end = NULL;
   switch (key)
     {
     case 'I':
-      incr = strtoull (arg, &end, 10);
+      app->incr = strtoull (arg, &end, 10);
       break;
     case '1':
-      mpz_set_str (oneshot, arg, 10);
+      mpz_set_str (app->oneshot, arg, 10);
       break;
     case 'o':
-      display_record = display_binary_nine_record;
+      app->display_record = display_binary_nine_record;
       break;
     case 'i':
-      in_binary = 1;
+      app->in_binary = 1;
       break;
     case '4':
         {
           four_square_progression_t *p =
             lookup_four_square_progression_by_name (arg);
           if (p)
-            force_four_square_prog = p;
+            app->force_four_square_prog = p;
           else
             {
               char *types = generate_list_of_four_square_progression_types ();
@@ -181,14 +186,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
         }
       break;
     case 'f':
-      filter = atoi (arg);
+      app->filter = atoi (arg);
       break;
     case 't':
         {
           nine_progression_t *p =
             lookup_nine_progression_by_name (arg);
           if (p)
-            nine_prog = p;
+            app->nine_prog = p;
           else
             {
               char *types = generate_list_of_nine_progression_types ();
@@ -198,37 +203,38 @@ parse_opt (int key, char *arg, struct argp_state *state)
         }
       break;
     case ARGP_KEY_ARG:
-      if (num_args == 2)
+      if (app->num_args == 2)
         argp_error (state, "too many arguments.");
       else
         {
-          if (num_args == 0)
-            mpz_init_set_str (finish, arg, 10);
+          if (app->num_args == 0)
+            mpz_init_set_str (app->finish, arg, 10);
           else
             {
-              mpz_init_set (start, finish);
-              mpz_init_set_str (finish, arg, 10);
+              mpz_init_set (app->start, app->finish);
+              mpz_init_set_str (app->finish, arg, 10);
             }
-          num_args++;
+          app->num_args++;
         }
       break;
     case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     case ARGP_KEY_FINI:
-      if (num_args == 0)
+      if (app->num_args == 0)
         argp_error (state, "too few arguments.");
 
-      four_to_nine_prog = nine_prog->progfunc;
-      count_prog = nine_prog->countfunc;
-      four_square_prog =
+      app->four_to_nine_prog = app->nine_prog->progfunc;
+      app->count_prog = app->nine_prog->countfunc;
+      app->four_square_prog =
         lookup_four_square_progression_by_kind
-        (nine_prog->four_square_progression);
-      if (force_four_square_prog)
+        (app->nine_prog->four_square_progression);
+      if (app->force_four_square_prog)
         {
-          if (force_four_square_prog->kind != nine_prog->four_square_progression)
+          if (app->force_four_square_prog->kind != app->nine_prog->four_square_progression)
             argp_error (state, "forcing the wrong kind of progression.");
           else
-            four_square_prog = force_four_square_prog;
+            app->four_square_prog = app->force_four_square_prog;
         }
       break;
     }
@@ -264,27 +270,38 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "START FINISH\nFINISH", "Generate progressions of 9 numbers that contain 4 squares or more.  If only FINISH is specified, read perfect squares from the standard input.  Continue iterating until the progression reaches FINISH.\v--type must be one of:%s", 0, help_filter};
+static struct argp argp ={options, parse_opt, "START FINISH\nFINISH", "Generate progressions of 9 numbers that contain 4 squares or more.  If only FINISH is specified, read perfect squares from the standard input.  Continue iterating until the progression reaches FINISH.\v--type must be one of:%s", 0, help_filter};
+
+int
+fituvalu_gen_progression (struct fv_gen_progression_t *app, FILE *in)
+{
+  if (app->num_args == 1)
+    {
+      if (app->in_binary)
+        generate_progression_from_binary_input (app, in);
+      else
+        generate_progression_from_input (app, in);
+    }
+  else
+    {
+      if (mpz_cmp_ui (app->oneshot, 0) != 0)
+        generate_progression_starting_at (app->oneshot, app);
+      else
+        generate_progression (app);
+    }
+  return 0;
+}
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  if (num_args == 1)
-    {
-      if (in_binary)
-        generate_progression_from_binary_input (stdin, stdout);
-      else
-        generate_progression_from_input (stdin, stdout);
-    }
-  else
-    {
-      if (mpz_cmp_ui (oneshot, 0) != 0)
-        generate_progression_starting_at (oneshot, stdout);
-      else
-        generate_progression (stdout);
-    }
-  return 0;
+  struct fv_gen_progression_t app;
+  memset (&app, 0, sizeof (app));
+  app.incr = 1;
+  app.nine_prog = &nine_progressions[0];
+  app.display_record = display_nine_record;
+  app.out = stdout;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_gen_progression (&app, stdin);
 }
 

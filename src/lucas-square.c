@@ -20,12 +20,16 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-int invert;
-int show_abc;
-int from_abc;
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
-int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
-int (*read_numbers)(FILE *, mpz_t *, char **, size_t *) = read_three_numbers_from_stream;
+struct fv_app_lucas_square_t
+{
+  int invert;
+  int show_abc;
+  int from_abc;
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+  int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+  int (*read_numbers)(FILE *, mpz_t *, char **, size_t *);
+};
+
 static int
 check_one_of_four (mpz_t num, mpz_t *others)
 {
@@ -91,7 +95,7 @@ is_lucas (mpz_t s[3][3], mpz_t *abc)
 }
 
 static int
-lucas_square (FILE *in, FILE *out)
+lucas_square (struct fv_app_lucas_square_t *app, FILE *in, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -108,17 +112,17 @@ lucas_square (FILE *in, FILE *out)
     mpz_init (abc[i]);
   while (1)
     {
-      read = read_square (in, &a, &line, &len);
+      read = app->read_square (in, &a, &line, &len);
       if (read == -1)
         break;
       int magic = is_magic_square (a, 1);
       int ret = is_lucas (a, abc);
-      if ((magic && invert && !ret) || (magic && !invert && ret) || (!magic && invert))
+      if ((magic && app->invert && !ret) || (magic && !app->invert && ret) || (!magic && app->invert))
         {
-          if (show_abc)
+          if (app->show_abc)
             display_three_record (abc, out);
           else
-            display_square (a, out);
+            app->display_square (a, out);
         }
     }
 
@@ -154,7 +158,7 @@ generate_lucas_square (mpz_t a[3][3], mpz_t *abc)
 }
 
 static int
-generate_lucas_squares (FILE *in, FILE *out)
+generate_lucas_squares (struct fv_app_lucas_square_t *app, FILE *in, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -171,11 +175,11 @@ generate_lucas_squares (FILE *in, FILE *out)
     mpz_init (abc[i]);
   while (1)
     {
-      read = read_numbers (in, abc, &line, &len);
+      read = app->read_numbers (in, abc, &line, &len);
       if (read == -1)
         break;
       generate_lucas_square (a, abc);
-      display_square (a, out);
+      app->display_square (a, out);
     }
 
   for (i = 0; i < 3; i++)
@@ -193,23 +197,24 @@ generate_lucas_squares (FILE *in, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_lucas_square_t *app = (struct fv_app_lucas_square_t *) state->input;
   switch (key)
     {
     case 'i':
-      read_square = binary_read_square_from_stream;
-      read_numbers = binary_read_three_numbers_from_stream;
+      app->read_square = binary_read_square_from_stream;
+      app->read_numbers = binary_read_three_numbers_from_stream;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     case 'a':
-      show_abc = 1;
+      app->show_abc = 1;
       break;
     case 'v':
-      invert = 1;
+      app->invert = 1;
       break;
     case 'f':
-      from_abc = 1;
+      app->from_abc = 1;
       break;
     }
   return 0;
@@ -226,7 +231,7 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and only show the ones that are in the Lucas family.\vThe nine values must be separated by a comma and terminated by a newline.  Lucas family squares have the following structure:\n"
+static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and only show the ones that are in the Lucas family.\vThe nine values must be separated by a comma and terminated by a newline.  Lucas family squares have the following structure:\n"
 "+-------------+-------------+-------------+\n"
 "|    c - b    | c + (a + b) |    c - a    |\n"
 "+-------------+-------------+-------------+\n"
@@ -237,12 +242,24 @@ struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the sta
   , 0};
 
 int
+fituvalu_lucas_square (struct fv_app_lucas_square_t *app, FILE *in, FILE *out)
+{
+  if (app->from_abc)
+    generate_lucas_squares (app, in, out);
+  else
+    return lucas_square (app, in, out);
+  return 0;
+}
+
+int
 main (int argc, char **argv)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
+  struct fv_app_lucas_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_square = display_square_record;
+  app.read_square = read_square_from_stream;
+  app.read_numbers = read_three_numbers_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
   is_magic_square_init ();
-  if (from_abc)
-    generate_lucas_squares (stdin, stdout);
-  else
-    return lucas_square (stdin, stdout);
+  return fituvalu_lucas_square (&app, stdin, stdout);
 }

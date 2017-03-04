@@ -20,34 +20,37 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
-int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
-int invert;
-int doubly_even;
-int mixed;
+struct fv_app_odd_square_t
+{
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+  int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+  int invert;
+  int doubly_even;
+  int mixed;
+};
 
 static int
-check_func (mpz_t a)
+check_func (struct fv_app_odd_square_t *app, mpz_t a)
 {
-  if (doubly_even)
+  if (app->doubly_even)
     return mpz_divisible_ui_p (a, 4);
-  else if (invert)
+  else if (app->invert)
     return mpz_even_p (a);
   else
     return mpz_odd_p (a);
 }
 
 static int
-filter (mpz_t a[3][3])
+filter (struct fv_app_odd_square_t *app, mpz_t a[3][3])
 {
-  if (mixed)
+  if (app->mixed)
     {
       int found = 0;
-      int result = check_func (a[0][0]);
+      int result = check_func (app, a[0][0]);
       for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
           {
-            if (check_func (a[i][j]) != result)
+            if (check_func (app, a[i][j]) != result)
               {
                 found = 1;
                 break;
@@ -61,7 +64,7 @@ filter (mpz_t a[3][3])
       for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
           {
-            if (!check_func (a[i][j]))
+            if (!check_func (app, a[i][j]))
               {
                 found = 1;
                 break;
@@ -71,8 +74,8 @@ filter (mpz_t a[3][3])
     }
 }
 
-static int
-odd_square (FILE *in, FILE *out)
+int
+fituvalu_odd_square (struct fv_app_odd_square_t *app, FILE *in, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -86,11 +89,11 @@ odd_square (FILE *in, FILE *out)
 
   while (1)
     {
-      read = read_square (in, &a, &line, &len);
+      read = app->read_square (in, &a, &line, &len);
       if (read == -1)
         break;
-      if (filter (a))
-        display_square (a, stdout);
+      if (filter (app, a))
+        app->display_square (a, out);
     }
 
   for (i = 0; i < 3; i++)
@@ -105,22 +108,23 @@ odd_square (FILE *in, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_odd_square_t *app = (struct fv_app_odd_square_t *) state->input;
   switch (key)
     {
     case 'm':
-      mixed = 1;
+      app->mixed = 1;
       break;
     case 'e':
-      invert = 1;
+      app->invert = 1;
       break;
     case 'E':
-      doubly_even = 1;
+      app->doubly_even = 1;
       break;
     case 'i':
-      read_square = binary_read_square_from_stream;
+      app->read_square = binary_read_square_from_stream;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     }
   return 0;
@@ -137,11 +141,15 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and displays them if they are comprised of odd numbers.\vThe nine values must be separated by a comma and terminated by a newline.", 0};
+static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and displays them if they are comprised of odd numbers.\vThe nine values must be separated by a comma and terminated by a newline.", 0};
 
 int
 main (int argc, char **argv)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  return odd_square (stdin, stdout);
+  struct fv_app_odd_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_square = display_square_record;
+  app.read_square = read_square_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_odd_square (&app, stdin, stdout);
 }

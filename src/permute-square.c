@@ -20,13 +20,16 @@
 #include "magicsquareutil.h"
 //http://stackoverflow.com/questions/2710713/algorithm-to-generate-all-possible-permutations-of-a-list by user Horacio in 2015.
 
-int (*read_numbers)(FILE *, mpz_t *, int, char **, size_t *) = read_numbers_from_stream;
-void (*display_record) (mpz_t *, FILE *) = display_nine_record;
+struct fv_app_permute_square_t
+{
+  int (*read_numbers)(FILE *, mpz_t *, int, char **, size_t *);
+  void (*display_record) (mpz_t *, FILE *);
 
-int invert;
-int show_all;
-int display_offset;
-int fact;
+  int invert;
+  int show_all;
+  int display_offset;
+  int fact;
+};
 
 void Rotate(mpz_t vec[], int size)
 {
@@ -41,23 +44,21 @@ void Rotate(mpz_t vec[], int size)
   mpz_clear (first);
 }
 
-int Permutate(mpz_t *start, int size, int *count)
+int Permutate(struct fv_app_permute_square_t *app, mpz_t *start, int size, int *count)
 {
-  if(size > 1)
+  if (size > 1)
     {
-      if(Permutate(start + 1, size - 1, count))
-        {
-          Rotate(start, size);
-        }
-      fact *= size;
+      if (Permutate (app, start + 1, size - 1, count))
+        Rotate(start, size);
+      app->fact *= size;
     }
   else
     {
       (*count)++;
-      fact = 1;
+      app->fact = 1;
     }
 
-  return !(*count % fact);
+  return !(*count % app->fact);
 }
 
 static void
@@ -95,8 +96,8 @@ should_stop (mpz_t vec[], int size)
   return ret;
 }
 
-static int
-find_combinations (FILE *stream)
+int
+fituvalu_permute_square (struct fv_app_permute_square_t *app, FILE *stream, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -110,43 +111,43 @@ find_combinations (FILE *stream)
   while (1)
     {
       int found = 0;
-      read = read_numbers (stream, vec, SIZE, &line, &len);
+      read = app->read_numbers (stream, vec, SIZE, &line, &len);
       if (read == -1)
         break;
-      if (display_offset)
+      if (app->display_offset)
         {
           for (int i = 0; i < SIZE; i++)
             mpz_set (orig[i], vec[i]);
         }
-      fact = 0;
+      app->fact = 0;
       count = 0;
       do
         {
-          if (show_all)
+          if (app->show_all)
             {
-              if (display_offset)
-                show_offset (orig, vec, SIZE, stdout);
+              if (app->display_offset)
+                show_offset (orig, vec, SIZE, out);
               else
-                display_record (vec, stdout);
+                app->display_record (vec, out);
             }
           else
             {
               if (should_stop (vec, SIZE))
                 {
                   found = 1;
-                  if (!invert)
+                  if (!app->invert)
                     {
-                      if (display_offset)
-                        show_offset (orig, vec, SIZE, stdout);
+                      if (app->display_offset)
+                        show_offset (orig, vec, SIZE, out);
                       else
-                        display_record (vec, stdout);
+                        app->display_record (vec, out);
                     }
                   break;
                 }
             }
-        } while(!Permutate(vec, SIZE, &count));
-      if (!found && !show_all && invert)
-        display_record (vec, stdout);
+        } while(!Permutate(app, vec, SIZE, &count));
+      if (!found && !app->show_all && app->invert)
+        app->display_record (vec, out);
     }
 
   for (int i = 0; i < SIZE; i++)
@@ -159,22 +160,26 @@ find_combinations (FILE *stream)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_permute_square_t *app = (struct fv_app_permute_square_t *) state->input;
   switch (key)
     {
     case 'v':
-      invert = 1;
+      app->invert = 1;
       break;
     case 'o':
-      display_record = display_binary_nine_record;
+      app->display_record = display_binary_nine_record;
       break;
     case 'i':
-      read_numbers = binary_read_numbers_from_stream;
+      app->read_numbers = binary_read_numbers_from_stream;
       break;
     case 'S':
-      show_all = 1;
+      app->show_all = 1;
       break;
     case 'd':
-      display_offset = 1;
+      app->display_offset = 1;
+      break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     }
   return 0;
@@ -191,13 +196,16 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept 9 numbers from the standard input, and permute them to find a magic sqaure.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
+static struct argp argp ={options, parse_opt, 0, "Accept 9 numbers from the standard input, and permute them to find a magic sqaure.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
+  struct fv_app_permute_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.read_numbers = read_numbers_from_stream;
+  app.display_record = display_nine_record;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
   is_magic_square_init ();
-  return find_combinations (stdin);
+  return fituvalu_permute_square (&app, stdin, stdout);
 }

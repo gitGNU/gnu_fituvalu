@@ -20,8 +20,14 @@
 #include <argp.h>
 #include <gmp.h>
 #include "magicsquareutil.h"
-int in_binary;
-int num_columns;
+
+struct fv_app_check_divisors_t
+{
+  int in_binary;
+  int num_columns;
+  int *divisors;
+  int num_divisors;
+};
 
 int default_divisors[] = 
 {
@@ -45,30 +51,28 @@ int default_divisors[] =
   29,
   0
 };
-int *divisors;
-int num_divisors;
 
 static int
-check (mpz_t *num)
+check (struct fv_app_check_divisors_t *app, mpz_t *num)
 {
-  for (int i = 0; i < num_divisors; i++)
+  for (int i = 0; i < app->num_divisors; i++)
     {
-      if (!mpz_divisible_ui_p (*num, divisors[i]))
+      if (!mpz_divisible_ui_p (*num, app->divisors[i]))
         return 0;
     }
   return 1;
 }
 
 static void
-binary_check_divisors (FILE *in, FILE *out)
+binary_check_divisors (struct fv_app_check_divisors_t *app, FILE *in, FILE *out)
 {
   ssize_t read;
-  mpz_t vec[num_columns];
-  for (int j = 0; j < num_columns; j++)
+  mpz_t vec[app->num_columns];
+  for (int j = 0; j < app->num_columns; j++)
     mpz_init (vec[j]);
   while (1)
     {
-      for (int j = 0; j < num_columns; j++)
+      for (int j = 0; j < app->num_columns; j++)
         {
           read = mpz_inp_raw (vec[j], in);
           if (!read)
@@ -76,21 +80,21 @@ binary_check_divisors (FILE *in, FILE *out)
         }
       if (!read)
         break;
-      for (int j = 0; j < num_columns; j++)
+      for (int j = 0; j < app->num_columns; j++)
         {
-          if (check (&vec[j]))
+          if (check (app, &vec[j]))
             {
-              disp_record (vec, num_columns, out);
+              disp_record (vec, app->num_columns, out);
               break;
             }
         }
     }
-  for (int j = 0; j < num_columns; j++)
+  for (int j = 0; j < app->num_columns; j++)
     mpz_clear (vec[j]);
 }
 
 static void
-check_divisors (FILE *in, FILE *out)
+check_divisors (struct fv_app_check_divisors_t *app, FILE *in, FILE *out)
 {
   ssize_t read;
   char *line = NULL;
@@ -109,7 +113,7 @@ check_divisors (FILE *in, FILE *out)
            l = strtok_r (NULL, ",\n", &sav))
         {
           mpz_set_str (i, l, 10);
-          if (check (&i))
+          if (check (app, &i))
             fprintf (out, "%s", orig_line);
         }
       free (orig_line);
@@ -124,14 +128,15 @@ check_divisors (FILE *in, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_check_divisors_t *app = (struct fv_app_check_divisors_t *) state->input;
   char *end = NULL;
   switch (key)
     {
     case 'i':
-      in_binary = 1;
+      app->in_binary = 1;
       break;
     case 'n':
-      num_columns = strtoull (arg, &end, 10);
+      app->num_columns = strtoull (arg, &end, 10);
       break;
     case ARGP_KEY_ARG:
         {
@@ -144,24 +149,27 @@ parse_opt (int key, char *arg, struct argp_state *state)
               read = fv_getline (&line, &len, fp);
               if (read != -1)
                 break;
-              divisors = realloc (divisors,
-                                  (num_divisors + 1) * sizeof (int));
-              divisors[num_divisors] = strtoul (line, &end, 10);
-              num_divisors++;
+              app->divisors = realloc (app->divisors,
+                                       (app->num_divisors + 1) * sizeof (int));
+              app->divisors[app->num_divisors] = strtoul (line, &end, 10);
+              app->num_divisors++;
             }
           fclose (fp);
           free (line);
-          if (num_divisors == 0)
+          if (app->num_divisors == 0)
             argp_error (state, "no divisors found in %s", arg);
         }
       break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
+      break;
     case ARGP_KEY_FINI:
-      if (!divisors)
+      if (!app->divisors)
         {
-          divisors = default_divisors;
-          num_divisors = 18;
+          app->divisors = default_divisors;
+          app->num_divisors = 18;
         }
-      if (!num_columns && in_binary)
+      if (!app->num_columns && app->in_binary)
         argp_error (state, "when using -i, you must also use -n.");
       break;
     }
@@ -176,17 +184,24 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "[FILE]", "Display the records from the standard input that have a number that is divisible by a set of a divisors.\vThe default divisors are: 29, 37, 41, 48, 53, 61, 72, 120, 168, 264, 312, 408, 456, 552, 744, 1032, 1128, and 1608.  Alternative divisors can be specified in FILE.", 0 };
+static struct argp argp ={options, parse_opt, "[FILE]", "Display the records from the standard input that have a number that is divisible by a set of a divisors.\vThe default divisors are: 29, 37, 41, 48, 53, 61, 72, 120, 168, 264, 312, 408, 456, 552, 744, 1032, 1128, and 1608.  Alternative divisors can be specified in FILE.", 0 };
+
+int
+fituvalu_check_divisors (struct fv_app_check_divisors_t *app, FILE *in, FILE *out)
+{
+  if (app->in_binary)
+    binary_check_divisors (app, in, out);
+  else
+    check_divisors (app, in, out);
+  return 0;
+}
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  if (in_binary)
-    binary_check_divisors (stdin, stdout);
-  else
-    check_divisors (stdin, stdout);
-  return 0;
+  struct fv_app_check_divisors_t app;
+  memset (&app, 0, sizeof (app));
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_check_divisors (&app, stdin, stdout);
 }
 

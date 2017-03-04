@@ -18,8 +18,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+struct fv_app_small_gutierrez_progressions_t
+{
 int num_args;
-long long max, startc = 3, starte, startb = 1;
+long long max, startc, starte, startb;
+};
 
 //from:
 //http://www.oddwheel.com/square_sequence%20tableGV.html
@@ -29,24 +32,24 @@ long long max, startc = 3, starte, startb = 1;
 //but getting an e value is more difficult
 //any even number over 3 and under c?
 int
-gutierrez (FILE *out)
+gutierrez (struct fv_app_small_gutierrez_progressions_t *app, FILE *out)
 {
   long long a, b, c, d, e, s, f, g, twob, n, n2, fourc, fourb, e2, en, twob2, c2;
   long long na, nb, nc, delta1, delta2, na2, nb2, nc2;
   long long ob, oc;
   a = 1;
-  b = startb;
-  c = startc;
+  b = app->startb;
+  c = app->startc;
 
-  if (!starte)
+  if (!app->starte)
     e = abs (c - b);
   else
-    e = starte;
+    e = app->starte;
   g = 2 * e;
   e2 = e * e;
   ob = b;
   oc = c;
-  for (n = 0; n < max; n++)
+  for (n = 0; n < app->max; n++)
     {
       n2 = n * n;
       en = e * n;
@@ -77,29 +80,29 @@ gutierrez (FILE *out)
   return 0;
 }
 
-static int
-gutierrezk (FILE *out)
+int
+fituvalu_gutierrez (struct fv_app_small_gutierrez_progressions_t *app, FILE *out)
 {
   long long a, b, c, k, m, d, s, f, na, nb, nc, delta1, delta2, j, e, g;
 
   a = 1;
-  b = startb;
-  c = startc;
+  b = app->startb;
+  c = app->startc;
 
-  if (startc != 1 && startb != 1)
+  if (app->startc != 1 && app->startb != 1)
     return 0;
-  else if (startc != 1)
+  else if (app->startc != 1)
     {
-      k = startc;
+      k = app->startc;
       // FIXME: there is a bug with startc being < 0 here
       // every other row gets skipped/misaligned wrt delta1/delta2
       m = (k - 1) / 2;
       d = -4 * m;
       j = (k-1) % 64;
     }
-  else if (startb != 1)
+  else if (app->startb != 1)
     {
-      k = startb;
+      k = app->startb;
       m = k - 1;
       d = 4 * m;
       j = k % 64;
@@ -125,10 +128,10 @@ gutierrezk (FILE *out)
       e = d/4;
       break;
     }
-  if (starte)
-    e = starte;
+  if (app->starte)
+    e = app->starte;
   g = 2 * e;
-  for (long long i = 0; i < max; i++)
+  for (long long i = 0; i < app->max; i++)
     {
       s = (a*a) + (b*b) + (c*c) - (3*b*b);
       f = rintl ((long double)s / (long double)d);
@@ -150,46 +153,52 @@ gutierrezk (FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_small_gutierrez_progressions_t *app = (struct fv_app_small_gutierrez_progressions_t *) state->input;
   switch (key)
     {
     case ARGP_KEY_ARG:
-      if (num_args == 4)
+      if (app->num_args == 4)
         argp_error (state, "too many arguments");
       else
         {
           char *end = NULL;
-          switch (num_args)
+          switch (app->num_args)
             {
             case 0:
-              max = strtoull (arg, &end, 10);
+              app->max = strtoull (arg, &end, 10);
               break;
             case 1:
-              startb = strtoull (arg, &end, 10);
+              app->startb = strtoull (arg, &end, 10);
               break;
             case 2:
-              startc = strtoull (arg, &end, 10);
+              app->startc = strtoull (arg, &end, 10);
               break;
             case 3:
-              starte = strtoull (arg, &end, 10);
+              app->starte = strtoull (arg, &end, 10);
               break;
             }
-          num_args++;
+          app->num_args++;
         }
       break;
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing argument.");
       break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
+      break;
     }
   return 0;
 }
 
-struct argp argp ={NULL, parse_opt, "MAX [B [C [E]]]", "Find an arithmetic progression consisting of three squares, and that is suitable to be the right diagonal of a 3x3 magic square.\vMAX is how many times we're going to try to make a progression in the sequence.  C is a prime number, and E is an even number over 3 and under C." , 0};
+static struct argp argp ={NULL, parse_opt, "MAX [B [C [E]]]", "Find an arithmetic progression consisting of three squares, and that is suitable to be the right diagonal of a 3x3 magic square.\vMAX is how many times we're going to try to make a progression in the sequence.  C is a prime number, and E is an even number over 3 and under C." , 0};
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  int ret = gutierrezk (stdout);
-  return ret;
+  struct fv_app_small_gutierrez_progressions_t app;
+  memset (&app, 0, sizeof (app));
+  app.startc = 3;
+  app.startb = 1;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_gutierrez (&app, stdout);
 }

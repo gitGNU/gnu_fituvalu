@@ -18,10 +18,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-int num_args;
-mpz_t args[3];
-static void (*dump_func) (mpz_t *, FILE *);
-char *buf;
+struct fv_app_sq_seq_t
+{
+  int num_args;
+  mpz_t args[3];
+  void (*dump_func) (mpz_t *, FILE *);
+};
 
 static void
 dump_binary_num (mpz_t *i, FILE *out)
@@ -32,15 +34,15 @@ dump_binary_num (mpz_t *i, FILE *out)
 static void
 dump_num (mpz_t *i, FILE *out)
 {
+  char buf[mpz_sizeinbase (*i, 10) + 2];
   mpz_get_str (buf, 10, *i);
   fprintf (out, "%s", buf);
   fprintf (out, "\n");
 }
 
 static int
-sq_seq (mpz_t start, mpz_t finish, mpz_t incr, FILE *out)
+sq_seq (struct fv_app_sq_seq_t *app, mpz_t start, mpz_t finish, mpz_t incr, FILE *out)
 {
-  buf = malloc (mpz_sizeinbase (finish, 10) + 2);
   mpz_t i, root, lastroot;
   mpz_inits (i, root, lastroot, NULL);
   mpz_set (i, start);
@@ -50,7 +52,7 @@ sq_seq (mpz_t start, mpz_t finish, mpz_t incr, FILE *out)
   mpz_mul (i, root, root);
   mpz_sqrt (lastroot, finish);
 
-  dump_func (&i, out);
+  app->dump_func (&i, out);
 
   while (mpz_cmp (root, lastroot) < 0)
     {
@@ -61,34 +63,34 @@ sq_seq (mpz_t start, mpz_t finish, mpz_t incr, FILE *out)
           mpz_add_ui (i, i, 1);
           mpz_add_ui (root, root, 1);
         }
-      dump_func (&i, out);
+      app->dump_func (&i, out);
     }
   mpz_clears (i, root, lastroot, NULL);
-  free (buf);
   return 0;
 }
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_sq_seq_t *app = (struct fv_app_sq_seq_t *) state->input;
   switch (key)
     {
     case 'o':
-      dump_func = dump_binary_num;
+      app->dump_func = dump_binary_num;
       break;
     case ARGP_KEY_ARG:
-      if (num_args == 3)
+      if (app->num_args == 3)
         argp_error (state, "too many arguments");
       else
         {
-          mpz_set_str (args[num_args], arg, 10);
-          num_args++;
+          mpz_set_str (app->args[app->num_args], arg, 10);
+          app->num_args++;
         }
       break;
     case ARGP_KEY_INIT:
-      dump_func = dump_num;
+      app->dump_func = dump_num;
       for (int i = 0; i < 3; i++)
-        mpz_init (args[i]);
+        mpz_init (app->args[i]);
       break;
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing argument.");
@@ -104,34 +106,43 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "FIRST\nFIRST LAST\nFIRST INCREMENT LAST", "Compute a sequence of perfect squares.\vIf FIRST or INCREMENT is omitted, it defaults to 1." , 0};
+static struct argp argp ={options, parse_opt, "FIRST\nFIRST LAST\nFIRST INCREMENT LAST", "Compute a sequence of perfect squares.\vIf FIRST or INCREMENT is omitted, it defaults to 1.", 0};
 
 int
-main (int argc, char **argv)
+fituvalu_sq_seq (struct fv_app_sq_seq_t *app, FILE *out)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-
   mpz_t one;
   mpz_init (one);
   mpz_set_ui (one, 1);
 
-  FILE *out = stdout;
   int ret = 0;
 
-  switch (num_args)
+  switch (app->num_args)
     {
     case 1:
-      ret = sq_seq (one, args[0], one, out);
+      ret = sq_seq (app, one, app->args[0], one, out);
       break;
     case 2:
-      ret = sq_seq (args[0], args[1], one, out);
+      ret = sq_seq (app, app->args[0], app->args[1], one, out);
       break;
     case 3:
-      ret = sq_seq (args[0], args[2], args[1], out);
+      ret = sq_seq (app, app->args[0], app->args[2], app->args[1], out);
+      break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     }
 
   mpz_clear (one);
   return ret;
+}
+
+int
+main (int argc, char **argv)
+{
+  struct fv_app_sq_seq_t app;
+  memset (&app, 0, sizeof (app));
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_sq_seq (&app, stdout);
+
 }

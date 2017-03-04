@@ -21,43 +21,45 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-mpz_t x1, _y1, z1, m12, n12, yx1dif, yx1sum;
-
-int has_divisors;
-int show_diff;
-int showroot = 1;
-int in_binary;
-void (*display_record) (mpz_t *, mpz_t*, FILE *out) = display_three_record_with_root;
+struct fv_app_find_3sq_progressions_mn_t
+{
+  mpz_t x1, _y1, z1, m12, n12, yx1dif, yx1sum;
+  int has_divisors;
+  int show_diff;
+  int showroot;
+  int in_binary;
+  void (*display_record) (mpz_t *, mpz_t*, FILE *out);
+};
 
 static void
-create_three_square_progression (mpz_t m, mpz_t n, mpz_t *vec, int size, mpz_t *finalroot)
+create_three_square_progression (struct fv_app_find_3sq_progressions_mn_t *app, mpz_t m, mpz_t n, mpz_t *vec, int size, mpz_t *finalroot)
 {
   //where X1 = 2*m1*n1,  Y1 = m1^2-n1^2,  Z1 = m1^2+n1^2,
-  mpz_set (x1, m);
-  mpz_mul (x1, x1, n);
-  mpz_mul_ui (x1, x1, 2);
+  mpz_set (app->x1, m);
+  mpz_mul (app->x1, app->x1, n);
+  mpz_mul_ui (app->x1, app->x1, 2);
 
-  mpz_set (m12, m);
-  mpz_mul (m12, m12, m);
+  mpz_set (app->m12, m);
+  mpz_mul (app->m12, app->m12, m);
 
-  mpz_set (n12, n);
-  mpz_mul (n12, n12, n);
+  mpz_set (app->n12, n);
+  mpz_mul (app->n12, app->n12, n);
 
-  mpz_sub (_y1, m12, n12);
+  mpz_sub (app->_y1, app->m12, app->n12);
 
-  mpz_add (z1, m12, n12);
+  mpz_add (app->z1, app->m12, app->n12);
 
-  mpz_sub (yx1dif, _y1, x1);
+  mpz_sub (app->yx1dif, app->_y1, app->x1);
 
-  mpz_add (yx1sum, _y1, x1);
+  mpz_add (app->yx1sum, app->_y1, app->x1);
 
-  mpz_mul (vec[0], yx1dif, yx1sum);
-  mpz_mul (vec[1], z1, yx1sum);
-  mpz_mul (vec[2], yx1sum, yx1sum);
+  mpz_mul (vec[0], app->yx1dif, app->yx1sum);
+  mpz_mul (vec[1], app->z1, app->yx1sum);
+  mpz_mul (vec[2], app->yx1sum, app->yx1sum);
 
   mpz_mul (vec[0], vec[0], vec[0]);
   mpz_mul (vec[1], vec[1], vec[1]);
-  if (showroot)
+  if (app->showroot)
     mpz_set (*finalroot, vec[2]);
   else
     mpz_set_ui (*finalroot, 0);
@@ -102,14 +104,14 @@ divisor_filter (mpz_t *v)
 }
 
 static int
-gen_3sq (FILE *in, FILE *out)
+gen_3sq (struct fv_app_find_3sq_progressions_mn_t *app, FILE *in, FILE *out)
 {
   ssize_t read;
   char *line = NULL;
   size_t len = 0;
   mpz_t m, n, vec[3], finalroot;
   mpz_inits (m, n, vec[0], vec[1], vec[2], finalroot, NULL);
-  mpz_inits (x1, _y1, z1, m12, n12, yx1dif, yx1sum, NULL);
+  mpz_inits (app->x1, app->_y1, app->z1, app->m12, app->n12, app->yx1dif, app->yx1sum, NULL);
   while (1)
     {
       read = fv_getdelim (&line, &len, ',', in);
@@ -123,16 +125,16 @@ gen_3sq (FILE *in, FILE *out)
       if (read == -1)
         break;
       mpz_set_str (n, line, 10);
-      create_three_square_progression (m, n, vec, 3, &finalroot);
+      create_three_square_progression (app, m, n, vec, 3, &finalroot);
 
-      if (has_divisors && !divisor_filter (vec))
+      if (app->has_divisors && !divisor_filter (vec))
         continue;
-      if (show_diff)
+      if (app->show_diff)
         {
           mpz_t diff;
           mpz_init (diff);
           mpz_sub (diff, vec[1], vec[0]);
-          if (display_record == display_binary_three_record_with_root)
+          if (app->display_record == display_binary_three_record_with_root)
             mpz_out_raw (out, diff);
           else
             {
@@ -142,22 +144,22 @@ gen_3sq (FILE *in, FILE *out)
             }
           mpz_clear (diff);
         }
-      display_record (vec, &finalroot, out);
+      app->display_record (vec, &finalroot, out);
     }
   mpz_clears (m, n, vec[0], vec[1], vec[2], finalroot, NULL);
-  mpz_clears (x1, _y1, z1, m12, n12, yx1dif, yx1sum, NULL);
+  mpz_clears (app->x1, app->_y1, app->z1, app->m12, app->n12, app->yx1dif, app->yx1sum, NULL);
   if (line)
     free (line);
   return 0;
 }
 
 static int
-gen_binary_3sq (FILE *in, FILE *out)
+gen_binary_3sq (struct fv_app_find_3sq_progressions_mn_t *app, FILE *in, FILE *out)
 {
   ssize_t read;
   mpz_t m, n, vec[3], finalroot;
   mpz_inits (m, n, vec[0], vec[1], vec[2], finalroot, NULL);
-  mpz_inits (x1, _y1, z1, m12, n12, yx1dif, yx1sum, NULL);
+  mpz_inits (app->x1, app->_y1, app->z1, app->m12, app->n12, app->yx1dif, app->yx1sum, NULL);
   while (1)
     {
       read = mpz_inp_raw (m, in);
@@ -166,11 +168,11 @@ gen_binary_3sq (FILE *in, FILE *out)
       read = mpz_inp_raw (n, in);
       if (!read)
         break;
-      create_three_square_progression (m, n, vec, 3, &finalroot);
-      display_record (vec, &finalroot, out);
+      create_three_square_progression (app, m, n, vec, 3, &finalroot);
+      app->display_record (vec, &finalroot, out);
     }
   mpz_clears (m, n, vec[0], vec[1], vec[2], finalroot, NULL);
-  mpz_clears (x1, _y1, z1, m12, n12, yx1dif, yx1sum, NULL);
+  mpz_clears (app->x1, app->_y1, app->z1, app->m12, app->n12, app->yx1dif, app->yx1sum, NULL);
   return 0;
 }
 
@@ -178,22 +180,26 @@ gen_binary_3sq (FILE *in, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_find_3sq_progressions_mn_t *app = (struct fv_app_find_3sq_progressions_mn_t *) state->input;
   switch (key)
     {
     case 'h':
-      has_divisors = 1;
+      app->has_divisors = 1;
       break;
     case 'd':
-      show_diff = 1;
+      app->show_diff = 1;
       break;
     case 'n':
-      showroot = 0;
+      app->showroot = 0;
       break;
     case 'i':
-      in_binary = 1;
+      app->in_binary = 1;
       break;
     case 'o':
-      display_record = display_binary_three_record_with_root;
+      app->display_record = display_binary_three_record_with_root;
+      break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     }
   return 0;
@@ -210,15 +216,24 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "", "Generate arithmetic progressions of three squares, with a fourth number being the square root of the 3rd square.\vThe input of this program comes from \"seq-morgenstern-mn\".", 0 };
+static struct argp argp ={options, parse_opt, "", "Generate arithmetic progressions of three squares, with a fourth number being the square root of the 3rd square.\vThe input of this program comes from \"seq-morgenstern-mn\".", 0 };
+
+int
+fituvalu_find_3sq_progressions_mn (struct fv_app_find_3sq_progressions_mn_t *app, FILE *in, FILE *out)
+{
+  if (app->in_binary)
+    return gen_binary_3sq (app, in, out);
+  else
+    return gen_3sq (app, in, out);
+}
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  if (in_binary)
-    return gen_binary_3sq (stdin, stdout);
-  else
-    return gen_3sq (stdin, stdout);
+  struct fv_app_find_3sq_progressions_mn_t app;
+  memset (&app, 0, sizeof (app));
+  app.showroot = 1;
+  app.display_record = display_three_record_with_root;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_find_3sq_progressions_mn (&app, stdin, stdout);
 }

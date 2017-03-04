@@ -21,54 +21,41 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-unsigned long long incr = 1;
-int in_binary;
-void (*func)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t*, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *) = fwd_4sq_progression1;
-mpz_t start, finish, oneshot;
-int num_args;
-
-static void (*display_four_progression)(mpz_t *, FILE *);
+struct fv_app_4sq_t
+{
+  unsigned long long incr;
+  int in_binary;
+  void (*func)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t*, mpz_t, mpz_t, mpz_t, mpz_t, void*), void*);
+  mpz_t start, finish, oneshot;
+  int num_args;
+  void (*display_record)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *);
+  FILE *out;
+};
 
 static void
-dump_num (mpz_t *i, FILE *out)
+display_record (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t four, void *data)
 {
-  char buf[mpz_sizeinbase (*i, 10) + 2];
-  mpz_get_str (buf, 10, *i);
-  fprintf (out, "%s", buf);
-}
-
-static void
-display_four_progression_as_text (mpz_t *progression, FILE *out)
-{
-  for (int i = 0; i < 4; i++)
-    {
-      dump_num (&progression[i], out);
-      fprintf (out, ", ");
-    }
-  fprintf (out, "\n");
-}
-
-static void
-display_four_progression_as_binary (mpz_t *progression, FILE *out)
-{
-  mpz_out_raw (out, progression[0]);
-  mpz_out_raw (out, progression[1]);
-  mpz_out_raw (out, progression[2]);
-  mpz_out_raw (out, progression[3]);
-}
-
-static void
-display_squares (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t four, FILE *out)
-{
+  struct fv_app_4sq_t *app = (struct fv_app_4sq_t *) data;
   mpz_set (progression[0], one);
   mpz_set (progression[1], two);
   mpz_set (progression[2], three);
   mpz_set (progression[3], four);
-  display_four_progression (progression, out);
+  display_four_record (progression, app->out);
+}
+
+static void
+display_binary_record (mpz_t *progression, mpz_t one, mpz_t two, mpz_t three, mpz_t four, void *data)
+{
+  struct fv_app_4sq_t *app = (struct fv_app_4sq_t *) data;
+  mpz_set (progression[0], one);
+  mpz_set (progression[1], two);
+  mpz_set (progression[2], three);
+  mpz_set (progression[3], four);
+  display_binary_four_record (progression, app->out);
 }
 
 void
-generate_4sq_from_binary_input (FILE *in, FILE *out)
+generate_4sq_from_binary_input (struct fv_app_4sq_t *app, FILE *in)
 {
   ssize_t read;
   mpz_t i;
@@ -78,13 +65,13 @@ generate_4sq_from_binary_input (FILE *in, FILE *out)
       read = mpz_inp_raw (i, in);
       if (!read)
         break;
-      func (i, i, finish, incr, display_squares, out);
+      app->func (i, i, app->finish, app->incr, app->display_record, app);
     }
   mpz_clear (i);
 }
 
 void
-generate_4sq_from_input (FILE *in, FILE *out)
+generate_4sq_from_input (struct fv_app_4sq_t *app, FILE *in)
 {
   char *line = NULL;
   size_t len = 0;
@@ -100,25 +87,25 @@ generate_4sq_from_input (FILE *in, FILE *out)
       if (end)
         *end = '\0';
       mpz_set_str (i, line, 10);
-      func (i, i, finish, incr, display_squares, out);
+      app->func (i, i, app->finish, app->incr, app->display_record, app);
     }
   mpz_clear (i);
   free (line);
 }
 
 void
-generate_4sq (FILE *out)
+generate_4sq (struct fv_app_4sq_t *app)
 {
   mpz_t i;
   mpz_init (i);
   mpz_t root;
   mpz_inits (root, NULL);
-  mpz_sqrt (root, start);
+  mpz_sqrt (root, app->start);
   mpz_mul (i, root, root);
-  func (i, start, finish, incr, display_squares, stdout);
+  app->func (i, app->start, app->finish, app->incr, app->display_record, app);
   while (1)
     {
-      for (int j = 0; j < incr; j++)
+      for (int j = 0; j < app->incr; j++)
         {
           mpz_add (i, i, root);
           mpz_add (i, i, root);
@@ -126,9 +113,9 @@ generate_4sq (FILE *out)
           mpz_add_ui (root, root, 1);
         }
 
-      if (mpz_cmp (i, finish) >= 0)
+      if (mpz_cmp (i, app->finish) >= 0)
         break;
-      func (i, start, finish, incr, display_squares, out);
+      app->func (i, app->start, app->finish, app->incr, app->display_record, app);
     }
   mpz_clears (root, NULL);
   mpz_clear (i);
@@ -137,27 +124,28 @@ generate_4sq (FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_4sq_t *app = (struct fv_app_4sq_t *) state->input;
   char *end = NULL;
   switch (key)
     {
     case 'I':
-      incr = strtoull (arg, &end, 10);
+      app->incr = strtoull (arg, &end, 10);
       break;
     case '1':
-      mpz_set_str (oneshot, arg, 10);
+      mpz_set_str (app->oneshot, arg, 10);
       break;
     case 'o':
-      display_four_progression = display_four_progression_as_binary;
+      app->display_record = display_binary_record;
       break;
     case 'i':
-      in_binary = 1;
+      app->in_binary = 1;
       break;
     case 't':
         {
           four_square_progression_t *p =
             lookup_four_square_progression_by_name (arg);
           if (p)
-            func = p->func;
+            app->func = p->func;
           else
             {
               char *types = generate_list_of_four_square_progression_types ();
@@ -167,27 +155,28 @@ parse_opt (int key, char *arg, struct argp_state *state)
         }
       break;
     case ARGP_KEY_ARG:
-      if (num_args == 2)
+      if (app->num_args == 2)
         argp_error (state, "too many arguments.");
       else
         {
-          if (num_args == 0)
-            mpz_init_set_str (finish, arg, 10);
+          if (app->num_args == 0)
+            mpz_init_set_str (app->finish, arg, 10);
           else
             {
-              mpz_init_set (start, finish);
-              mpz_init_set_str (finish, arg, 10);
+              mpz_init_set (app->start, app->finish);
+              mpz_init_set_str (app->finish, arg, 10);
             }
-          num_args++;
+          app->num_args++;
         }
       break;
     case ARGP_KEY_INIT:
-      mpz_init (start);
-      mpz_init (finish);
-      display_four_progression = display_four_progression_as_text;
+      mpz_init (app->start);
+      mpz_init (app->finish);
+      app->display_record = display_record;
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     case ARGP_KEY_FINI:
-      if (num_args == 0)
+      if (app->num_args == 0)
         argp_error (state, "too few arguments.");
       break;
     }
@@ -221,27 +210,38 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, "START FINISH\nFINISH", "Generate progressions of 4 perfect squares.  If only FINISH is specified, read the starting perfect square from the standard input.  Continue iterating until the progression reaches FINISH.\vAn arithmetic progression of 4 squares in a row is impossible (e.g. the distance between the squares is the same), so we iterate over 4 squares with a different gap between one or more of the squares.  --type must be one of:%s", 0, help_filter};
+static struct argp argp ={options, parse_opt, "START FINISH\nFINISH", "Generate progressions of 4 perfect squares.  If only FINISH is specified, read the starting perfect square from the standard input.  Continue iterating until the progression reaches FINISH.\vAn arithmetic progression of 4 squares in a row is impossible (e.g. the distance between the squares is the same), so we iterate over 4 squares with a different gap between one or more of the squares.  --type must be one of:%s", 0, help_filter};
+
+int
+fituvalu_4sq (struct fv_app_4sq_t *app, FILE *in)
+{
+  if (app->num_args == 1)
+    {
+      if (app->in_binary)
+        generate_4sq_from_binary_input (app, in);
+      else
+        generate_4sq_from_input (app, in);
+    }
+  else
+    {
+      if (mpz_cmp_ui (app->oneshot, 0) != 0)
+        app->func (app->oneshot, app->start, app->finish, app->incr, app->display_record, app);
+      else
+        generate_4sq (app);
+    }
+  return 0;
+}
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  if (num_args == 1)
-    {
-      if (in_binary)
-        generate_4sq_from_binary_input (stdin, stdout);
-      else
-        generate_4sq_from_input (stdin, stdout);
-    }
-  else
-    {
-      if (mpz_cmp_ui (oneshot, 0) != 0)
-        func (oneshot, start, finish, incr, display_squares, stdout);
-      else
-        generate_4sq (stdout);
-    }
-  return 0;
+  struct fv_app_4sq_t app;
+  memset (&app, 0, sizeof (app));
+  app.incr = 1;
+  app.func = fwd_4sq_progression1;
+  app.out = stdout;
+
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_4sq (&app, stdin);
 }
 

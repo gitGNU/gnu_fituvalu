@@ -20,13 +20,16 @@
 #include <string.h>
 #include <gmp.h>
 #include "magicsquareutil.h"
-int simple;
-int show_sums;
-int csvthree;
-int magic_number = 1;
-int number_line;
-int cr_no_lf;
-int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
+struct fv_app_display_square_t
+{
+  int simple;
+  int show_sums;
+  int csvthree;
+  int magic_number;
+  int number_line;
+  int cr_no_lf;
+  int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+};
 
 static int
 get_width (mpz_t i)
@@ -149,12 +152,12 @@ display_row (int width, mpz_t a[3][3], int row, FILE *out, char *extra)
 }
 
 static void
-display (mpz_t a[3][3], FILE *out)
+display (struct fv_app_display_square_t *app, mpz_t a[3][3], FILE *out)
 {
   int width = get_width_of_widest_cell (a);
 
   char *extra = NULL;
-  if (magic_number)
+  if (app->magic_number)
     extra = get_magic_number_string (a);
   display_row_border (width, out);
   display_row (width, a, 0, out, NULL);
@@ -307,7 +310,7 @@ get_max_and_min (mpz_t a[3][3], mpz_t max, mpz_t min)
 }
 
 static void
-display_number_line (mpz_t a[3][3], FILE *out)
+display_number_line (struct fv_app_display_square_t *app, mpz_t a[3][3], FILE *out)
 {
   mpf_t num, maxnum, p, result, difff;
   mpz_t min, max, diff;
@@ -367,7 +370,7 @@ display_number_line (mpz_t a[3][3], FILE *out)
               }
           }
       }
-  if (cr_no_lf)
+  if (app->cr_no_lf)
     fprintf (out, "|--%s--|\r", line);
   else
     fprintf (out, "|--%s--|\n", line);
@@ -384,8 +387,8 @@ display_csv_three_rows (mpz_t a[3][3], FILE *out)
   display_three_record (a[2], out);
 }
 
-static int
-display_square (FILE *stream)
+int
+fituvalu_display_square (struct fv_app_display_square_t *app, FILE *stream)
 {
   char *line = NULL;
   size_t len = 0;
@@ -399,19 +402,19 @@ display_square (FILE *stream)
 
   while (1)
     {
-      read = read_square (stream, &a, &line, &len);
+      read = app->read_square (stream, &a, &line, &len);
       if (read == -1)
         break;
-      if (number_line)
-        display_number_line (a, stdout);
-      else if (csvthree)
+      if (app->number_line)
+        display_number_line (app, a, stdout);
+      else if (app->csvthree)
         display_csv_three_rows (a, stdout);
-      else if (is_magic_square (a, 1) && !show_sums)
+      else if (is_magic_square (a, 1) && !app->show_sums)
         {
-          if (simple)
+          if (app->simple)
             display_simple (a, stdout);
           else
-            display (a, stdout);
+            display (app, a, stdout);
         }
       else
         display_broken_square (a, stdout);
@@ -429,32 +432,37 @@ display_square (FILE *stream)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_display_square_t *app = (struct fv_app_display_square_t *) state->input;
   switch (key)
     {
     case '3':
-      csvthree = 1;
+      app->csvthree = 1;
       break;
     case 'i':
-      read_square = binary_read_square_from_stream;
+      app->read_square = binary_read_square_from_stream;
       break;
     case 'c':
-      cr_no_lf = 1;
+      app->cr_no_lf = 1;
       break;
     case 'S':
-      simple = 1;
+      app->simple = 1;
       break;
     case 's':
-      show_sums = 1;
+      app->show_sums = 1;
       break;
     case 'N':
-      magic_number = 0;
+      app->magic_number = 0;
       break;
     case 'n':
-      number_line = 1;
+      app->number_line = 1;
+      break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     }
   return 0;
 }
+
 static struct argp_option
 options[] =
 {
@@ -467,13 +475,16 @@ options[] =
   { "csv-three", '3', 0, 0, "Dump the square in csv format, 3 numbers per row"},
   { 0 }
 };
-struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and display it.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
+static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and display it.\vThe nine values must be separated by a comma and terminated by a newline." , 0};
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
+  struct fv_app_display_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.magic_number = 1;
+  app.read_square = read_square_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
   is_magic_square_init ();
-  return display_square (stdin);
+  return fituvalu_display_square (&app, stdin);
 }

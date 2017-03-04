@@ -20,11 +20,15 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-int invert;
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
-int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *) = read_square_from_stream;
-static int
-check_if_magic_square (FILE *stream)
+struct fv_app_check_magic_square_t
+{
+  int invert;
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+  int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+};
+
+int
+fituvalu_check_if_magic_square (struct fv_app_check_magic_square_t *app, FILE *stream)
 {
   char *line = NULL;
   size_t len = 0;
@@ -38,12 +42,12 @@ check_if_magic_square (FILE *stream)
 
   while (1)
     {
-      read = read_square (stream, &a, &line, &len);
+      read = app->read_square (stream, &a, &line, &len);
       if (read == -1)
         break;
       int magic = is_magic_square (a, 1);
-      if ((invert && !magic) || (!invert && magic))
-        display_square (a, stdout);
+      if ((app->invert && !magic) || (!app->invert && magic))
+        app->display_square (a, stdout);
     }
 
   for (i = 0; i < 3; i++)
@@ -58,16 +62,17 @@ check_if_magic_square (FILE *stream)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_check_magic_square_t *app = (struct fv_app_check_magic_square_t *) state->input;
   switch (key)
     {
     case 'v':
-      invert = 1;
+      app->invert = 1;
       break;
     case 'i':
-      read_square = binary_read_square_from_stream;
+      app->read_square = binary_read_square_from_stream;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     }
   return 0;
@@ -82,12 +87,16 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and displays them if they are magic squares.\vThe nine values must be separated by a comma and terminated by a newline.", 0};
+static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares from the standard input, and displays them if they are magic squares.\vThe nine values must be separated by a comma and terminated by a newline.", 0};
 
 int
 main (int argc, char **argv)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
+  struct fv_app_check_magic_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_square = display_square_record;
+  app.read_square = read_square_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
   is_magic_square_init ();
-  return check_if_magic_square (stdin);
+  return fituvalu_check_if_magic_square (&app, stdin);
 }

@@ -1,0 +1,29 @@
+#!/bin/bash
+# Copyright (C) 2017 Ben Asselstine
+# 
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
+
+#here is what we expect
+expected=`mktemp $builddir/fituvalu.XXXXXX`
+bindir=$builddir/../src
+cat << EOF >$expected
+1, 2, 3, 4, 
+1, 2, 3, 7, 
+1, 2, 3, 12, 
+EOF
+
+
+#generating our results
+
+echo "1, 2, 3, " | $bindir/complete-3sq-progression 3
+
+#0086.log is simultaneously created as this script runs.
+diff -uNrd $expected $builddir/0086.log
+retval=$?
+
+#cleanup
+rm $expected
+exit $retval

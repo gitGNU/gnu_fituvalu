@@ -219,7 +219,7 @@ count_squares (mpz_t a[3][3])
 }
 
 void
-small_read_square_and_run (FILE *stream, void (*iterfunc)(unsigned long long, unsigned long long, unsigned long long, void (*)(unsigned long long*, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *), void (*checkfunc)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long start, unsigned long long finish, FILE *out)
+small_read_square_and_run (FILE *stream, void (*iterfunc)(unsigned long long, unsigned long long, unsigned long long, void (*)(unsigned long long*, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *), void (*checkfunc)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), unsigned long long start, unsigned long long finish, void *data)
 {
   ssize_t read;
   char *line = NULL;
@@ -233,14 +233,14 @@ small_read_square_and_run (FILE *stream, void (*iterfunc)(unsigned long long, un
         break;
       end = NULL;
       i = strtoull (line, &end, 10);
-      iterfunc (i, start, finish, checkfunc, out);
+      iterfunc (i, start, finish, checkfunc, data);
     }
   free (line);
   return;
 }
 
 void
-read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t start, mpz_t finish, unsigned long long incr, FILE *out)
+read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void*), void *), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void*), mpz_t start, mpz_t finish, unsigned long long incr, void *out)
 {
   mpz_t i;
   mpz_init (i);
@@ -264,7 +264,7 @@ read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigne
 }
 
 void
-binary_read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t start, mpz_t finish, unsigned long long incr, FILE *out)
+binary_read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void*), void *), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void*), mpz_t start, mpz_t finish, unsigned long long incr, void *data)
 {
   mpz_t i;
   mpz_init (i);
@@ -274,7 +274,7 @@ binary_read_square_and_run (FILE *stream, void (*iterfunc)(mpz_t, mpz_t, mpz_t, 
       read = mpz_inp_raw (i, stream);
       if (!read)
         break;
-      iterfunc (i, start, finish, incr, checkfunc, out);
+      iterfunc (i, start, finish, incr, checkfunc, data);
     }
   mpz_clear (i);
   return;
@@ -292,14 +292,14 @@ small_is_square (long long num)
 }
 
 void
-small_loop_and_run (void (*iterfunc)(unsigned long long, unsigned long long, unsigned long long, void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), FILE *), void (*checkfunc)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long start, unsigned long long finish, FILE *out)
+small_loop_and_run (void (*iterfunc)(unsigned long long, unsigned long long, unsigned long long, void (*)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *), void (*checkfunc)(unsigned long long *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), unsigned long long start, unsigned long long finish, void *data)
 {
   unsigned long long root, lastroot, i;
   for (i = start; i < finish; i++)
     {
       if (small_is_square (i))
         {
-          iterfunc (i, start, finish, checkfunc, out);
+          iterfunc (i, start, finish, checkfunc, data);
           root = sqrtl (i);
           lastroot = sqrtl (finish);
           do
@@ -307,7 +307,7 @@ small_loop_and_run (void (*iterfunc)(unsigned long long, unsigned long long, uns
               i += root;
               i += root;
               i++;
-              iterfunc (i, start, finish, checkfunc, out);
+              iterfunc (i, start, finish, checkfunc, data);
               root++;
             }
           while (root < lastroot);
@@ -317,7 +317,7 @@ small_loop_and_run (void (*iterfunc)(unsigned long long, unsigned long long, uns
 }
 
 void
-loop_and_run (void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t*, mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE*), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, FILE*), mpz_t start, mpz_t finish, unsigned long long incr, FILE *out)
+loop_and_run (void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)(mpz_t*, mpz_t, mpz_t, mpz_t, mpz_t, void *), void *), void (*checkfunc)(mpz_t *, mpz_t, mpz_t, mpz_t, mpz_t, void *), mpz_t start, mpz_t finish, unsigned long long incr, void *data)
 {
   mpz_t i, j, k, root, lastroot;
   mpz_inits (i, j, k, root, lastroot, NULL);
@@ -325,7 +325,7 @@ loop_and_run (void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)
     {
       if (mpz_perfect_square_p (i))
         {
-          iterfunc (i, start, finish, incr, checkfunc, out);
+          iterfunc (i, start, finish, incr, checkfunc, data);
           mpz_sqrt (root, i);
           mpz_sqrt (lastroot, finish);
           do
@@ -333,7 +333,7 @@ loop_and_run (void (*iterfunc)(mpz_t, mpz_t, mpz_t, unsigned long long, void (*)
               mpz_add (i, i, root);
               mpz_add (i, i, root);
               mpz_add_ui (i, i, 1);
-              iterfunc (i, start, finish, incr, checkfunc, out);
+              iterfunc (i, start, finish, incr, checkfunc, data);
               mpz_add_ui (root, root, 1);
             }
           while (mpz_cmp (root, lastroot) < 0);
@@ -475,9 +475,9 @@ display_binary_square_record (mpz_t s[3][3], FILE *out)
 }
 
 static void
-seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, FILE *), mpz_t _m2, mpz_t _n2)
+seq (mpz_t m, mpz_t n, mpz_t finish, void *data, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, void *), mpz_t _m2, mpz_t _n2)
 {
-  search (m, n, _m2, _n2, out);
+  search (m, n, _m2, _n2, data);
   mpz_t s;
   mpz_init (s);
   mpz_add (s, m, n);
@@ -488,26 +488,26 @@ seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out, void (*search)(mpz_t, mpz_t, mpz
       mpz_set (m2, s);
       mpz_set (n2, m);
       if (mpz_even_p (n2))
-        seq (m2, n2, finish, out, search, _m2, _n2);
+        seq (m2, n2, finish, data, search, _m2, _n2);
       else
         {
           mpz_add (s, m2, n2);
           if (mpz_cmp (s, finish) < 0)
             {
-              seq (s, m2, finish, out, search, _m2, _n2);
-              seq (s, n2, finish, out, search, _m2, _n2);
+              seq (s, m2, finish, data, search, _m2, _n2);
+              seq (s, n2, finish, data, search, _m2, _n2);
             }
         }
       mpz_set (n2, n);
       if (mpz_even_p (n2))
-        seq (m2, n2, finish, out, search, _m2, _n2);
+        seq (m2, n2, finish, data, search, _m2, _n2);
       else
         {
           mpz_add (s, m2, n2);
           if (mpz_cmp (s, finish) < 0)
             {
-              seq (s, m2, finish, out, search, _m2, _n2);
-              seq (s, n2, finish, out, search, _m2, _n2);
+              seq (s, m2, finish, data, search, _m2, _n2);
+              seq (s, n2, finish, data, search, _m2, _n2);
             }
         }
       mpz_clears (m2, n2, NULL);
@@ -516,42 +516,42 @@ seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out, void (*search)(mpz_t, mpz_t, mpz
 }
 
 static void
-small_seq (unsigned long long int m, unsigned long long int n, int finish, FILE *out, void (*search)(unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE *), unsigned long long _m2, unsigned long long _n2)
+small_seq (unsigned long long int m, unsigned long long int n, int finish, void *data, void (*search)(unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), unsigned long long _m2, unsigned long long _n2)
 {
-  search (m, n, _m2, _n2, out);
+  search (m, n, _m2, _n2, data);
   unsigned long long int s = m + n;
   if (s < finish)
     {
       unsigned long long int m2 = s;
       unsigned long long int n2 = m;
       if ((n2 & 1) == 0)
-        small_seq (m2, n2, finish, out, search, _m2, _n2);
+        small_seq (m2, n2, finish, data, search, _m2, _n2);
       else
         {
           s = m2 + n2;
           if (s < finish)
             {
-              small_seq (s, m2, finish, out, search, _m2, _n2);
-              small_seq (s, n2, finish, out, search, _m2, _n2);
+              small_seq (s, m2, finish, data, search, _m2, _n2);
+              small_seq (s, n2, finish, data, search, _m2, _n2);
             }
         }
       n2 = n;
       if ((n2 & 1) == 0)
-        small_seq (m2, n2, finish, out, search, _m2, _n2);
+        small_seq (m2, n2, finish, data, search, _m2, _n2);
       else
         {
           s = m2 + n2;
           if (s < finish)
             {
-              small_seq (s, m2, finish, out, search, _m2, _n2);
-              small_seq (s, n2, finish, out, search, _m2, _n2);
+              small_seq (s, m2, finish, data, search, _m2, _n2);
+              small_seq (s, n2, finish, data, search, _m2, _n2);
             }
         }
     }
 }
 
 int
-small_morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, FILE*), FILE *out)
+small_morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsigned long long, unsigned long long, unsigned long long, unsigned long long, void *), void *data)
 {
   ssize_t read;
   char *line = NULL;
@@ -570,7 +570,7 @@ small_morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsi
         break;
       end = NULL;
       n = strtoull (line, &end, 10);
-      small_seq (1, 2, max, out, search, m, n);
+      small_seq (1, 2, max, data, search, m, n);
     }
   if (line)
     free (line);
@@ -578,7 +578,7 @@ small_morgenstern_search (unsigned long long max, FILE *in, void (*search) (unsi
 }
 
 int
-morgenstern_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+morgenstern_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
   ssize_t read;
   char *line = NULL;
@@ -600,7 +600,7 @@ morgenstern_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mp
       if (read == -1)
         break;
       mpz_set_str (n, line, 10);
-      seq (startm, startn, max, out, search, m, n);
+      seq (startm, startn, max, data, search, m, n);
     }
   mpz_clears (m, n, startm, startn, NULL);
   if (line)
@@ -609,7 +609,7 @@ morgenstern_search (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mp
 }
 
 int
-morgenstern_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+morgenstern_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
   ssize_t read;
   mpz_t m, n, startm, startn;
@@ -624,7 +624,7 @@ morgenstern_search_from_binary (mpz_t max, FILE *in, void (*search) (mpz_t, mpz_
       read = mpz_inp_raw (n, in);
       if (!read)
         break;
-      seq (startm, startn, max, out, search, m, n);
+      seq (startm, startn, max, data, search, m, n);
     }
   mpz_clears (m, n, startm, startn, NULL);
   return 0;
@@ -648,7 +648,8 @@ reduce_three_square_progression (mpz_t *progression)
       for (int i = 0; i < 3; i++)
         {
           mpz_cdiv_q (d, progression[i], gcd);
-          if (!mpz_perfect_square_p (d))
+          if (!mpz_perfect_square_p (d) &&
+              mpz_perfect_square_p (progression[i]))
             {
               squares_retained = 0;
               break;
@@ -665,7 +666,7 @@ reduce_three_square_progression (mpz_t *progression)
 }
 
 static void
-_dual_inner (FILE *in, mpz_t m, mpz_t n, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, FILE *), FILE *out)
+_dual_inner (FILE *in, mpz_t m, mpz_t n, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
   ssize_t read;
   char *line = NULL;
@@ -685,7 +686,7 @@ _dual_inner (FILE *in, mpz_t m, mpz_t n, void (*search)(mpz_t, mpz_t, mpz_t, mpz
       if (read == -1)
         break;
       mpz_set_str (s, line, 10);
-      search (m, n, r, s, out);
+      search (m, n, r, s, data);
     }
   mpz_clears (r, s, NULL);
   if (line)
@@ -693,7 +694,7 @@ _dual_inner (FILE *in, mpz_t m, mpz_t n, void (*search)(mpz_t, mpz_t, mpz_t, mpz
 }
 
 void
-morgenstern_search_dual (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+morgenstern_search_dual (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
   //in2 is rewindable, in1 is not.
   ssize_t read;
@@ -715,7 +716,7 @@ morgenstern_search_dual (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz
         break;
       mpz_set_str (n, line, 10);
       rewind (in2);
-      _dual_inner (in2, m, n, search, out);
+      _dual_inner (in2, m, n, search, data);
     }
   mpz_clears (m, n, NULL);
   if (line)
@@ -724,7 +725,7 @@ morgenstern_search_dual (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz
 }
 
 static void
-_dual_binary_inner (FILE *in, mpz_t m, mpz_t n, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+_dual_binary_inner (FILE *in, mpz_t m, mpz_t n, void (*search)(mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
   ssize_t read;
   mpz_t r, s;
@@ -737,14 +738,14 @@ _dual_binary_inner (FILE *in, mpz_t m, mpz_t n, void (*search)(mpz_t, mpz_t, mpz
       read = mpz_inp_raw (s, in);
       if (!read)
         break;
-      search (m, n, r, s, out);
+      search (m, n, r, s, data);
     }
   mpz_clears (r, s, NULL);
   return;
 }
 
 void
-morgenstern_search_dual_binary (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+morgenstern_search_dual_binary (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
   ssize_t read;
   mpz_t m, n;
@@ -758,7 +759,7 @@ morgenstern_search_dual_binary (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz
       if (!read)
         break;
       rewind (in2);
-      _dual_binary_inner (in2, m, n, search, out);
+      _dual_binary_inner (in2, m, n, search, data);
     }
   mpz_clears (m, n, NULL);
   return;
@@ -958,7 +959,7 @@ load_mn (FILE *in, struct rec **recs, int *numrecs)
 }
 
 static void
-_morgenstern_search_dual_mem (FILE *in, struct rec *in2recs, int num_in2recs, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+_morgenstern_search_dual_mem (FILE *in, struct rec *in2recs, int num_in2recs, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
   /*
    **
@@ -982,7 +983,7 @@ _morgenstern_search_dual_mem (FILE *in, struct rec *in2recs, int num_in2recs, vo
         continue;
       for (unsigned long long j = 0; j < i; j++)
         search (in2recs[i].mn[0], in2recs[i].mn[1],
-                in2recs[j].mn[0], in2recs[j].mn[1], out);
+                in2recs[j].mn[0], in2recs[j].mn[1], data);
     }
 
   //clean up
@@ -999,7 +1000,7 @@ _morgenstern_search_dual_mem (FILE *in, struct rec *in2recs, int num_in2recs, vo
 }
 
 static void
-_morgenstern_search_dual_binary_mem (FILE *in, struct rec *in2recs, int num_in2recs, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+_morgenstern_search_dual_binary_mem (FILE *in, struct rec *in2recs, int num_in2recs, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
   /*
    **
@@ -1019,7 +1020,7 @@ _morgenstern_search_dual_binary_mem (FILE *in, struct rec *in2recs, int num_in2r
         continue;
       for (unsigned long long j = 0; j < i; j++)
         search (in2recs[i].mn[0], in2recs[i].mn[1],
-                in2recs[j].mn[0], in2recs[j].mn[1], out);
+                in2recs[j].mn[0], in2recs[j].mn[1], data);
     }
 
   //clean up
@@ -1033,19 +1034,19 @@ _morgenstern_search_dual_binary_mem (FILE *in, struct rec *in2recs, int num_in2r
 }
 
 void
-morgenstern_search_dual_binary_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+morgenstern_search_dual_binary_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
   struct rec *in2recs = NULL;
   int num_in2recs = 0;
   load_mn_binary (in2, &in2recs, &num_in2recs);
-  return _morgenstern_search_dual_binary_mem (in1, in2recs, num_in2recs, search, out);
+  return _morgenstern_search_dual_binary_mem (in1, in2recs, num_in2recs, search, data);
 }
 
 void
-morgenstern_search_dual_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, FILE*), FILE *out)
+morgenstern_search_dual_mem (FILE *in1, FILE *in2, void (*search) (mpz_t, mpz_t, mpz_t, mpz_t, void *), void *data)
 {
   struct rec *in2recs = NULL;
   int num_in2recs = 0;
   load_mn (in2, &in2recs, &num_in2recs);
-  return _morgenstern_search_dual_mem (in1, in2recs, num_in2recs, search, out);
+  return _morgenstern_search_dual_mem (in1, in2recs, num_in2recs, search, data);
 }

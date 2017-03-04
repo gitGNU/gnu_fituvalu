@@ -19,20 +19,23 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
+struct fv_app_seq_morgenstern_t
+{
 int num_args;
 int brute;
 mpz_t max, min;
+void (*display_record)(mpz_t*, mpz_t*, FILE *);
+};
 
-void (*display_record)(mpz_t*, mpz_t*, FILE *) = display_two_record;
 static void
-seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out)
+seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out, struct fv_app_seq_morgenstern_t *app)
 {
     {
       //XXX FIXME: we put m and n into one and two to avoid a warning
       mpz_t one, two;
       mpz_init_set (one, m);
       mpz_init_set (two, n);
-      display_record (&one, &two, out);
+      app->display_record (&one, &two, out);
       mpz_clears (one, two, NULL);
     }
   mpz_t s;
@@ -45,26 +48,26 @@ seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out)
       mpz_set (m2, s);
       mpz_set (n2, m);
       if (mpz_even_p (n2))
-        seq (m2, n2, finish, out);
+        seq (m2, n2, finish, out, app);
       else
         {
           mpz_add (s, m2, n2);
           if (mpz_cmp (s, finish) < 0)
             {
-              seq (s, m2, finish, out);
-              seq (s, n2, finish, out);
+              seq (s, m2, finish, out, app);
+              seq (s, n2, finish, out, app);
             }
         }
       mpz_set (n2, n);
       if (mpz_even_p (n2))
-        seq (m2, n2, finish, out);
+        seq (m2, n2, finish, out, app);
       else
         {
           mpz_add (s, m2, n2);
           if (mpz_cmp (s, finish) < 0)
             {
-              seq (s, m2, finish, out);
-              seq (s, n2, finish, out);
+              seq (s, m2, finish, out, app);
+              seq (s, n2, finish, out, app);
             }
         }
       mpz_clears (m2, n2, NULL);
@@ -73,21 +76,21 @@ seq (mpz_t m, mpz_t n, mpz_t finish, FILE *out)
 }
 
 static int
-morgenstern_seq (FILE *out)
+morgenstern_seq (struct fv_app_seq_morgenstern_t *app, FILE *out)
 {
   mpz_t m, n;
   mpz_inits (m, n, NULL);
-  if (mpz_cmp_ui (min, 0) > 0)
+  if (mpz_cmp_ui (app->min, 0) > 0)
     {
-      mpz_sub_ui (m, min, 1);
-      mpz_sub_ui (n, min, 2);
-      seq (m, n, max, out);
+      mpz_sub_ui (m, app->min, 1);
+      mpz_sub_ui (n, app->min, 2);
+      seq (m, n, app->max, out, app);
     }
   else
     {
       mpz_set_ui (m, 2);
       mpz_set_ui (n, 1);
-      seq (m, n, max, out);
+      seq (m, n, app->max, out, app);
     }
   mpz_clears (m, n, NULL);
   return 0;
@@ -96,35 +99,37 @@ morgenstern_seq (FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_seq_morgenstern_t *app = (struct fv_app_seq_morgenstern_t *) state->input;
   switch (key)
     {
     case 'b':
-      brute = 1;
+      app->brute = 1;
       break;
     case 'o':
-      display_record = display_binary_two_record;
+      app->display_record = display_binary_two_record;
       break;
     case ARGP_KEY_ARG:
-      if (num_args == 2)
+      if (app->num_args == 2)
         argp_error (state, "too many arguments");
       else
         {
-          switch (num_args)
+          switch (app->num_args)
             {
             case 0:
-              mpz_set_str (max, arg, 10);
+              mpz_set_str (app->max, arg, 10);
               break;
             case 1:
-              mpz_set (min, max);
-              mpz_set_str (max, arg, 10);
+              mpz_set (app->min, app->max);
+              mpz_set_str (app->max, arg, 10);
               break;
             }
-          num_args++;
+          app->num_args++;
         }
       break;
      case ARGP_KEY_INIT:
-      mpz_init_set_ui (min, 0);
-      mpz_init_set_ui (max, 0);
+      mpz_init_set_ui (app->min, 0);
+      mpz_init_set_ui (app->max, 0);
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing argument.");
@@ -140,7 +145,7 @@ options[] =
   { "brute", 'b', 0, OPTION_HIDDEN, ""},
   { 0 }
 };
-struct argp argp ={options, parse_opt, "MAX\nMIN MAX", "Compute an MN list.\vThe output of this program is suitable for input into the \"morgenstern-search-type-*\" programs, as well as \"3sq\".  This sequence of numbers has the form:\nM > N > 0, where M and N are coprime, and with one number being even, and the other number being odd." , 0};
+static struct argp argp ={options, parse_opt, "MAX\nMIN MAX", "Compute an MN list.\vThe output of this program is suitable for input into the \"morgenstern-search-type-*\" programs, as well as \"3sq\".  This sequence of numbers has the form:\nM > N > 0, where M and N are coprime, and with one number being even, and the other number being odd." , 0};
 
 static int
 morgenstern_brute (FILE *out, char *start)
@@ -158,14 +163,22 @@ morgenstern_brute (FILE *out, char *start)
 }
 
 int
+fituvalu_seq_morgenstern (struct fv_app_seq_morgenstern_t *app, FILE *out)
+{
+  int ret = 0;
+  if (app->brute)
+    ret = morgenstern_brute (out, "54342291404080490827096080");
+  else
+    ret = morgenstern_seq (app, out);
+  return ret;
+}
+
+int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  int ret = 0;
-  if (brute)
-    ret = morgenstern_brute (stdout, "54342291404080490827096080");
-  else
-    ret = morgenstern_seq (stdout);
-  return ret;
+  struct fv_app_seq_morgenstern_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_record = display_two_record;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_seq_morgenstern (&app, stdout);
 }

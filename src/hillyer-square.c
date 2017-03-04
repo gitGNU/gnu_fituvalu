@@ -21,9 +21,12 @@
 
 //from:
 //http://www.multimagie.com/English/Morgenstern06.htm
-int in_binary;
-int show_ratio;
-void (*display_square) (mpz_t s[3][3], FILE *out) = display_square_record;
+struct fv_app_hillyer_square_t
+{
+  int in_binary;
+  int show_ratio;
+  void (*display_square) (mpz_t s[3][3], FILE *out);
+};
 
 static void
 generate_hillyer_square (mpz_t sq[3][3], mpz_t k, mpz_t l)
@@ -101,7 +104,7 @@ generate_hillyer_square (mpz_t sq[3][3], mpz_t k, mpz_t l)
 }
 
 int
-hillyer (FILE *in, FILE *out)
+hillyer (struct fv_app_hillyer_square_t *app, FILE *in, FILE *out)
 {
   ssize_t read;
   char *line = NULL;
@@ -125,7 +128,7 @@ hillyer (FILE *in, FILE *out)
         break;
       mpz_set_str (l, line, 10);
       generate_hillyer_square (sq, k, l);
-      if (show_ratio)
+      if (app->show_ratio)
         {
           mpf_t sum1f, sum2f, ratio;
           mpz_t sum1, sum2;
@@ -161,7 +164,7 @@ hillyer (FILE *in, FILE *out)
           mpz_clears (sum1, sum2, NULL);
         }
       else
-        display_square (sq, out);
+        app->display_square (sq, out);
     }
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
@@ -173,7 +176,7 @@ hillyer (FILE *in, FILE *out)
 }
 
 static int
-binary_hillyer (FILE *in, FILE *out)
+binary_hillyer (struct fv_app_hillyer_square_t *app, FILE *in, FILE *out)
 {
   ssize_t read;
   mpz_t k, l, sq[3][3];
@@ -190,7 +193,7 @@ binary_hillyer (FILE *in, FILE *out)
       if (!read)
         break;
       generate_hillyer_square (sq, k, l);
-      display_square (sq, out);
+      app->display_square (sq, out);
     }
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
@@ -202,16 +205,20 @@ binary_hillyer (FILE *in, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_hillyer_square_t *app = (struct fv_app_hillyer_square_t *) state->input;
   switch (key)
     {
     case 'i':
-      in_binary = 1;
+      app->in_binary = 1;
       break;
     case 'o':
-      display_square = display_binary_square_record;
+      app->display_square = display_binary_square_record;
       break;
     case 's':
-      show_ratio = 1;
+      app->show_ratio = 1;
+      break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
       break;
     }
   return 0;
@@ -226,18 +233,25 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Generate a nearly-magic 3x3 square according to Lee Morgenstern's algorithm that employes hillyer's formula on multimagie.com.  These squares are generated from two input values on the standard input, K and L, separated by a comma." , 0};
+static struct argp argp ={options, parse_opt, 0, "Generate a nearly-magic 3x3 square according to Lee Morgenstern's algorithm that employes hillyer's formula on multimagie.com.  These squares are generated from two input values on the standard input, K and L, separated by a comma." , 0};
 
+int
+fituvalu_hillyer_square (struct fv_app_hillyer_square_t *app, FILE *in, FILE *out)
+{
+  int ret;
+  if (app->in_binary)
+    ret = binary_hillyer (app, in, out);
+  else
+    ret = hillyer (app, in, out);
+  return ret;
+}
 
 int
 main (int argc, char **argv)
 {
-  setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  int ret;
-  if (in_binary)
-    ret = binary_hillyer (stdout, stdout);
-  else
-    ret = hillyer (stdin, stdout);
-  return ret;
+  struct fv_app_hillyer_square_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_square = display_square_record;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_hillyer_square (&app, stdin, stdout);
 }

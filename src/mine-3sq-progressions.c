@@ -19,11 +19,15 @@
 #include <stdlib.h>
 #include "magicsquareutil.h"
 
-int squares;
-int show_sum;
-int show_diff;
-int show_root;
-int (*read_numbers)(FILE *, mpz_t *, int size, char **, size_t *) = read_numbers_from_stream;
+struct fv_app_mine_3sq_progressions_t
+{
+  int squares;
+  int show_sum;
+  int show_diff;
+  int show_root;
+  int (*read_numbers)(FILE *, mpz_t *, int size, char **, size_t *);
+  FILE *out;
+};
 
 int
 compar (const void *left, const void *right)
@@ -35,20 +39,20 @@ compar (const void *left, const void *right)
 
 //http://www.geeksforgeeks.org/print-all-possible-combinations-of-r-elements-in-a-given-array-of-size-n/
 void combinationUtil (mpz_t arr[], mpz_t data[], int start, int end,
-                      int index, int r, FILE *out);
+                      int index, int r, struct fv_app_mine_3sq_progressions_t *app);
 
-void printCombination (mpz_t arr[], int n, int r, FILE *out)
+void printCombination (mpz_t arr[], int n, int r, struct fv_app_mine_3sq_progressions_t *app)
 {
   mpz_t data[r];
   for (int i = 0; i < r; i++)
     mpz_init (data[i]);
-  combinationUtil (arr, data, 0, n-1, 0, r, out);
+  combinationUtil (arr, data, 0, n-1, 0, r, app);
   for (int i = 0; i < r; i++)
     mpz_clear (data[i]);
 }
  
 void combinationUtil (mpz_t arr[], mpz_t data[], int start, int end,
-                      int index, int r, FILE *out)
+                      int index, int r, struct fv_app_mine_3sq_progressions_t *app)
 {
   if (index == r)
     {
@@ -57,16 +61,16 @@ void combinationUtil (mpz_t arr[], mpz_t data[], int start, int end,
       mpz_sub (diff1, data[1], data[0]);
       mpz_sub (diff2, data[2], data[1]);
       int match = mpz_cmp (diff1, diff2) == 0;
-      if (show_diff && match)
+      if (app->show_diff && match)
         {
           char buf[mpz_sizeinbase (diff1, 10) + 2];
           mpz_get_str (buf, 10, diff1);
-          fprintf (out, "%s, ", buf);
+          fprintf (app->out, "%s, ", buf);
         }
       mpz_clears (diff1, diff2, NULL);
       if (!match)
         return;
-      if (show_sum)
+      if (app->show_sum)
         {
           mpz_t sum;
           mpz_init (sum);
@@ -74,46 +78,46 @@ void combinationUtil (mpz_t arr[], mpz_t data[], int start, int end,
             mpz_add (sum, sum, data[j]);
           char buf[mpz_sizeinbase (sum, 10) + 2];
           mpz_get_str (buf, 10, sum);
-          fprintf (out, "%s, ", buf);
+          fprintf (app->out, "%s, ", buf);
           mpz_clear (sum);
         }
       for (int j = 0; j < r; j++)
         {
           char buf[mpz_sizeinbase (data[j], 10) + 2];
           mpz_get_str (buf, 10, data[j]);
-          fprintf (out, "%s, ", buf);
+          fprintf (app->out, "%s, ", buf);
         }
-      if (show_root)
+      if (app->show_root)
         {
           mpz_t root;
           mpz_init (root);
           mpz_sqrt (root, data[r-1]);
           char buf[mpz_sizeinbase (root, 10) + 2];
           mpz_get_str (buf, 10, root);
-          fprintf (out, "%s, ", buf);
+          fprintf (app->out, "%s, ", buf);
           mpz_clear (root);
         }
-      fprintf (out, "\n");
+      fprintf (app->out, "\n");
       return;
     }
 
   for (int i = start; i <= end && end - i + 1 >= r - index; i++)
     {
       mpz_set (data[index], arr[i]);
-      combinationUtil(arr, data, i + 1, end, index + 1, r, out);
+      combinationUtil(arr, data, i + 1, end, index + 1, r, app);
     }
 }
 
 static void
-check (mpz_t one, mpz_t two, mpz_t three, mpz_t diff, FILE *out)
+check (mpz_t one, mpz_t two, mpz_t three, mpz_t diff, struct fv_app_mine_3sq_progressions_t *app)
 {
-  if (show_diff)
+  if (app->show_diff)
     {
       char buf[mpz_sizeinbase (diff, 10) + 2];
       mpz_get_str (buf, 10, diff);
-      fprintf (out, "%s, ", buf);
+      fprintf (app->out, "%s, ", buf);
     }
-  if (show_sum)
+  if (app->show_sum)
     {
       mpz_t sum;
       mpz_init (sum);
@@ -122,52 +126,52 @@ check (mpz_t one, mpz_t two, mpz_t three, mpz_t diff, FILE *out)
       mpz_add (sum, sum, three);
       char buf[mpz_sizeinbase (sum, 10) + 2];
       mpz_get_str (buf, 10, sum);
-      fprintf (out, "%s, ", buf);
+      fprintf (app->out, "%s, ", buf);
       mpz_clear (sum);
     }
     {
       char buf[mpz_sizeinbase (one, 10) + 2];
       mpz_get_str (buf, 10, one);
-      fprintf (out, "%s, ", buf);
+      fprintf (app->out, "%s, ", buf);
     }
     {
       char buf[mpz_sizeinbase (two, 10) + 2];
       mpz_get_str (buf, 10, two);
-      fprintf (out, "%s, ", buf);
+      fprintf (app->out, "%s, ", buf);
     }
     {
       char buf[mpz_sizeinbase (three, 10) + 2];
       mpz_get_str (buf, 10, three);
-      fprintf (out, "%s, ", buf);
+      fprintf (app->out, "%s, ", buf);
     }
-  if (show_root)
+  if (app->show_root)
     {
       mpz_t root;
       mpz_init (root);
       mpz_sqrt (root, three);
       char buf[mpz_sizeinbase (root, 10) + 2];
       mpz_get_str (buf, 10, root);
-      fprintf (out, "%s, ", buf);
+      fprintf (app->out, "%s, ", buf);
       mpz_clear (root);
     }
-  fprintf (out, "\n");
+  fprintf (app->out, "\n");
 }
 
 void combination2Util (mpz_t arr[], mpz_t data[], int start, int end,
-                      int index, int r, FILE *out);
+                      int index, int r, struct fv_app_mine_3sq_progressions_t *app);
 
-void print2Combination (mpz_t arr[], int n, int r, FILE *out)
+void print2Combination (mpz_t arr[], int n, int r, struct fv_app_mine_3sq_progressions_t *app)
 {
   mpz_t data[r];
   for (int i = 0; i < r; i++)
     mpz_init (data[i]);
-  combination2Util (arr, data, 0, n-1, 0, r, out);
+  combination2Util (arr, data, 0, n-1, 0, r, app);
   for (int i = 0; i < r; i++)
     mpz_clear (data[i]);
 }
 
 void combination2Util (mpz_t arr[], mpz_t data[], int start, int end,
-                      int index, int r, FILE *out)
+                      int index, int r, struct fv_app_mine_3sq_progressions_t *app)
 {
   if (index == r)
     {
@@ -185,21 +189,21 @@ void combination2Util (mpz_t arr[], mpz_t data[], int start, int end,
         }
       if (mpz_cmp (data[1], data[0]) > 0)
         {
-      mpz_add (next, data[1], diff);
-      if (mpz_perfect_square_p (next))
-        check (data[0], data[1], next, diff, out);
-      mpz_sub (next, data[0], diff);
-      if (mpz_perfect_square_p (next))
-        check (next, data[0], data[1], diff, out);
+          mpz_add (next, data[1], diff);
+          if (mpz_perfect_square_p (next))
+            check (data[0], data[1], next, diff, app);
+          mpz_sub (next, data[0], diff);
+          if (mpz_perfect_square_p (next))
+            check (next, data[0], data[1], diff, app);
         }
       else
         {
-      mpz_add (next, data[0], diff);
-      if (mpz_perfect_square_p (next))
-        check (data[1], data[0], next, diff, out);
-      mpz_sub (next, data[1], diff);
-      if (mpz_perfect_square_p (next))
-        check (next, data[1], data[0], diff, out);
+          mpz_add (next, data[0], diff);
+          if (mpz_perfect_square_p (next))
+            check (data[1], data[0], next, diff, app);
+          mpz_sub (next, data[1], diff);
+          if (mpz_perfect_square_p (next))
+            check (next, data[1], data[0], diff, app);
         }
 
       mpz_clears (diff, next, NULL);
@@ -210,12 +214,12 @@ void combination2Util (mpz_t arr[], mpz_t data[], int start, int end,
   for (int i = start; i <= end && end - i + 1 >= r - index; i++)
     {
       mpz_set (data[index], arr[i]);
-      combination2Util(arr, data, i + 1, end, index + 1, r, out);
+      combination2Util(arr, data, i + 1, end, index + 1, r, app);
     }
 }
 
 static void
-mine_progression (mpz_t vec[], int size, FILE *out)
+mine_progression (mpz_t vec[], int size, struct fv_app_mine_3sq_progressions_t *app)
 {
   int count = 0;
   mpz_t progression[size];
@@ -237,7 +241,7 @@ mine_progression (mpz_t vec[], int size, FILE *out)
 
   qsort (progression, count, sizeof (mpz_t), compar);
 
-  printCombination (progression, count, 3, out);
+  printCombination (progression, count, 3, app);
 
   for (int i = 0; i < count; i++)
     mpz_clear (progression[i]);
@@ -245,7 +249,7 @@ mine_progression (mpz_t vec[], int size, FILE *out)
 }
 
 static int
-mine_3sq_progressions (FILE *in, FILE *out)
+mine_3sq_progressions (struct fv_app_mine_3sq_progressions_t *app, FILE *in)
 {
   char *line = NULL;
   size_t len = 0;
@@ -257,10 +261,10 @@ mine_3sq_progressions (FILE *in, FILE *out)
     mpz_inits (vec[i], orig[i], NULL);
   while (1)
     {
-      read = read_numbers (in, vec, SIZE, &line, &len);
+      read = app->read_numbers (in, vec, SIZE, &line, &len);
       if (read == -1)
         break;
-      mine_progression (vec, SIZE, out);
+      mine_progression (vec, SIZE, app);
     }
 
   for (int i = 0; i < SIZE; i++)
@@ -272,7 +276,7 @@ mine_3sq_progressions (FILE *in, FILE *out)
 }
 
 static int
-mine_3sq_progressions_sq (FILE *in, FILE *out)
+mine_3sq_progressions_sq (struct fv_app_mine_3sq_progressions_t *app, FILE *in)
 {
   char *line = NULL;
   size_t len = 0;
@@ -284,7 +288,7 @@ mine_3sq_progressions_sq (FILE *in, FILE *out)
   mpz_init (sq);
   while (1)
     {
-      if (read_numbers == binary_read_numbers_from_stream)
+      if (app->read_numbers == binary_read_numbers_from_stream)
         {
           read = mpz_inp_raw (sq, in);
           if (!read)
@@ -304,7 +308,7 @@ mine_3sq_progressions_sq (FILE *in, FILE *out)
           num_sqs++;
         }
     }
-  print2Combination (sqs, num_sqs, 2, out);
+  print2Combination (sqs, num_sqs, 2, app);
   mpz_clear (sq);
   for (int i = 0; i < num_sqs; i++)
     mpz_clear (sqs[i]);
@@ -318,22 +322,23 @@ mine_3sq_progressions_sq (FILE *in, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_mine_3sq_progressions_t *app = (struct fv_app_mine_3sq_progressions_t *) state->input;
   switch (key)
     {
     case 'S':
-      squares = 1;
+      app->squares = 1;
       break;
     case 'd':
-      show_diff = 1;
+      app->show_diff = 1;
       break;
     case 's':
-      show_sum = 1;
+      app->show_sum = 1;
       break;
     case 'r':
-      show_root = 1;
+      app->show_root = 1;
       break;
     case 'i':
-      read_numbers = binary_read_numbers_from_stream;
+      app->read_numbers = binary_read_numbers_from_stream;
       break;
     }
   return 0;
@@ -350,14 +355,24 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares and output any arithmetic progressions that are formed by three perfect squares.\vThe 3x3 magic squares must be separated by a comma and terminated by a newline." , 0};
+static struct argp argp ={options, parse_opt, 0, "Accept 3x3 magic squares and output any arithmetic progressions that are formed by three perfect squares.\vThe 3x3 magic squares must be separated by a comma and terminated by a newline." , 0};
+
+int
+fituvalu_mine_3sq_progressions (struct fv_app_mine_3sq_progressions_t *app, FILE *in)
+{
+  if (app->squares)
+    return mine_3sq_progressions_sq (app, in);
+  else
+    return mine_3sq_progressions (app, in);
+}
 
 int
 main (int argc, char **argv)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  if (squares)
-    return mine_3sq_progressions_sq (stdin, stdout);
-  else
-    return mine_3sq_progressions (stdin, stdout);
+  struct fv_app_mine_3sq_progressions_t app;
+  memset (&app, 0, sizeof (app));
+  app.read_numbers = read_numbers_from_stream;
+  app.out = stdout;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_mine_3sq_progressions (&app, stdin);
 }

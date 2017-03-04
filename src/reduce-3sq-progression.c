@@ -20,11 +20,14 @@
 #include <gmp.h>
 #include "magicsquareutil.h"
 
-void (*display_tuple) (mpz_t s[3], FILE *out) = display_three_record;
-int (*read_tuple) (FILE *, mpz_t *, char **, size_t *) = read_three_numbers_from_stream;
+struct fv_app_reduce_progression_t
+{
+  void (*display_tuple) (mpz_t s[3], FILE *out);
+  int (*read_tuple) (FILE *, mpz_t *, char **, size_t *);
+};
 
-static int
-reduce (FILE *stream, FILE *out)
+int
+fituvalu_reduce_progression (struct fv_app_reduce_progression_t *app, FILE *in, FILE *out)
 {
   char *line = NULL;
   size_t len = 0;
@@ -36,11 +39,11 @@ reduce (FILE *stream, FILE *out)
 
   while (1)
     {
-      read = read_tuple (stream, a, &line, &len);
+      read = app->read_tuple (in, a, &line, &len);
       if (read == -1)
         break;
       reduce_three_square_progression (a);
-      display_tuple (a, out);
+      app->display_tuple (a, out);
     }
 
   for (int i = 0; i < 3; i++)
@@ -54,13 +57,14 @@ reduce (FILE *stream, FILE *out)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  struct fv_app_reduce_progression_t *app = (struct fv_app_reduce_progression_t *) state->input;
   switch (key)
     {
     case 'i':
-      read_tuple = binary_read_three_numbers_from_stream;
+      app->read_tuple = binary_read_three_numbers_from_stream;
       break;
     case 'o':
-      display_tuple = display_binary_three_record;
+      app->display_tuple = display_binary_three_record;
       break;
     }
   return 0;
@@ -74,11 +78,15 @@ options[] =
   { 0 }
 };
 
-struct argp argp ={options, parse_opt, 0, "Accept three-square arithmetic progressions from the standard input, and reduce them to their smallest values.\vThe three values must be separated by a comma and terminated by a newline, and must be in ascending order." , 0};
+static struct argp argp ={options, parse_opt, 0, "Accept three-square arithmetic progressions from the standard input, and reduce them to their smallest values.\vThe three values must be separated by a comma and terminated by a newline, and must be in ascending order." , 0};
 
 int
 main (int argc, char **argv)
 {
-  argp_parse (&argp, argc, argv, 0, 0, 0);
-  return reduce (stdin, stdout);
+  struct fv_app_reduce_progression_t app;
+  memset (&app, 0, sizeof (app));
+  app.display_tuple = display_three_record;
+  app.read_tuple = read_three_numbers_from_stream;
+  argp_parse (&argp, argc, argv, 0, 0, &app);
+  return fituvalu_reduce_progression (&app, stdin, stdout);
 }
