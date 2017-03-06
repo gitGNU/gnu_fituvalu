@@ -22,10 +22,13 @@
 
 struct fv_app_display_magic_square_t
 {
+  mpz_t *filters;
+  int num_filters;
   int showmax;
   int showmin;
   int showdiff;
   int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+  void (*display_square) (mpz_t s[3][3], FILE *out);
 };
 
 static void
@@ -70,7 +73,21 @@ fituvalu_display_magic_number (struct fv_app_display_magic_square_t *app, FILE *
       read = app->read_square (stream, &a, &line, &len);
       if (read == -1)
         break;
-      if (app->showmax)
+      if (app->num_filters)
+        {
+          mpz_t sum;
+          mpz_init (sum);
+          mpz_set (sum, a[0][0]);
+          mpz_add (sum, sum, a[0][1]);
+          mpz_add (sum, sum, a[0][2]);
+          for (i = 0; i < app->num_filters; i++)
+            {
+              if (mpz_cmp (app->filters[i], sum) == 0)
+                app->display_square (a, stdout);
+            }
+          mpz_clear (sum);
+        }
+      else if (app->showmax)
         {
           mpz_t m;
           mpz_init (m);
@@ -129,6 +146,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
   struct fv_app_display_magic_square_t *app = (struct fv_app_display_magic_square_t *) state->input;
   switch (key)
     {
+    case 'f':
+      app->filters = realloc (app->filters,
+                              sizeof (mpz_t) * (app->num_filters + 1));
+      mpz_init_set_str (app->filters[app->num_filters], arg, 10);
+      app->num_filters++;
+      break;
     case 'd':
       app->showdiff = 1;
       break;
@@ -152,6 +175,7 @@ options[] =
   { "max", 'm', 0, 0, "Show the largest value instead of the magic number"},
   { "min", 'M', 0, 0, "Show the smallest value instead of the magic number"},
   { "diff", 'd', 0, OPTION_HIDDEN, "Show the difference between the largest value and the smallest value"},
+  { "filter", 'f', "NUM", 0, "Only show squares with magic number NUM"},
   { 0 },
 };
 
@@ -169,6 +193,7 @@ main (int argc, char **argv)
   struct fv_app_display_magic_square_t app;
   memset (&app, 0, sizeof (app));
   app.read_square = read_square_from_stream;
+  app.display_square = display_square_record;
   argp_parse (&argp, argc, argv, 0, 0, &app);
   return fituvalu_display_magic_number (&app, stdin);
 }
