@@ -23,16 +23,17 @@
 struct fv_app_multiply_progression_t
 {
   int num_args;
-  mpz_t multiplier, max_tries;
+  mpq_t multiplier;
+  mpz_t max_tries;
   void (*display_tuple) (mpz_t s[3], FILE *out);
   int (*read_tuple) (FILE *, mpz_t *, char **, size_t *);
 };
 
 static void
-multiply_three_square_progression (struct fv_app_multiply_progression_t *app, mpz_t *a)
+multiply_three_square_progression (struct fv_app_multiply_progression_t *app, mpq_t *a)
 {
   for (int i = 0; i < 3; i++)
-    mpz_mul (a[i], a[i], app->multiplier);
+    mpq_mul (a[i], a[i], app->multiplier);
 }
 
 int
@@ -41,27 +42,43 @@ fituvalu_multiply_progression (struct fv_app_multiply_progression_t *app, FILE *
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
-  mpz_t a[3], j;
+  mpz_t ar[3], j;
+  mpq_t a[3];
 
   for (int i = 0; i < 3; i++)
-    mpz_init (a[i]);
+    {
+      mpq_init (a[i]);
+      mpz_init (ar[i]);
+    }
   mpz_init (j);
 
-  while (1)
+  read = app->read_tuple (stream, ar, &line, &len);
+  if (read != -1)
     {
-      read = app->read_tuple (stream, a, &line, &len);
-      if (read == -1)
-        break;
-      for (mpz_set_ui (j, 0); mpz_cmp (j, app->max_tries) < 0;
-           mpz_add_ui (j, j, 1))
+      app->display_tuple (ar, out);
+      while (1)
         {
-          multiply_three_square_progression (app, a);
-          app->display_tuple (a, out);
+          for (int i = 0; i < 3; i++)
+            mpq_set_z (a[i], ar[i]);
+          for (mpz_set_ui (j, 0); mpz_cmp (j, app->max_tries) < 0;
+               mpz_add_ui (j, j, 1))
+            {
+              multiply_three_square_progression (app, a);
+              for (int i = 0; i < 3; i++)
+                mpz_set_q (ar[i], a[i]);
+              app->display_tuple (ar, out);
+            }
+          read = app->read_tuple (stream, ar, &line, &len);
+          if (read == -1)
+            break;
         }
     }
 
   for (int i = 0; i < 3; i++)
-    mpz_clear (a[i]);
+    {
+      mpq_clear (a[i]);
+      mpz_clear (ar[i]);
+    }
   mpz_clear (j);
 
   if (line)
@@ -87,11 +104,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
       else if (app->num_args == 1)
         mpz_set_str (app->max_tries, arg, 10);
       else if (app->num_args == 0)
-        mpz_set_str (app->multiplier, arg, 10);
+        mpq_set_str (app->multiplier, arg, 10);
       app->num_args++;
       break;
     case ARGP_KEY_INIT:
-      mpz_inits (app->multiplier, app->max_tries, NULL);
+      mpq_init (app->multiplier);
+      mpz_init (app->max_tries);
       mpz_set_ui (app->max_tries, 1);
       break;
     case ARGP_KEY_NO_ARGS:
@@ -113,7 +131,7 @@ static struct argp
 argp =
 {
   options, parse_opt, "MUL [TRIES]",
-  "Accept three-square arithmetic progressions from the standard input, and multiply them by MUL.\vThe three values must be separated by a comma and terminated by a newline, and must be in ascending order.",
+  "Accept three-square arithmetic progressions from the standard input, and multiply them by MUL which can be a rational number.\vThe three values must be separated by a comma and terminated by a newline, and must be in ascending order.",
   0
 };
 
