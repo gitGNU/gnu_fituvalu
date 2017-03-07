@@ -42,7 +42,7 @@ fituvalu_multiply_progression (struct fv_app_multiply_progression_t *app, FILE *
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
-  mpz_t ar[3], j;
+  mpz_t ar[3], j, diff;
   mpq_t a[3];
 
   for (int i = 0; i < 3; i++)
@@ -50,7 +50,7 @@ fituvalu_multiply_progression (struct fv_app_multiply_progression_t *app, FILE *
       mpq_init (a[i]);
       mpz_init (ar[i]);
     }
-  mpz_init (j);
+  mpz_inits (j, diff, NULL);
 
   read = app->read_tuple (stream, ar, &line, &len);
   if (read != -1)
@@ -66,6 +66,8 @@ fituvalu_multiply_progression (struct fv_app_multiply_progression_t *app, FILE *
               multiply_three_square_progression (app, a);
               for (int i = 0; i < 3; i++)
                 mpz_set_q (ar[i], a[i]);
+              mpz_sub (diff, ar[1], ar[0]);
+              mpz_add (ar[2], ar[1], diff);
               app->display_tuple (ar, out);
             }
           read = app->read_tuple (stream, ar, &line, &len);
@@ -79,7 +81,7 @@ fituvalu_multiply_progression (struct fv_app_multiply_progression_t *app, FILE *
       mpq_clear (a[i]);
       mpz_clear (ar[i]);
     }
-  mpz_clear (j);
+  mpz_clears (j, diff, NULL);
 
   if (line)
     free (line);
