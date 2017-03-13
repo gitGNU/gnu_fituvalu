@@ -47,6 +47,7 @@ bin_PROGRAMS = \
 	     find-3sq-progressions-gutierrez \
 	     find-3sq-progressions-dist \
 	     find-3sq-progressions-conrad \
+	     find-3sq-progressions-dist-sdt \
 	     complete-3sq-progression reduce-3sq-progression \
 	     nine-search 3sq-pair-search odd-square \
 	     \
@@ -294,6 +295,9 @@ scissor_square_LDADD = -lm libmagicsquareutil.la
 
 unique_squares_SOURCES = unique-squares.c
 unique_squares_LDADD = -lm libmagicsquareutil.la
+
+find_3sq_progressions_dist_sdt_SOURCES = find-3sq-progressions-dist-sdt.c
+find_3sq_progressions_dist_sdt_LDADD = -lm libmagicsquareutil.la
 
 AM_CFLAGS=-Wall
 
