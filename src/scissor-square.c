@@ -28,6 +28,7 @@ struct fv_app_scissor_square_t
   void (*display_square) (mpz_t s[3][3], FILE *out);
   int (*read_tuple) (FILE *, mpz_t *, char **, size_t *);
   mpz_t match[3];
+  int no_warbird;
 };
 
 
@@ -227,10 +228,13 @@ pair_search (struct fv_app_scissor_square_t *app, mpz_t *target, FILE *in, FILE 
         break;
       if (generate_scissor_square (sq, target, b))
         app->display_square (sq, out);
-      if (generate_warbird_square1 (sq, target, b))
-        app->display_square (sq, out);
-      if (generate_warbird_square2 (sq, target, b))
-        app->display_square (sq, out);
+      if (!app->no_warbird)
+        {
+          if (generate_warbird_square1 (sq, target, b))
+            app->display_square (sq, out);
+          if (generate_warbird_square2 (sq, target, b))
+            app->display_square (sq, out);
+        }
     }
 
   for (int i = 0; i < 3; i++)
@@ -266,10 +270,13 @@ _pair_search_file (struct fv_app_scissor_square_t *app, mpz_t *a, FILE *out)
         break;
       if (generate_scissor_square (sq, a, b))
         app->display_square (sq, out);
-      if (generate_warbird_square1 (sq, a, b))
-        app->display_square (sq, out);
-      if (generate_warbird_square2 (sq, a, b))
-        app->display_square (sq, out);
+      if (!app->no_warbird)
+        {
+          if (generate_warbird_square1 (sq, a, b))
+            app->display_square (sq, out);
+          if (generate_warbird_square2 (sq, a, b))
+            app->display_square (sq, out);
+        }
     }
 
   for (int i = 0; i < 3; i++)
@@ -313,6 +320,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
   struct fv_app_scissor_square_t *app = (struct fv_app_scissor_square_t *) state->input;
   switch (key)
     {
+    case 'n':
+      app->no_warbird = 1;
+      break;
     case 'i':
       app->read_tuple = binary_read_three_numbers_from_stream;
       break;
@@ -368,6 +378,7 @@ options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "no-warbird", 'n', 0, 0, "Only try the scissor square method"},
   { 0 }
 };
 
