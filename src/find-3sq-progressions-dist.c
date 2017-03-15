@@ -142,6 +142,51 @@ gen_3sq_in (struct fv_app_find_3sq_progressions_dist_t *app, FILE *in, FILE *out
   return 0;
 }
 
+/*
+static void
+calculate_start_and_max_tries (struct fv_app_find_3sq_progressions_dist_t *app)
+{
+  //app->distance is the number
+  //we want to fill out app->start
+  //and app->max_tries
+  //
+  //using the square difference triangle to find the starting row
+  //and ending row
+  //
+  //it doesn't work though.  the starting square for 3360 can be 4
+  mpz_t finish, i, j, icount, jcount, row, col, next, root;
+  mpz_inits (finish, i, j, icount, jcount, row, col, next, root, NULL);
+  mpz_set (finish, app->distance);
+  mpz_set_ui (icount, 3);
+  mpz_set (i, icount);
+  mpz_set_ui (row, 2);
+
+  mpz_sqrt (root, finish);
+  mpz_t rootplus2;
+  mpz_init (rootplus2);
+  mpz_add_ui (rootplus2, root, 2);
+  mpz_mul (i, root, rootplus2);
+  mpz_sub_ui (rootplus2, rootplus2, 1);
+  mpz_sub_ui (root, root, 1);
+  mpz_mul (j, root, rootplus2);
+  mpz_clear (rootplus2);
+  mpz_sub (icount, i, j);
+  mpz_set (row, root);
+  mpz_add_ui (row, row, 2);
+
+  //mpz_set (app->start, i);
+
+  //((num / 2) + 1) * ((num / 2) + 1)  - 1
+  mpz_cdiv_q_ui (app->max_tries, app->distance, 2);
+  mpz_add_ui (app->max_tries, app->max_tries, 1);
+  mpz_mul (app->max_tries, app->max_tries, app->max_tries);
+  mpz_sub_ui (app->max_tries, app->max_tries, 1);
+  display_textual_number (&i, stdout);
+  display_textual_number (&app->max_tries, stdout);
+  mpz_clears (finish, i, j, icount, jcount, row, col, next, root, NULL);
+}
+*/
+
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
