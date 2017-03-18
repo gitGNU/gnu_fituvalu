@@ -870,25 +870,53 @@ reduce_square (mpz_t a[3][3])
           continue;
         mpz_gcd (gcd, gcd, a[j][k]);
       }
+
+  //printf("gcd is ");
+    //display_textual_number (&gcd, stdout);
   if (mpz_cmp_ui (gcd, 1) > 0)
     {
-      mpz_t d;
-      mpz_init (d);
       int squares_retained = 1;
-      for (j = 0; j < 3; j++)
-        for (k = 0; k < 3; k++)
-          {
-            mpz_cdiv_q (d, a[j][k], gcd);
-            if (mpz_perfect_square_p (a[j][k]))
-              {
-                if (!mpz_perfect_square_p (d))
-                  {
-                    squares_retained = 0;
-                    break;
-                  }
-              }
-          }
-      mpz_clear (d);
+      mpz_t root, d;
+      mpz_inits (root, d, NULL);
+      mpz_sqrt (root, gcd);
+      mpz_mul (gcd, root, root);
+      while (1)
+        {
+          squares_retained = 1;
+          for (j = 0; j < 3; j++)
+            {
+              for (k = 0; k < 3; k++)
+                {
+                  mpz_mod (d, a[j][k], gcd);
+                  if (mpz_cmp_ui (d, 0) != 0)
+                    {
+                      squares_retained = 0;
+                      break;
+                    }
+                  mpz_cdiv_q (d, a[j][k], gcd);
+                  if (mpz_perfect_square_p (a[j][k]))
+                    {
+                      if (!mpz_perfect_square_p (d))
+                        {
+                          squares_retained = 0;
+                          break;
+                        }
+                    }
+                }
+              if (squares_retained == 0)
+                break;
+            }
+          if (squares_retained)
+            break;
+          if (mpz_cmp_ui (gcd, 1) == 0)
+            break;
+          mpz_sub_ui (root, root, 1);
+          mpz_sub (gcd, gcd, root);
+          mpz_sub (gcd, gcd, root);
+          mpz_sub_ui (gcd, gcd, 1);
+        }
+      mpz_clears (root, d, NULL);
+
 
       if (squares_retained)
         {
