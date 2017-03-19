@@ -24,6 +24,8 @@ struct fv_app_mod_magic_square_t
 {
   int num_args;
   mpz_t num;
+  int num_filters;
+  int *filters;
   void (*display_square) (mpz_t s[3][3], FILE *out);
   int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
 };
@@ -47,10 +49,32 @@ fituvalu_mod_magic_square (struct fv_app_mod_magic_square_t *app, FILE *stream)
       if (read == -1)
         break;
 
-      for (i = 0; i < 3; i++)
-        for (j = 0; j < 3; j++)
-          mpz_mod (a[i][j], a[i][j], app->num);
-      app->display_square (a, stdout);
+      if (app->num_filters)
+        {
+          mpz_t num;
+          mpz_init (num);
+          int count = 0;
+          for (int k = 0; k < app->num_filters; k++)
+            {
+              for (i = 0; i < 3; i++)
+                for (j = 0; j < 3; j++)
+                  {
+                    mpz_mod (num, a[i][j], app->num);
+                    if (mpz_cmp_ui (num, app->filters[k]) == 0)
+                      count++;
+                  }
+            }
+          mpz_clear (num);
+          if (count == 9)
+            app->display_square (a, stdout);
+        }
+      else
+        {
+          for (i = 0; i < 3; i++)
+            for (j = 0; j < 3; j++)
+              mpz_mod (a[i][j], a[i][j], app->num);
+          app->display_square (a, stdout);
+        }
     }
 
   for (i = 0; i < 3; i++)
@@ -74,12 +98,30 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'o':
       app->display_square = display_binary_square_record;
       break;
+    case 'f':
+        {
+          char *end = NULL;
+          int num = strtoul (arg, &end, 10);
+          if (num >= 0)
+            {
+              app->filters =
+                realloc (app->filters , (app->num_filters + 1) * sizeof (int));
+              app->filters[app->num_filters] = num;
+              app->num_filters++;
+            }
+          else
+            argp_error (state, "%s is an invalid value for -f", arg);
+        }
+      break;
     case ARGP_KEY_ARG:
       if (app->num_args == 1)
         argp_error (state, "too many arguments");
       else if (app->num_args == 0)
         mpz_set_str (app->num, arg, 10);
       app->num_args++;
+      break;
+    case ARGP_KEY_NO_ARGS:
+      argp_error (state, "missing argument");
       break;
     }
   return 0;
@@ -90,6 +132,7 @@ options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "filter", 'f', "REM", 0, "Show squares that have at least one value that is REM mod NUM"},
   { 0 }
 };
 
