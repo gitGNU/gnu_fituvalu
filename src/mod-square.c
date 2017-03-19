@@ -120,6 +120,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
         mpz_set_str (app->num, arg, 10);
       app->num_args++;
       break;
+    case ARGP_KEY_INIT:
+      setenv ("ARGP_HELP_FMT", "no-dup-args-note", 1);
+      break;
     case ARGP_KEY_NO_ARGS:
       argp_error (state, "missing argument");
       break;
@@ -132,7 +135,7 @@ options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
-  { "filter", 'f', "REM", 0, "Show squares that have at least one value that is REM mod NUM"},
+  { "filter", 'f', "REM", 0, "Show squares that a value that is REM mod NUM"},
   { 0 }
 };
 
