@@ -53,7 +53,7 @@ bin_PROGRAMS = \
 	     \
 	     siamese-square gutierrez-square check-divisors \
 	     hillyer-square multiply-3sq-progression scissor-square \
-	     seq-mul unique-squares
+	     seq-mul unique-squares mod-square
 
 noinst_LTLIBRARIES = libmagicsquareutil.la
 
@@ -298,6 +298,9 @@ unique_squares_LDADD = -lm libmagicsquareutil.la
 
 find_3sq_progressions_dist_sdt_SOURCES = find-3sq-progressions-dist-sdt.c
 find_3sq_progressions_dist_sdt_LDADD = -lm libmagicsquareutil.la
+
+mod_square_SOURCES = mod-square.c
+mod_square_LDADD = -lm libmagicsquareutil.la
 
 AM_CFLAGS=-Wall
 
