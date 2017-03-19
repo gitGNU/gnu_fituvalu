@@ -29,13 +29,14 @@ struct fv_app_display_square_t
   int number_line;
   int cr_no_lf;
   int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
+  int nohat;
 };
 
 static int
-get_width (mpz_t i)
+get_width (int nohat, mpz_t i)
 {
   int ret = 0;
-  if (mpz_perfect_square_p (i))
+  if (mpz_perfect_square_p (i) && !nohat)
     {
       mpz_t root;
       mpz_init (root);
@@ -49,14 +50,14 @@ get_width (mpz_t i)
 }
 
 static int
-get_width_of_widest_cell (mpz_t a[3][3])
+get_width_of_widest_cell (struct fv_app_display_square_t *app, mpz_t a[3][3])
 {
   int widest = 0;
   for (int i = 0; i < 3; i++)
     {
       for (int j = 0; j < 3; j++)
         {
-          int width = get_width (a[i][i]);
+          int width = get_width (app->nohat, a[i][i]);
           if (width > widest)
             widest = width;
         }
@@ -92,13 +93,13 @@ get_magic_number_string (mpz_t a[3][3])
 }
 
 static char *
-get_number_string (mpz_t i, int width)
+get_number_string (int nohat, mpz_t i, int width)
 {
   char s[32768];
   /* FIXME, it's an unfortunate limit */
   memset (s, 0, sizeof (s));
   memset (s, ' ', width);
-  if (mpz_perfect_square_p (i))
+  if (mpz_perfect_square_p (i) && !nohat)
     {
       mpz_t root;
       mpz_init (root);
@@ -134,13 +135,13 @@ get_number_string (mpz_t i, int width)
 }
 
 static void
-display_row (int width, mpz_t a[3][3], int row, FILE *out, char *extra)
+display_row (struct fv_app_display_square_t *app, int width, mpz_t a[3][3], int row, FILE *out, char *extra)
 {
   int count = 0;
   for (int i = 0; i < width * 3; i++)
     if (i % width == 0)
       {
-        char *num = get_number_string (a[row][count], width-1);
+        char *num = get_number_string (app->nohat, a[row][count], width-1);
         fprintf (out, "|%s", num);
         free (num);
         count++;
@@ -154,19 +155,19 @@ display_row (int width, mpz_t a[3][3], int row, FILE *out, char *extra)
 static void
 display (struct fv_app_display_square_t *app, mpz_t a[3][3], FILE *out)
 {
-  int width = get_width_of_widest_cell (a);
+  int width = get_width_of_widest_cell (app, a);
 
   char *extra = NULL;
   if (app->magic_number)
     extra = get_magic_number_string (a);
   display_row_border (width, out);
-  display_row (width, a, 0, out, NULL);
+  display_row (app, width, a, 0, out, NULL);
   display_row_border (width, out);
-  display_row (width, a, 1, out, extra);
+  display_row (app, width, a, 1, out, extra);
   if (extra)
     free (extra);
   display_row_border (width, out);
-  display_row (width, a, 2, out, NULL);
+  display_row (app, width, a, 2, out, NULL);
   display_row_border (width, out);
 }
 
@@ -200,31 +201,31 @@ fill_sums (mpz_t a[3][3], mpz_t row1, mpz_t row2, mpz_t row3, mpz_t col1, mpz_t 
 }
 
 static int
-get_widest_sum (mpz_t row1, mpz_t row2, mpz_t row3, mpz_t col1, mpz_t col2, mpz_t col3, mpz_t diag1, mpz_t diag2)
+get_widest_sum (struct fv_app_display_square_t *app, mpz_t row1, mpz_t row2, mpz_t row3, mpz_t col1, mpz_t col2, mpz_t col3, mpz_t diag1, mpz_t diag2)
 {
   int width = 0;
-  int w = get_width (row1);
+  int w = get_width (app->nohat, row1);
   if (w > width)
     width = w;
-  w = get_width (row2);
+  w = get_width (app->nohat, row2);
   if (w > width)
     width = w;
-  w = get_width (row3);
+  w = get_width (app->nohat, row3);
   if (w > width)
     width = w;
-  w = get_width (col1);
+  w = get_width (app->nohat, col1);
   if (w > width)
     width = w;
-  w = get_width (col2);
+  w = get_width (app->nohat, col2);
   if (w > width)
     width = w;
-  w = get_width (col3);
+  w = get_width (app->nohat, col3);
   if (w > width)
     width = w;
-  w = get_width (diag1);
+  w = get_width (app->nohat, diag1);
   if (w > width)
     width = w;
-  w = get_width (diag2);
+  w = get_width (app->nohat, diag2);
   if (w > width)
     width = w;
   return width;
@@ -245,14 +246,14 @@ get_num_space_str (int num_spaces, mpz_t num)
 }
 
 static void
-display_broken_square (mpz_t a[3][3], FILE *out)
+display_broken_square (struct fv_app_display_square_t *app, mpz_t a[3][3], FILE *out)
 {
   mpz_t row1, row2, row3, col1, col2, col3, diag1, diag2;
   mpz_inits (row1, row2, row3, col1, col2, col3, diag1, diag2, NULL);
   fill_sums (a, row1, row2, row3, col1, col2, col3, diag1, diag2);
   int sumwidth =
-    get_widest_sum (row1, row2, row3, col1, col2, col3, diag1, diag2);
-  int cellwidth = get_width_of_widest_cell (a);
+    get_widest_sum (app, row1, row2, row3, col1, col2, col3, diag1, diag2);
+  int cellwidth = get_width_of_widest_cell (app, a);
   int width = sumwidth;
   if (cellwidth > width)
     width = cellwidth;
@@ -262,24 +263,24 @@ display_broken_square (mpz_t a[3][3], FILE *out)
   free (buf);
   buf = get_num_space_str (1, row1);
   display_row_border (width, out);
-  display_row (width, a, 0, out, buf);
+  display_row (app, width, a, 0, out, buf);
   free (buf);
   display_row_border (width, out);
   buf = get_num_space_str (1, row2);
-  display_row (width, a, 1, out, buf);
+  display_row (app, width, a, 1, out, buf);
   free (buf);
   display_row_border (width, out);
   buf = get_num_space_str (1, row3);
-  display_row (width, a, 2, out, buf);
+  display_row (app, width, a, 2, out, buf);
   free (buf);
   display_row_border (width, out);
-  buf = get_number_string (col1, width-1);
+  buf = get_number_string (app->nohat, col1, width-1);
   fprintf (out, " %s", buf);
   free (buf);
-  buf = get_number_string (col2, width-1);
+  buf = get_number_string (app->nohat, col2, width-1);
   fprintf (out, " %s", buf);
   free (buf);
-  buf = get_number_string (col3, width-1);
+  buf = get_number_string (app->nohat, col3, width-1);
   fprintf (out, " %s", buf);
   free (buf);
   buf = get_num_space_str (2, diag1);
@@ -417,7 +418,7 @@ fituvalu_display_square (struct fv_app_display_square_t *app, FILE *stream)
             display (app, a, stdout);
         }
       else
-        display_broken_square (a, stdout);
+        display_broken_square (app, a, stdout);
     }
 
   for (i = 0; i < 3; i++)
@@ -435,6 +436,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
   struct fv_app_display_square_t *app = (struct fv_app_display_square_t *) state->input;
   switch (key)
     {
+    case 'h':
+      app->nohat = 1;
+      break;
     case '3':
       app->csvthree = 1;
       break;
@@ -473,6 +477,7 @@ options[] =
   { "number-line", 'n', 0, 0, "Chart the numbers"},
   { "cr-no-lf", 'c', 0, 0, "With -n, redraw on the same line"},
   { "csv-three", '3', 0, 0, "Dump the square in csv format, 3 numbers per row"},
+  { "no-hat-2", 'h', 0, 0, "Don't show squares as ^2"},
   { 0 }
 };
 
