@@ -30,6 +30,8 @@ struct fv_app_unique_squares_t
   int (*read_numbers)(FILE *, mpz_t *, int, char **, size_t *);
   struct rec *recs;
   int numrecs;
+  int distinct;
+  int reduce;
 };
 
 
@@ -98,7 +100,7 @@ get_squares (struct fv_app_unique_squares_t *app, FILE *in)
       mpz_set (sq[2][0], app->recs[app->numrecs].sq[6]);
       mpz_set (sq[2][1], app->recs[app->numrecs].sq[7]);
       mpz_set (sq[2][2], app->recs[app->numrecs].sq[8]);
-      int is_square = is_magic_square (sq, 1);
+      int is_square = is_magic_square (sq, app->distinct);
       if (!is_square)
         continue;
       app->numrecs++;
@@ -199,8 +201,11 @@ fituvalu_unique_squares (struct fv_app_unique_squares_t *app, FILE *in, FILE *ou
 
   remove_dups (app);
 
-  reduce (app);
-  remove_dups (app);
+  if (app->reduce)
+    {
+      reduce (app);
+      remove_dups (app);
+    }
 
   struct irec *irec = NULL;
   int numirecs = 0;
@@ -243,6 +248,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
   struct fv_app_unique_squares_t *app = (struct fv_app_unique_squares_t *) state->input;
   switch (key)
     {
+    case 'd':
+      app->distinct = 0;
+      app->reduce = 0;
+      break;
     case 'i':
       app->read_numbers = binary_read_numbers_from_stream;
       break;
@@ -258,6 +267,7 @@ options[] =
 {
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
+  { "non-distinct", 'd', 0, 0, "Accept non-distinct magic squares"},
   { 0 }
 };
 
@@ -276,6 +286,8 @@ main (int argc, char **argv)
   memset (&app, 0, sizeof (app));
   app.display_record = display_nine_record;
   app.read_numbers = read_numbers_from_stream;
+  app.distinct = 1;
+  app.reduce = 1;
   argp_parse (&argp, argc, argv, 0, 0, &app);
   is_magic_square_init ();
   return fituvalu_unique_squares (&app, stdin, stdout);
