@@ -89,7 +89,7 @@ should_stop (mpz_t vec[], int size)
         mpz_set (a[i][j], vec[count]);
         count++;
       }
-  int ret = is_magic_square (a, 0);
+  int ret = is_magic_square (a, 1);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       mpz_clear (a[i][j]);
