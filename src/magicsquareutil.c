@@ -41,7 +41,7 @@ is_magic_square_fini ()
 }
 
 int 
-is_magic_square (mpz_t a[3][3], int diag)
+is_magic_square (mpz_t a[3][3], int distinct)
 {
   mpz_add (row1, a[0][0], a[0][1]);
   mpz_add (row1, row1, a[0][2]);
@@ -88,13 +88,16 @@ is_magic_square (mpz_t a[3][3], int diag)
   if (res)
     return 0;
 
-  int i, j, k, l;
-  for (i = 0; i < 3; i++)
-    for (j = 0; j < 3; j++)
-      for (k = 0; k < 3; k++)
-        for (l = 0; l < 3; l++)
-          if (mpz_cmp (a[i][j], a[k][l]) == 0 && (i != k || j != l))
-            return 0;
+  if (distinct)
+    {
+      int i, j, k, l;
+      for (i = 0; i < 3; i++)
+        for (j = 0; j < 3; j++)
+          for (k = 0; k < 3; k++)
+            for (l = 0; l < 3; l++)
+              if (mpz_cmp (a[i][j], a[k][l]) == 0 && (i != k || j != l))
+                return 0;
+    }
   return 1;
 }
 

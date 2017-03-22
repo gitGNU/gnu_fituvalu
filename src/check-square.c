@@ -23,6 +23,7 @@
 struct fv_app_check_magic_square_t
 {
   int invert;
+  int distinct;
   void (*display_square) (mpz_t s[3][3], FILE *out);
   int (*read_square) (FILE *, mpz_t (*)[3][3], char **, size_t *);
 };
@@ -45,7 +46,7 @@ fituvalu_check_if_magic_square (struct fv_app_check_magic_square_t *app, FILE *s
       read = app->read_square (stream, &a, &line, &len);
       if (read == -1)
         break;
-      int magic = is_magic_square (a, 1);
+      int magic = is_magic_square (a, app->distinct);
       if ((app->invert && !magic) || (!app->invert && magic))
         app->display_square (a, stdout);
     }
@@ -65,6 +66,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
   struct fv_app_check_magic_square_t *app = (struct fv_app_check_magic_square_t *) state->input;
   switch (key)
     {
+    case 'd':
+      app->distinct = 0;
+      break;
     case 'v':
       app->invert = 1;
       break;
@@ -84,6 +88,7 @@ options[] =
   { "in-binary", 'i', 0, 0, "Input raw GMP numbers instead of text"},
   { "out-binary", 'o', 0, 0, "Output raw GMP numbers instead of text"},
   { "invert", 'v', 0, 0, "Show the squares that aren't magic"},
+  { "non-distinct", 'd', 0, 0, "Allow non-distinct magic squares"},
   { 0 }
 };
 
@@ -102,6 +107,7 @@ main (int argc, char **argv)
   memset (&app, 0, sizeof (app));
   app.display_square = display_square_record;
   app.read_square = read_square_from_stream;
+  app.distinct = 1;
   argp_parse (&argp, argc, argv, 0, 0, &app);
   is_magic_square_init ();
   return fituvalu_check_if_magic_square (&app, stdin);
