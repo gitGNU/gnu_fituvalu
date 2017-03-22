@@ -10,6 +10,7 @@
 expected=`mktemp $builddir/fituvalu.XXXXXX`
 bindir=$builddir/../src
 cat << EOF >$expected
+1, 2, 3, 
 3, 6, 9, 
 EOF
 
